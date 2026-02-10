@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Enums ──────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  FRANCHISE_OWNER
+}
+
+enum InvestmentRange {
+  RANGE_50K_100K
+  RANGE_100K_200K
+  RANGE_200K_PLUS
+}
+
+enum ExperienceLevel {
+  INVERSOR
+  OPERACIONES
+  VENTAS
+  OTRO
+}
+
+// ── Lookup Tables ──────────────────────────────────
+
+model Sector {
+  id         String      @id @default(cuid())
+  name       String      @unique
+  slug       String      @unique
+  emoji      String
+  franchises Franchise[]
+  leads      Lead[]      @relation("LeadSectors")
+  createdAt  DateTime    @default(now())
+
+  @@map("sectors")
+}
+
+model Country {
+  id                String              @id @default(cuid())
+  name              String              @unique
+  code              String              @unique
+  phoneCode         String
+  flag              String
+  franchiseCoverage FranchiseCoverage[]
+  leads             Lead[]
+  createdAt         DateTime            @default(now())
+
+  @@map("countries")
+}
+
+// ── Core Models ────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         UserRole @default(FRANCHISE_OWNER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Franchise {
+  id                String              @id @default(cuid())
+  name              String
+  description       String
+  logo              String?
+  video             String?
+  investmentMin     Float
+  investmentMax     Float
+  sectorId          String
+  sector            Sector              @relation(fields: [sectorId], references: [id])
+  contactEmail      String?
+  featured          Boolean             @default(false)
+  active            Boolean             @default(true)
+  coverageCountries FranchiseCoverage[]
+  matches           LeadFranchiseMatch[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@map("franchises")
+}
+
+model FranchiseCoverage {
+  id          String    @id @default(cuid())
+  franchiseId String
+  franchise   Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  countryId   String
+  country     Country   @relation(fields: [countryId], references: [id])
+
+  @@unique([franchiseId, countryId])
+  @@map("franchise_coverage")
+}
+
+model Lead {
+  id              String          @id @default(cuid())
+  name            String
+  email           String
+  phone           String
+  phoneVerified   Boolean         @default(false)
+  countryId       String
+  country         Country         @relation(fields: [countryId], references: [id])
+  sectors         Sector[]        @relation("LeadSectors")
+  investmentRange InvestmentRange
+  experienceLevel ExperienceLevel
+  viewed          Boolean         @default(false)
+  matches         LeadFranchiseMatch[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([email])
+  @@index([phone])
+  @@map("leads")
+}
+
+model LeadFranchiseMatch {
+  id          String    @id @default(cuid())
+  leadId      String
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  franchiseId String
+  franchise   Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  score       Int
+  contacted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@unique([leadId, franchiseId])
+  @@map("lead_franchise_matches")
+}
+
+model SmsVerification {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  verified  Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("sms_verifications")
+}
