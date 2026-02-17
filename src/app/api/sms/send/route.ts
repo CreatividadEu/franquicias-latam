@@ -1,36 +1,56 @@
 import { NextResponse } from "next/server";
-import { sendVerificationCode } from "@/lib/twilio";
+import { sendSmsOtpWithDetails } from "@/lib/twilio";
 import { prisma } from "@/lib/prisma";
+import { getTwilioRuntimeFlags } from "@/lib/twilioConfig";
 import { generateOTP } from "@/lib/utils";
+
+/**
+ * Manual Test Checklist:
+ * 1. Restart the server after env changes.
+ * 2. GET /api/debug/twilio and confirm providerMode.
+ * 3. POST /api/sms/send with a real phone number.
+ * 4. Check Twilio Console -> Monitor -> Messaging logs for outgoing SMS.
+ * 5. If there are no Twilio Messaging logs, the request never reached Twilio.
+ */
+function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  const visible = digits.slice(-4);
+  return visible ? `***${visible}` : "***";
+}
 
 export async function POST(request: Request) {
   try {
-    const startedAt = Date.now();
-    const twilioConfigured =
-      !!process.env.TWILIO_ACCOUNT_SID &&
-      !!process.env.TWILIO_AUTH_TOKEN &&
-      !!process.env.TWILIO_VERIFY_SERVICE_SID;
+    const { nodeEnv, smsConfigured, usingMessagingServiceSid, providerMode } =
+      getTwilioRuntimeFlags();
+
+    const cleanupResult = await prisma.smsVerification.deleteMany({
+      where: {
+        verified: false,
+        expiresAt: { lt: new Date() },
+      },
+    });
 
     const body = await request.json().catch(() => ({}));
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
 
-    console.log("[sms/send] request received", {
-      phone,
-      twilioConfigured,
-      env: process.env.NODE_ENV,
+    console.log("[sms/send] request", {
+      providerMode,
+      nodeEnv,
+      smsConfigured,
+      usingMessagingServiceSid,
+      phoneMasked: maskPhone(phone),
     });
 
     const phoneValid = /^\+?\d{7,15}$/.test(phone);
     if (!phoneValid) {
-      console.log("[sms/send] invalid phone");
       return NextResponse.json(
         { error: "Numero de telefono invalido" },
         { status: 400 }
       );
     }
 
-    if (!twilioConfigured && process.env.NODE_ENV !== "development") {
-      console.log("[sms/send] twilio missing in production");
+    if (providerMode === "error_not_configured") {
+      console.warn("[sms/send] twilio missing in production");
       return NextResponse.json(
         { error: "Twilio is not configured" },
         { status: 500 }
@@ -38,7 +58,7 @@ export async function POST(request: Request) {
     }
 
     // Rate limit: max 3 attempts per phone per hour (only in production)
-    if (process.env.NODE_ENV !== "development") {
+    if (nodeEnv !== "development") {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
       const recentAttempts = await prisma.smsVerification.count({
         where: {
@@ -48,65 +68,67 @@ export async function POST(request: Request) {
       });
 
       if (recentAttempts >= 3) {
-        console.log("[sms/send] rate limited");
+        console.warn("[sms/send] rate limited");
         return NextResponse.json(
           { error: "Demasiados intentos. Intenta en 1 hora." },
           { status: 429 }
         );
       }
-    } else {
-      console.log("[sms/send] rate limit disabled in development");
     }
 
-    if (!twilioConfigured) {
-      console.log("[sms/send] dev fallback path");
-      // Use hardcoded code for easier testing in development
-      const code = process.env.NODE_ENV === "development" ? "123456" : generateOTP();
+    const latestVerification = await prisma.smsVerification.findFirst({
+      where: { phone },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
 
-      // Delete old unverified codes for this phone to prevent confusion
-      const deleted = await prisma.smsVerification.deleteMany({
-        where: {
-          phone,
-          verified: false,
-        },
-      });
-
-      if (deleted.count > 0) {
-        console.log("[sms/send] 🗑️ deleted", deleted.count, "old verification(s)");
-      }
-
-      const verification = await prisma.smsVerification.create({
-        data: {
-          phone,
-          code,
-          expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-        },
-      });
-
-      console.log("[sms/send] ✅ DEV CODE:", code, "for phone:", phone, "| ID:", verification.id, "| Expires:", verification.expiresAt.toISOString());
-
-      const response = NextResponse.json({
-        ok: true,
-        ...(process.env.NODE_ENV === "development" ? { code } : {}),
-      });
-      console.log("[sms/send] response sent", { ms: Date.now() - startedAt });
-      return response;
+    if (
+      latestVerification &&
+      Date.now() - latestVerification.createdAt.getTime() < 60 * 1000
+    ) {
+      return NextResponse.json(
+        { error: "Espera unos segundos antes de solicitar otro código" },
+        { status: 429 }
+      );
     }
 
-    console.log("[sms/send] twilio path");
-    const sent = await sendVerificationCode(phone);
+    const code = generateOTP();
+
+    // Delete old unverified codes for this phone to prevent confusion
+    await prisma.smsVerification.deleteMany({
+      where: {
+        phone,
+        verified: false,
+      },
+    });
+
+    await prisma.smsVerification.create({
+      data: {
+        phone,
+        code,
+        channel: "sms",
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      },
+    });
+
+    if (!smsConfigured) {
+      return NextResponse.json({ ok: true });
+    }
+
+    const { sent, error: twilioError } = await sendSmsOtpWithDetails(phone, code);
 
     if (!sent) {
-      console.log("[sms/send] twilio send failed");
+      console.warn("[sms/send] twilio sms send failed", {
+        code: twilioError?.code,
+        message: twilioError?.message,
+      });
       return NextResponse.json(
         { error: "No se pudo enviar el SMS" },
         { status: 500 }
       );
     }
 
-    const response = NextResponse.json({ ok: true });
-    console.log("[sms/send] response sent", { ms: Date.now() - startedAt });
-    return response;
+    return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[sms/send] unexpected error:", error);
     return NextResponse.json(

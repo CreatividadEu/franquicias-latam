@@ -1,38 +1,57 @@
-import twilio from "twilio";
+import { getMessagingServiceSid, getTwilioClient } from "./twilioConfig";
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const verifySid = process.env.TWILIO_VERIFY_SERVICE_SID;
+export type TwilioSmsError = {
+  code?: string | number;
+  message?: string;
+};
 
-const client =
-  accountSid && authToken ? twilio(accountSid, authToken) : null;
+export type TwilioSmsSendResult = {
+  sent: boolean;
+  sid?: string;
+  error?: {
+    code?: string | number;
+    message: string;
+  };
+};
 
-export async function sendVerificationCode(phone: string): Promise<boolean> {
-  // Dev bypass: skip Twilio in development when no credentials are set
-  if (!client || !verifySid) {
-    console.log(`[DEV] SMS code for ${phone}: 123456`);
-    return true;
-  }
-
-  const verification = await client.verify.v2
-    .services(verifySid)
-    .verifications.create({ to: phone, channel: "sms" });
-
-  return verification.status === "pending";
-}
-
-export async function checkVerificationCode(
+export async function sendSmsOtpWithDetails(
   phone: string,
   code: string
-): Promise<boolean> {
-  // Dev bypass: accept 123456 when no Twilio credentials
-  if (!client || !verifySid) {
-    return code === "123456";
+): Promise<TwilioSmsSendResult> {
+  const client = getTwilioClient();
+  if (!client) {
+    return {
+      sent: false,
+      error: { message: "Twilio client unavailable" },
+    };
   }
 
-  const check = await client.verify.v2
-    .services(verifySid)
-    .verificationChecks.create({ to: phone, code });
+  // Light validation before calling Twilio API.
+  if (!/^\+\d{8,15}$/.test(phone)) {
+    return {
+      sent: false,
+      error: { message: "Invalid phone" },
+    };
+  }
 
-  return check.status === "approved";
+  const messagingServiceSid = getMessagingServiceSid();
+
+  try {
+    const message = await client.messages.create({
+      to: phone,
+      messagingServiceSid,
+      body: `Tu código de verificación de Franquicias LATAM es: ${code}`,
+    });
+
+    return { sent: !!message.sid, sid: message.sid };
+  } catch (error: unknown) {
+    const twilioError = error as TwilioSmsError;
+    return {
+      sent: false,
+      error: {
+        code: twilioError.code,
+        message: twilioError.message ?? "Unknown Twilio error",
+      },
+    };
+  }
 }
