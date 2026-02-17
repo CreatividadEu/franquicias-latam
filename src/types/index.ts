@@ -55,6 +55,7 @@ export type ChatAction =
 
 export interface MatchedFranchise {
   id: string;
+  slug: string;
   name: string;
   description: string;
   logo: string | null;

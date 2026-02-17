@@ -5,61 +5,91 @@ export type TwilioProviderMode =
   | "fallback_db"
   | "error_not_configured";
 
-const nodeEnv = process.env.NODE_ENV ?? "development";
-const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID?.trim() ?? "";
-const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN?.trim() ?? "";
-const twilioMessagingServiceSid =
-  process.env.TWILIO_MESSAGING_SERVICE_SID?.trim() ?? "";
+type TwilioEnv = {
+  accountSid: string;
+  authToken: string;
+  messagingServiceSid: string;
+  nodeEnv: string;
+};
 
 let cachedClient: ReturnType<typeof twilio> | null | undefined;
+let cachedClientKey: string | null = null;
 
-export function isSmsConfigured(): boolean {
-  return !!twilioAccountSid && !!twilioAuthToken && !!twilioMessagingServiceSid;
+function getTwilioEnv(): TwilioEnv {
+  return {
+    accountSid: process.env.TWILIO_ACCOUNT_SID?.trim() ?? "",
+    authToken: process.env.TWILIO_AUTH_TOKEN?.trim() ?? "",
+    messagingServiceSid:
+      process.env.TWILIO_MESSAGING_SERVICE_SID?.trim() ?? "",
+    nodeEnv: process.env.NODE_ENV ?? "development",
+  };
 }
 
-export function getTwilioClient(): ReturnType<typeof twilio> | null {
-  if (!isSmsConfigured()) {
-    return null;
-  }
-
-  if (cachedClient === undefined) {
-    cachedClient = twilio(twilioAccountSid, twilioAuthToken);
-  }
-
-  return cachedClient;
-}
-
-export function getMessagingServiceSid(): string {
-  if (!twilioMessagingServiceSid) {
-    throw new Error("TWILIO_MESSAGING_SERVICE_SID is not configured");
-  }
-
-  return twilioMessagingServiceSid;
-}
-
-export function getProviderMode(): TwilioProviderMode {
-  if (isSmsConfigured()) {
+function resolveProviderMode(env: TwilioEnv): TwilioProviderMode {
+  if (env.accountSid && env.authToken && env.messagingServiceSid) {
     return "twilio_sms";
   }
 
-  if (nodeEnv === "production") {
+  if (env.nodeEnv === "production") {
     return "error_not_configured";
   }
 
   return "fallback_db";
 }
 
-export function getTwilioRuntimeFlags(): {
-  nodeEnv: string;
-  smsConfigured: boolean;
-  usingMessagingServiceSid: boolean;
-  providerMode: TwilioProviderMode;
-} {
-  const smsConfigured = isSmsConfigured();
+export function isSmsConfigured(): boolean {
+  const env = getTwilioEnv();
+  return !!env.accountSid && !!env.authToken && !!env.messagingServiceSid;
+}
+
+export function getTwilioClient(): ReturnType<typeof twilio> | null {
+  const env = getTwilioEnv();
+
+  if (!env.accountSid || !env.authToken || !env.messagingServiceSid) {
+    cachedClient = null;
+    cachedClientKey = null;
+    return null;
+  }
+
+  const nextKey = `${env.accountSid}:${env.authToken}`;
+
+  if (cachedClient === undefined || cachedClientKey !== nextKey) {
+    cachedClient = twilio(env.accountSid, env.authToken);
+    cachedClientKey = nextKey;
+  }
+
+  return cachedClient;
+}
+
+export function getMessagingServiceSid(): string {
+  const env = getTwilioEnv();
+
+  if (!env.messagingServiceSid) {
+    throw new Error("TWILIO_MESSAGING_SERVICE_SID is not configured");
+  }
+
+  return env.messagingServiceSid;
+}
+
+export function getProviderMode(): TwilioProviderMode {
+  return resolveProviderMode(getTwilioEnv());
+}
+
+export function getTwilioRuntimeFlags() {
+  const env = getTwilioEnv();
+  const smsConfigured =
+    !!env.accountSid && !!env.authToken && !!env.messagingServiceSid;
+
+  console.log("[twilio-config] runtime env check", {
+    hasSid: !!env.accountSid,
+    hasToken: !!env.authToken,
+    hasService: !!env.messagingServiceSid,
+  });
+
   return {
-    nodeEnv,
+    nodeEnv: env.nodeEnv,
     smsConfigured,
-    usingMessagingServiceSid: !!twilioMessagingServiceSid,
-    providerMode: getProviderMode(),
+    usingMessagingServiceSid: !!env.messagingServiceSid,
+    providerMode: resolveProviderMode(env),
   };
 }

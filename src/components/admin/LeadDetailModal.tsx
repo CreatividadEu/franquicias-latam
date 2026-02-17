@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -53,12 +52,6 @@ export function LeadDetailModal({
   open,
   onClose,
 }: LeadDetailModalProps) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   if (!lead) return null;
 
   return (
@@ -98,7 +91,9 @@ export function LeadDetailModal({
               </div>
               <div>
                 <span className="text-gray-500">Fecha:</span>
-                <p className="font-medium">{isClient ? formatDate(lead.createdAt) : ""}</p>
+                <p className="font-medium" suppressHydrationWarning>
+                  {formatDate(lead.createdAt)}
+                </p>
               </div>
             </div>
           </div>

@@ -17,7 +17,6 @@ import { CountryStep } from "./steps/CountryStep";
 import { ExperienceStep } from "./steps/ExperienceStep";
 import { ContactStep } from "./steps/ContactStep";
 import { VerificationStep } from "./steps/VerificationStep";
-import { ResultsStep } from "./steps/ResultsStep";
 
 const COMPOSER_ENABLED_STEPS: ChatStep[] = [];
 
@@ -90,8 +89,6 @@ export function ChatbotContainer() {
             phone={state.answers.phone}
           />
         );
-      case "results":
-        return <ResultsStep results={state.results} />;
       default:
         return null;
     }

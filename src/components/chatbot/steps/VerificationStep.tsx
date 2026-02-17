@@ -124,14 +124,6 @@ export function VerificationStep({
         )}
       </motion.div>
 
-      <motion.p
-        className="text-sm text-neutral-500 text-center leading-relaxed"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-      >
-        💡 Tip: En modo desarrollo usa el codigo <span className="font-mono text-neutral-900">123456</span>
-      </motion.p>
     </div>
   );
 }

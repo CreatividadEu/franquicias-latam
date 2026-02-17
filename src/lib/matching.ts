@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import type { InvestmentRange, ExperienceLevel } from "@prisma/client";
 import type { MatchedFranchise } from "@/types";
+import { buildFranchiseSlug } from "@/lib/franchiseSlug";
 
 interface MatchInput {
   sectors: string[];
@@ -116,6 +117,7 @@ export async function findMatches(
 
   return finalMatches.map((m) => ({
     id: m.franchise.id,
+    slug: buildFranchiseSlug(m.franchise.name, m.franchise.id),
     name: m.franchise.name,
     description: m.franchise.description,
     logo: m.franchise.logo,

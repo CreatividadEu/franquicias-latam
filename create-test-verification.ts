@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function createTestVerification() {
   const phone = "+573108649290";
-  const code = "123456";
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
 
   // Clean up old records
   await prisma.smsVerification.deleteMany({
@@ -27,7 +27,7 @@ async function createTestVerification() {
   console.log(`🔐 Code: ${code}`);
   console.log(`⏰ Expires: ${verification.expiresAt.toISOString()}`);
   console.log("━".repeat(60));
-  console.log("\n✨ You can now verify with code: 123456\n");
+  console.log(`\n✨ You can now verify with code: ${code}\n`);
 
   await prisma.$disconnect();
 }

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
+const satoshi = localFont({
+  src: "../../public/fonts/Satoshi-Variable.ttf",
   variable: "--font-inter",
   display: "swap",
 });
@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${satoshi.variable} font-sans antialiased`}>
         {children}
       </body>
     </html>

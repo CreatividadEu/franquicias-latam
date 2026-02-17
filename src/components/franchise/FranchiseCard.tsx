@@ -9,7 +9,8 @@ import type { MatchedFranchise } from "@/types";
 import { Star } from "lucide-react";
 
 interface FranchiseCardProps {
-  franchise: MatchedFranchise & { slug: string };
+  franchise: MatchedFranchise;
+  backToResultsUrl?: string;
 }
 
 function getMatchBadgeStyle(score: number) {
@@ -18,7 +19,7 @@ function getMatchBadgeStyle(score: number) {
   return "bg-gray-500 text-white";
 }
 
-export function FranchiseCard({ franchise }: FranchiseCardProps) {
+export function FranchiseCard({ franchise, backToResultsUrl }: FranchiseCardProps) {
   // Generate a nice gradient fallback if no logo
   const gradients = [
     "from-blue-500 to-indigo-600",
@@ -34,6 +35,12 @@ export function FranchiseCard({ franchise }: FranchiseCardProps) {
   // Mock rating (since we don't have it in the data)
   const rating = Math.min(5, Math.max(3.5, 3 + (franchise.score / 100) * 2));
   const ratingDisplay = rating.toFixed(1);
+  const franchiseHref = backToResultsUrl
+    ? {
+        pathname: `/franquicia/${franchise.slug}`,
+        query: { backTo: backToResultsUrl },
+      }
+    : `/franquicia/${franchise.slug}`;
 
   return (
     <Card className="group overflow-hidden rounded-2xl border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -119,7 +126,7 @@ export function FranchiseCard({ franchise }: FranchiseCardProps) {
           asChild
           className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md shadow-blue-600/20 active:scale-[0.98] transition-all"
         >
-          <Link href={`/franquicia/${franchise.slug}`}>Ver Franquicia</Link>
+          <Link href={franchiseHref}>Ver Franquicia</Link>
         </Button>
       </CardContent>
     </Card>

@@ -1,12 +1,12 @@
 "use client";
 
 import { useReducer, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import type {
   ChatState,
   ChatAction,
   ChatStep,
   ChatMessage,
-  MatchedFranchise,
 } from "@/types";
 import type { InvestmentRange, ExperienceLevel } from "@prisma/client";
 
@@ -276,6 +276,7 @@ function getInitialState(options?: UseChatbotOptions): ChatState {
 }
 
 export function useChatbot(options?: UseChatbotOptions) {
+  const router = useRouter();
   const [state, dispatch] = useReducer(chatReducer, options, (opts) => getInitialState(opts));
 
   const start = useCallback(() => dispatch({ type: "START" }), []);
@@ -343,12 +344,15 @@ export function useChatbot(options?: UseChatbotOptions) {
           body: JSON.stringify({ phone: state.answers.phone, code }),
         });
 
-        const verifyData = await verifyRes.json();
+        const verifyData = await verifyRes.json().catch(() => ({}));
 
-        if (!verifyData.verified) {
+        if (!verifyRes.ok || !verifyData.verified) {
           dispatch({
             type: "VERIFICATION_FAILED",
-            error: verifyData.error || "Codigo invalido",
+            error:
+              typeof verifyData.error === "string"
+                ? verifyData.error
+                : "Codigo invalido",
           });
           dispatch({ type: "SET_LOADING", loading: false });
           return;
@@ -371,17 +375,53 @@ export function useChatbot(options?: UseChatbotOptions) {
           }),
         });
 
-        const leadData = await leadRes.json();
+        const leadData = await leadRes.json().catch(() => ({}));
 
-        dispatch({
-          type: "MATCHES_LOADED",
-          results: leadData.matches as MatchedFranchise[],
+        if (!leadRes.ok) {
+          dispatch({
+            type: "SET_ERROR",
+            error:
+              typeof leadData.error === "string"
+                ? leadData.error
+                : "No se pudo crear tu perfil",
+          });
+          return;
+        }
+
+        if (!Array.isArray(leadData.matches)) {
+          dispatch({
+            type: "SET_ERROR",
+            error: "Respuesta invalida del servidor",
+          });
+          return;
+        }
+
+        if (
+          !state.answers.investmentRange ||
+          !state.answers.countryId ||
+          !state.answers.experienceLevel ||
+          state.answers.sectors.length === 0
+        ) {
+          dispatch({
+            type: "SET_ERROR",
+            error: "No se pudo reconstruir la busqueda",
+          });
+          return;
+        }
+
+        const params = new URLSearchParams({
+          sectors: state.answers.sectors.join(","),
+          investmentRange: state.answers.investmentRange,
+          countryId: state.answers.countryId,
+          experienceLevel: state.answers.experienceLevel,
         });
+
+        router.push(`/results?${params.toString()}`);
       } catch {
         dispatch({ type: "SET_ERROR", error: "Error de conexion" });
       }
     },
-    [state.answers]
+    [router, state.answers]
   );
 
   const goBack = useCallback(() => dispatch({ type: "GO_BACK" }), []);

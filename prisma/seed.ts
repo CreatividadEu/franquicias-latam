@@ -128,28 +128,56 @@ async function main() {
   ];
 
   for (const fd of franchiseData) {
-    const franchise = await prisma.franchise.create({
-      data: {
-        name: fd.name,
-        description: fd.description,
-        investmentMin: fd.investmentMin,
-        investmentMax: fd.investmentMax,
-        sectorId: sectorMap[fd.sectorSlug],
-        contactEmail: fd.contactEmail,
-        featured: fd.featured,
-        active: true,
+    const franchisePayload = {
+      name: fd.name,
+      description: fd.description,
+      investmentMin: fd.investmentMin,
+      investmentMax: fd.investmentMax,
+      sectorId: sectorMap[fd.sectorSlug],
+      contactEmail: fd.contactEmail,
+      featured: fd.featured,
+      active: true,
+    };
+
+    const existingFranchise = await prisma.franchise.findFirst({
+      where: { name: fd.name },
+      select: { id: true },
+    });
+
+    const franchise = existingFranchise
+      ? await prisma.franchise.update({
+          where: { id: existingFranchise.id },
+          data: franchisePayload,
+        })
+      : await prisma.franchise.create({
+          data: franchisePayload,
+        });
+
+    const targetCountryIds = fd.countries
+      .map((code) => countryMap[code])
+      .filter((countryId): countryId is string => Boolean(countryId));
+
+    if (targetCountryIds.length === 0) {
+      await prisma.franchiseCoverage.deleteMany({
+        where: { franchiseId: franchise.id },
+      });
+      continue;
+    }
+
+    await prisma.franchiseCoverage.deleteMany({
+      where: {
+        franchiseId: franchise.id,
+        countryId: { notIn: targetCountryIds },
       },
     });
 
-    // Create coverage records (sequentially to avoid connection pool limits)
-    for (const code of fd.countries) {
-      await prisma.franchiseCoverage.create({
-        data: {
-          franchiseId: franchise.id,
-          countryId: countryMap[code],
-        },
-      });
-    }
+    await prisma.franchiseCoverage.createMany({
+      data: targetCountryIds.map((countryId) => ({
+        franchiseId: franchise.id,
+        countryId,
+      })),
+      skipDuplicates: true,
+    });
   }
 
   console.log("Seed completed successfully!");

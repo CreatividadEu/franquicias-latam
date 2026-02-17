@@ -17,7 +17,6 @@ export async function POST(request: Request) {
       investmentRange,
       countryId,
       experienceLevel,
-      phoneVerified,
     } = body as {
       name: string;
       email: string;
@@ -26,13 +25,14 @@ export async function POST(request: Request) {
       investmentRange: InvestmentRange;
       countryId: string;
       experienceLevel: ExperienceLevel;
-      phoneVerified?: boolean;
     };
+
+    const normalizedPhone = phone?.trim();
 
     if (
       !name ||
       !email ||
-      !phone ||
+      !normalizedPhone ||
       !sectors?.length ||
       !investmentRange ||
       !countryId ||
@@ -54,20 +54,19 @@ export async function POST(request: Request) {
     }
 
     // Check if phone has been verified
-    const hasVerifiedSms =
-      phoneVerified === true
-        ? true
-        : !!(await prisma.smsVerification.findFirst({
-            where: {
-              phone,
-              verified: true,
-              expiresAt: { gte: new Date() }, // Ensure verification hasn't expired
-            },
-            orderBy: { createdAt: "desc" }, // Get most recent verification
-          }));
+    const hasVerifiedSms = !!(await prisma.smsVerification.findFirst({
+      where: {
+        phone: normalizedPhone,
+        verified: true,
+        expiresAt: { gte: new Date() }, // Ensure verification hasn't expired
+      },
+      orderBy: { createdAt: "desc" }, // Get most recent verification
+    }));
 
     if (!hasVerifiedSms) {
-      console.error("[leads/POST] Phone verification failed", { phone });
+      console.error("[leads/POST] Phone verification failed", {
+        phone: normalizedPhone,
+      });
       return NextResponse.json(
         {
           error:
@@ -77,12 +76,14 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("[leads/POST] Phone verified successfully", { phone });
+    console.log("[leads/POST] Phone verified successfully", {
+      phone: normalizedPhone,
+    });
 
     // Check for existing lead with same email or phone (deduplication)
     const existingLead = await prisma.lead.findFirst({
       where: {
-        OR: [{ email }, { phone }],
+        OR: [{ email }, { phone: normalizedPhone }],
       },
       include: {
         country: true,
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
         data: {
           name,
           email,
-          phone,
+          phone: normalizedPhone,
           phoneVerified: hasVerifiedSms,
           countryId,
           investmentRange,
@@ -135,14 +136,17 @@ export async function POST(request: Request) {
 
       isUpdate = true;
     } else {
-      console.log("[leads/POST] Creating new lead", { email, phone });
+      console.log("[leads/POST] Creating new lead", {
+        email,
+        phone: normalizedPhone,
+      });
 
       // Create new lead
       lead = await prisma.lead.create({
         data: {
           name,
           email,
-          phone,
+          phone: normalizedPhone,
           phoneVerified: hasVerifiedSms,
           countryId,
           investmentRange,

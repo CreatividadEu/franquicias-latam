@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Franquicias LATAM
 
-## Getting Started
+Marketplace app to match investors with franchise opportunities in LatAm.
 
-First, run the development server:
+## Tech Stack
+
+- Next.js 16 (App Router)
+- TypeScript
+- Prisma + PostgreSQL (Supabase compatible)
+- Tailwind CSS
+- Twilio Verify (SMS)
+- Resend (email notifications)
+
+## Requirements
+
+- Node.js 20+
+- npm 10+
+- PostgreSQL database
+
+## Environment Variables
+
+Create `.env.local` from `.env.example` and set real credentials:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies
+```bash
+npm ci
+```
+2. Generate Prisma client
+```bash
+npm run db:generate
+```
+3. Run database migrations
+```bash
+npm run db:migrate
+```
+4. Seed sample data (dev)
+```bash
+npm run db:seed
+```
+5. Start app
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+- `npm run dev`: start local development server
+- `npm run build`: production build using webpack (stable in restricted CI/sandboxes)
+- `npm run build:ci`: alias of `npm run build` for CI workflows
+- `npm run start`: run production server
+- `npm run lint`: run ESLint
+- `npm run typecheck`: run TypeScript checks
+- `npm run test`: run automated tests (`node:test`)
+- `npm run test:watch`: run tests in watch mode
+- `npm run db:generate`: generate Prisma client
+- `npm run db:migrate`: create/apply local migration
+- `npm run db:migrate:deploy`: apply committed migrations (CI/prod)
+- `npm run db:push`: direct schema push (prototype only; avoid in shared/prod envs)
+- `npm run db:seed`: seed baseline data
+- `npm run db:studio`: open Prisma Studio
 
-To learn more about Next.js, take a look at the following resources:
+## Database Workflow
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This repo now uses migration files under `prisma/migrations/`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- For schema changes in development:
+```bash
+npm run db:migrate -- --name your_change_name
+```
+- In CI/production:
+```bash
+npm run db:migrate:deploy
+```
 
-## Deploy on Vercel
+## Testing and CI
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Tests live under `tests/`.
+- GitHub Actions workflow (`.github/workflows/ci.yml`) runs:
+  - lint
+  - typecheck
+  - tests
+  - build
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+
+- Seed script is idempotent for sample franchises/country coverage.
+- Default seeded admin user is only allowed when `NODE_ENV=development` or `ALLOW_DEV_SEED=true`.

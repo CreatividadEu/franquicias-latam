@@ -27,8 +27,9 @@ const INVESTMENT_LABELS: Record<string, string> = {
 
 const EXPERIENCE_LABELS: Record<string, string> = {
   INVERSOR: "Inversor",
-  EMPRENDEDOR: "Emprendedor",
-  EMPRESARIO: "Empresario",
+  OPERACIONES: "Operaciones",
+  VENTAS: "Ventas",
+  OTRO: "Otro",
 };
 
 /**

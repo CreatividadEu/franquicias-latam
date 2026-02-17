@@ -564,18 +564,47 @@ export default function HomePage() {
 
           {/* Mockup Display */}
           <div className="max-w-5xl mx-auto scroll-fade-in">
-            <div className="hero-image bg-gradient-to-br from-blue-50 to-purple-50 aspect-[4/3] sm:aspect-video flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-4xl sm:text-5xl mb-2 sm:mb-3">
-                  {activeView === "quiz" && "💬"}
-                  {activeView === "matching" && "🎯"}
-                  {activeView === "resultados" && "📊"}
-                  {activeView === "contacto" && "📞"}
+            <div className="hero-image bg-gradient-to-br from-blue-50 to-purple-50 aspect-[4/3] sm:aspect-video relative overflow-hidden">
+              {activeView === "quiz" ||
+              activeView === "matching" ||
+              activeView === "resultados" ||
+              activeView === "contacto" ? (
+                <Image
+                  src={
+                    activeView === "quiz"
+                      ? "/fotos_home/franquicias_screen.png"
+                      : activeView === "matching"
+                        ? "/fotos_home/screen_resultados.png"
+                        : activeView === "resultados"
+                          ? "/fotos_home/franquicias-personalizadas.png"
+                          : "/fotos_home/contacto.png"
+                  }
+                  alt={
+                    activeView === "quiz"
+                      ? "Quiz Inteligente"
+                      : activeView === "matching"
+                        ? "Matching de Compatibilidad"
+                        : activeView === "resultados"
+                          ? "Resultados Personalizados"
+                          : "Contacto Directo"
+                  }
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, 80vw"
+                  priority
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl sm:text-5xl mb-2 sm:mb-3">
+                      {activeView === "contacto" && "📞"}
+                    </div>
+                    <p className="text-gray-700 font-medium text-base sm:text-lg">
+                      {viewTitles[activeView]}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-gray-700 font-medium text-base sm:text-lg">
-                  {viewTitles[activeView]}
-                </p>
-              </div>
+              )}
             </div>
           </div>
 
@@ -599,22 +628,23 @@ export default function HomePage() {
                 Proceso
               </span>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                Responde. Descubre.
-                <br className="hidden sm:block" /> Invierte.
+                Plataforma Financiada por el
+                <br className="hidden sm:block" /> Banco Interamericano de
+                Desarrollo.
               </h2>
               <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8">
-                No se trata de buscar franquicias al azar. Se trata de encontrar
-                la oportunidad perfecta para tu perfil de inversor.
+                La tecnología de inversión en franquicias premiada por gobiernos
+                y organismos internacionales.
               </p>
 
               <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
                 {[
-                  "Sectores",
-                  "Inversi\u00f3n",
-                  "Pa\u00eds",
-                  "Experiencia",
-                  "Verificaci\u00f3n SMS",
-                  "Contacto directo",
+                  "Financiado por BID",
+                  "Ganadores Retos 4.0",
+                  "Locomotora de la Innovación",
+                  "MinTIC Colombia",
+                  "Plataforma Validada",
+                  "Tecnología Propia",
                 ].map((chip) => (
                   <span
                     key={chip}

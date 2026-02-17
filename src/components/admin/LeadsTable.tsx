@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -44,12 +44,6 @@ const INVESTMENT_LABELS: Record<string, string> = {
 
 export function LeadsTable({ leads }: LeadsTableProps) {
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null);
-  const [isClient, setIsClient] = useState(false);
-
-  // Prevent hydration mismatch for date formatting
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleRowClick = async (lead: LeadRow) => {
     setSelectedLead(lead);
@@ -126,8 +120,11 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                       {topScore(lead)}%
                     </Badge>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell text-gray-500">
-                    {isClient ? formatDate(lead.createdAt) : ""}
+                  <TableCell
+                    className="hidden md:table-cell text-gray-500"
+                    suppressHydrationWarning
+                  >
+                    {formatDate(lead.createdAt)}
                   </TableCell>
                 </TableRow>
               ))

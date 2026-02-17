@@ -1,16 +1,12 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
 import { BookOpenCheck, GraduationCap, Handshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { prisma } from "@/lib/prisma";
+import { matchesFranchiseSlug } from "@/lib/franchiseSlug";
 
 const marqueeText = "✅ Franquicia Desarrollada x Franquicias LATAM";
 
@@ -349,22 +345,40 @@ function MiniChatMock({
 
 export default async function FranchiseLandingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ backTo?: string }>;
 }) {
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const requestedSlug = resolvedParams.slug.trim().toLowerCase();
+  const rawBackTo =
+    typeof resolvedSearchParams.backTo === "string"
+      ? resolvedSearchParams.backTo
+      : "";
+  const backToResults =
+    rawBackTo.startsWith("/results?") || rawBackTo === "/results"
+      ? rawBackTo
+      : null;
 
-  console.log("Slug:", resolvedParams.slug);
+  const franchises = await prisma.franchise.findMany({
+    where: { active: true },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      logo: true,
+      video: true,
+      investmentMin: true,
+      investmentMax: true,
+    },
+  });
 
-  const { data: franchise, error } = await supabase
-    .from("franchises")
-    .select("*")
-    .eq("slug", resolvedParams.slug)
-    .single();
+  const franchise =
+    franchises.find((item) => matchesFranchiseSlug(item, requestedSlug)) ?? null;
 
-  console.log("Franchise:", franchise);
-
-  if (error || !franchise) {
+  if (!franchise) {
     return (
       <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#def7ec_0%,#edf6ff_45%,#f8fafc_100%)] px-4 py-8 sm:px-6 sm:py-10">
         <div className="mx-auto w-full max-w-3xl">
@@ -374,11 +388,17 @@ export default async function FranchiseLandingPage({
                 Franquicia no encontrada
               </h1>
               <p className="text-sm text-slate-600 sm:text-base">
-                No encontramos informacion mock para la franquicia solicitada.
+                No encontramos informacion para la franquicia solicitada.
               </p>
-              <Button asChild>
-                <Link href="/quiz">Volver al quiz</Link>
-              </Button>
+              {backToResults ? (
+                <Button asChild>
+                  <Link href={backToResults}>Volver a resultados</Link>
+                </Button>
+              ) : (
+                <Button asChild>
+                  <Link href="/quiz">Volver al quiz</Link>
+                </Button>
+              )}
             </CardContent>
           </GlassPanel>
         </div>
@@ -387,7 +407,7 @@ export default async function FranchiseLandingPage({
   }
 
   const franchiseData = buildFranchiseView(franchise as Record<string, unknown>);
-  const marqueeLoop = [...Array.from({ length: 8 }).fill(marqueeText)];
+  const marqueeLoop: string[] = Array.from({ length: 8 }, () => marqueeText);
 
   return (
     <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top_left,#def7ec_0%,#edf6ff_45%,#f8fafc_100%)] px-4 py-8 sm:px-6 sm:py-10 lg:py-12">
@@ -395,6 +415,11 @@ export default async function FranchiseLandingPage({
         <section>
           <GlassPanel>
             <CardContent className="space-y-3 p-5 sm:p-7">
+              {backToResults && (
+                <Button asChild size="sm" variant="outline" className="w-fit">
+                  <Link href={backToResults}>← Volver a resultados</Link>
+                </Button>
+              )}
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                 Bienvenidos a {franchiseData.name}
               </h1>

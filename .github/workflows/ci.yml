@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/franquicias_test?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/franquicias_test?schema=public
+      JWT_SECRET: test-jwt-secret
+      RESEND_API_KEY: re_test
+      ADMIN_EMAIL: admin@example.com
+      TWILIO_ACCOUNT_SID: ACtest
+      TWILIO_AUTH_TOKEN: test-token
+      TWILIO_VERIFY_SERVICE_SID: VAtest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build:ci
