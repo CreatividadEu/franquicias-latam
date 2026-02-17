@@ -135,7 +135,7 @@
 
 5. Posible bypass o superficie de bypass
 - Bypass directo de `/api/leads` desde cliente no pasa porque exige verificacion DB (`src/app/api/leads/route.ts:57`).
-- Endpoint debug Twilio devuelve 404 en produccion; la superficie de diagnostico queda limitada a entornos no productivos.
+- Endpoint debug Twilio solo expone booleans y sufijos enmascarados (sin secretos completos).
 
 6. Riesgo operativo
 - El registro OTP se guarda antes de confirmar envio Twilio; si Twilio falla, queda OTP no entregado y el usuario puede pegarse con cooldown/rate-limit en reintentos (`src/app/api/sms/send/route.ts:112` y `src/app/api/sms/send/route.ts:92`).
@@ -203,3 +203,17 @@ curl -X POST http://localhost:3000/api/sms/send \
 4. Ejecutar smoke test:
    - `curl -X POST http://localhost:3000/api/sms/send -H "Content-Type: application/json" -d '{"phone":"+34XXXXXXXXX"}'`
 5. Confirmar envio saliente en Twilio Console (Messaging logs).
+
+## L. Production Smoke Diagnostics
+```bash
+curl -i https://<prod>/api/debug/twilio
+curl -i -X POST https://<prod>/api/sms/send \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"+34695126804"}'
+```
+
+Interpretacion rapida:
+- `401`: la plataforma o middleware esta protegiendo la ruta (auth/preview protection) antes de llegar al handler.
+- `404`: ruta no desplegada en esa version, path incorrecto, o rewrite/proxy bloqueando el acceso.
+- `308`: redireccion (ej. dominio/canonical URL); repetir el curl contra la URL final redirigida.
+- `500`: el handler se ejecuto y fallo; revisar JSON de respuesta y logs de Vercel para distinguir config Twilio vs error de envio.

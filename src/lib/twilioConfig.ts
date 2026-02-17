@@ -12,10 +12,20 @@ type TwilioEnv = {
   nodeEnv: string;
 };
 
+export type TwilioRuntimeFlags = {
+  nodeEnv: string;
+  smsConfigured: boolean;
+  usingMessagingServiceSid: boolean;
+  providerMode: TwilioProviderMode;
+  hasSid: boolean;
+  hasToken: boolean;
+  hasService: boolean;
+};
+
 let cachedClient: ReturnType<typeof twilio> | null | undefined;
 let cachedClientKey: string | null = null;
 
-function getTwilioEnv(): TwilioEnv {
+export function getTwilioEnv(): TwilioEnv {
   return {
     accountSid: process.env.TWILIO_ACCOUNT_SID?.trim() ?? "",
     authToken: process.env.TWILIO_AUTH_TOKEN?.trim() ?? "",
@@ -26,7 +36,7 @@ function getTwilioEnv(): TwilioEnv {
 }
 
 function resolveProviderMode(env: TwilioEnv): TwilioProviderMode {
-  if (env.accountSid && env.authToken && env.messagingServiceSid) {
+  if (!!env.accountSid && !!env.authToken && !!env.messagingServiceSid) {
     return "twilio_sms";
   }
 
@@ -75,21 +85,20 @@ export function getProviderMode(): TwilioProviderMode {
   return resolveProviderMode(getTwilioEnv());
 }
 
-export function getTwilioRuntimeFlags() {
+export function getTwilioRuntimeFlags(): TwilioRuntimeFlags {
   const env = getTwilioEnv();
-  const smsConfigured =
-    !!env.accountSid && !!env.authToken && !!env.messagingServiceSid;
-
-  console.log("[twilio-config] runtime env check", {
-    hasSid: !!env.accountSid,
-    hasToken: !!env.authToken,
-    hasService: !!env.messagingServiceSid,
-  });
+  const hasSid = !!env.accountSid;
+  const hasToken = !!env.authToken;
+  const hasService = !!env.messagingServiceSid;
+  const smsConfigured = hasSid && hasToken && hasService;
 
   return {
     nodeEnv: env.nodeEnv,
     smsConfigured,
-    usingMessagingServiceSid: !!env.messagingServiceSid,
+    usingMessagingServiceSid: hasService,
     providerMode: resolveProviderMode(env),
+    hasSid,
+    hasToken,
+    hasService,
   };
 }

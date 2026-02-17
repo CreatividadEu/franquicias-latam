@@ -1,4 +1,3 @@
-npm run dev
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { BookOpenCheck, GraduationCap, Handshake } from "lucide-react";
@@ -228,7 +227,14 @@ function PlaceholderBlock({
   );
 }
 
-function MiniChatMock({ data }: { data?: any }) {
+function MiniChatMock({
+  data,
+}: {
+  data?: {
+    chatBubbles?: string[];
+    suggestedQuestions?: string[];
+  };
+}) {
   const { chatBubbles = [], suggestedQuestions = [] } = data || {};
   return (
     <GlassPanel className="h-full">
@@ -313,7 +319,7 @@ export default async function FranchiseLandingPage({
     );
   }
 
-  const marqueeLoop = [...Array.from({ length: 8 }).fill(marqueeText)];
+  const marqueeLoop: string[] = Array.from({ length: 8 }, () => marqueeText);
 
   return (
     <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top_left,#def7ec_0%,#edf6ff_45%,#f8fafc_100%)] px-4 py-8 sm:px-6 sm:py-10 lg:py-12">

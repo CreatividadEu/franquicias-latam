@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { getTwilioRuntimeFlags } from "@/lib/twilioConfig";
 import { generateOTP } from "@/lib/utils";
 
+export const runtime = "nodejs";
+
 /**
  * Manual Test Checklist:
  * 1. Restart the server after env changes.
@@ -23,7 +25,7 @@ export async function POST(request: Request) {
     const { nodeEnv, smsConfigured, usingMessagingServiceSid, providerMode } =
       getTwilioRuntimeFlags();
 
-    const cleanupResult = await prisma.smsVerification.deleteMany({
+    await prisma.smsVerification.deleteMany({
       where: {
         verified: false,
         expiresAt: { lt: new Date() },
@@ -52,7 +54,13 @@ export async function POST(request: Request) {
     if (providerMode === "error_not_configured") {
       console.warn("[sms/send] twilio missing in production");
       return NextResponse.json(
-        { error: "Twilio is not configured" },
+        {
+          error: "Twilio is not configured",
+          providerMode,
+          nodeEnv,
+          smsConfigured,
+          usingMessagingServiceSid,
+        },
         { status: 500 }
       );
     }
