@@ -633,7 +633,7 @@ export default function HomePage() {
                 Desarrollo.
               </h2>
               <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8">
-                Hemos sido reconocidos y££ premiados por diferentes gobiernos y organizaciones internacionales. 
+                Hemos sido reconocidos y premiados por diferentes gobiernos y organizaciones internacionales. 
               </p>
 
               <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
