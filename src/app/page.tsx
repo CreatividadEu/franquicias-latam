@@ -628,7 +628,7 @@ export default function HomePage() {
                 Proceso
               </span>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                Plataforma Financiada por el
+                Financiados por el
                 <br className="hidden sm:block" /> Banco Interamericano de
                 Desarrollo.
               </h2>

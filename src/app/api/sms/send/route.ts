@@ -111,13 +111,13 @@ export async function POST(request: Request) {
     });
 
     await prisma.smsVerification.create({
-      data: {
-        phone,
-        code,
-        channel: "sms",
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-      },
-    });
+  data: {
+    phone,
+    code,
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+  },
+});
+
 
     if (!smsConfigured) {
       return NextResponse.json({ ok: true });
