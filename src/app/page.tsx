@@ -664,12 +664,13 @@ export default function HomePage() {
 
             <div className="order-1 lg:order-2 scroll-fade-in">
               <div className="hero-image bg-gradient-to-br from-green-50 to-emerald-50 aspect-square flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">
-                    💬
-                  </div>
-                  <p className="text-gray-700 font-medium">Quiz Inteligente</p>
-                </div>
+                <Image
+                  src="/premio-franquicias/premio_franquicias.png"
+                  alt="Premio Franquicias LATAM"
+                  width={900}
+                  height={900}
+                  className="h-full w-full object-contain"
+                />
               </div>
             </div>
           </div>
