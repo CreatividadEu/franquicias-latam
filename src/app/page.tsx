@@ -572,9 +572,9 @@ export default function HomePage() {
                 <Image
                   src={
                     activeView === "quiz"
-                      ? "/fotos_home/franquicias_screen.png"
+                      ? "/fotos_home/franquicias_screen.jpg"
                       : activeView === "matching"
-                        ? "/fotos_home/screen_resultados.png"
+                        ? "/fotos_home/iphone_resultados.jpeg"
                         : activeView === "resultados"
                           ? "/fotos_home/franquicias-personalizadas.png"
                           : "/fotos_home/contacto.png"
@@ -663,13 +663,12 @@ export default function HomePage() {
             </div>
 
             <div className="order-1 lg:order-2 scroll-fade-in">
-              <div className="hero-image bg-gradient-to-br from-green-50 to-emerald-50 aspect-square flex items-center justify-center">
+              <div className="hero-image bg-gradient-to-br from-green-50 to-emerald-50 aspect-square relative flex items-center justify-center">
                 <Image
-                  src="/premio-franquicias/premio_franquicias.png"
-                  alt="Premio Franquicias LATAM"
-                  width={900}
-                  height={900}
-                  className="h-full w-full object-contain"
+                  src="/premio-franquicias/premio_latam.png"
+                  alt="Premio LATAM"
+                  fill
+                  className="object-cover"
                 />
               </div>
             </div>
