@@ -218,7 +218,7 @@ export function HomeHeroFranchise() {
                 Convierte tu Negocio en una Franquicia.
               </h1>
               <p className="mt-5 max-w-2xl text-base text-slate-600 sm:text-lg">
-                Desarrollamos, optimizamos y comercializamos negocios con la metodolog&iacute;a premiada por el BID y organismos internacionales.
+                Escala tu negocio como una franquicia global. Aplica a nuestro programa que ha sido premiado por el Banco Interamericano de Desarrollo y Naciones Unidas, para convertir empresas en operaciones replicables, rentables y listas para crecimiento internacional.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">

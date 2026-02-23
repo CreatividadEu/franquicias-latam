@@ -440,7 +440,7 @@ export default function HomePage() {
                   Paso 1 de 5
                 </p>
                 <h3 className="text-center text-lg sm:text-xl font-semibold mb-1">
-                  Selecciona los sectores que te interesan
+                  ¿En qué sectores te interesa invertir?
                 </h3>
                 {heroSelected.length === 0 && (
                   <p className="text-center text-[0.90rem] text-gray-500 mb-4">
