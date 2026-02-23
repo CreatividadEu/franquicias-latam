@@ -61,7 +61,13 @@ export function DashboardPreview({ className = "" }: DashboardPreviewProps) {
           aria-label="Crecimiento y presencia regional"
         >
           <defs>
-            <pattern id="preview-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+            <pattern
+              id="preview-grid"
+              className="previewGridPattern"
+              width="24"
+              height="24"
+              patternUnits="userSpaceOnUse"
+            >
               <path
                 d="M24 0H0V24"
                 fill="none"
@@ -75,20 +81,21 @@ export function DashboardPreview({ className = "" }: DashboardPreviewProps) {
             </linearGradient>
           </defs>
           <rect x="0" y="0" width="330" height="160" fill="url(#preview-grid)" />
-          <ellipse cx="72" cy="62" rx="34" ry="16" fill="rgba(148,163,184,0.08)" />
-          <ellipse cx="168" cy="58" rx="44" ry="20" fill="rgba(148,163,184,0.08)" />
-          <ellipse cx="258" cy="78" rx="42" ry="18" fill="rgba(148,163,184,0.08)" />
+          <ellipse className="previewBlob" cx="72" cy="62" rx="34" ry="16" fill="rgba(148,163,184,0.08)" />
+          <ellipse className="previewBlob" cx="168" cy="58" rx="44" ry="20" fill="rgba(148,163,184,0.08)" />
+          <ellipse className="previewBlob" cx="258" cy="78" rx="42" ry="18" fill="rgba(148,163,184,0.08)" />
           <path
+            className="previewLine"
             d="M12 132 C 44 126, 70 122, 98 110 C 124 97, 138 92, 164 89 C 190 86, 208 76, 232 63 C 252 53, 274 40, 318 30"
             fill="none"
             stroke="url(#preview-line)"
             strokeWidth="4"
             strokeLinecap="round"
           />
-          <circle cx="98" cy="110" r="4.5" fill="#2563eb" />
-          <circle cx="164" cy="89" r="4.5" fill="#1d4ed8" />
-          <circle cx="232" cy="63" r="4.5" fill="#0ea5e9" />
-          <circle cx="286" cy="44" r="5.5" fill="#10b981" />
+          <circle className="previewDot dot1" cx="98" cy="110" r="4.5" fill="#2563eb" />
+          <circle className="previewDot dot2" cx="164" cy="89" r="4.5" fill="#1d4ed8" />
+          <circle className="previewDot dot3" cx="232" cy="63" r="4.5" fill="#0ea5e9" />
+          <circle className="previewDot dot4" cx="286" cy="44" r="5.5" fill="#10b981" />
           <circle cx="70" cy="62" r="3.5" fill="rgba(30,41,59,0.34)" />
           <circle cx="168" cy="58" r="3.5" fill="rgba(30,41,59,0.34)" />
           <circle cx="258" cy="78" r="3.5" fill="rgba(30,41,59,0.34)" />

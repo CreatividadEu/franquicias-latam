@@ -500,3 +500,119 @@ html {
 .scroll-fade-in.delay-3 {
   transition-delay: 0.3s;
 }
+
+/* Revenue Growth preview animation */
+.previewGridPattern {
+  transform-origin: center;
+  transform-box: fill-box;
+  will-change: transform;
+  animation: grid-drift 4s linear infinite;
+}
+
+@keyframes grid-drift {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-24px, -24px);
+  }
+}
+
+.previewBlob {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation: blob-float 4s ease-in-out infinite alternate,
+             blob-breathe 4s ease-in-out infinite;
+  opacity: 0.75; /* base suave, sin cambiar el fill */
+}
+
+@keyframes blob-float {
+  from { transform: translate(0px, 0px); }
+  to   { transform: translate(6px, -4px); }
+}
+
+@keyframes blob-breathe {
+  0%, 100% { opacity: 0.65; }
+  50%      { opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .previewBlob { animation: none !important; }
+}
+
+.previewLine {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  will-change: stroke-dashoffset, opacity;
+  animation: line-draw 6.2s cubic-bezier(0.33, 1, 0.68, 1) infinite;
+}
+
+@keyframes line-draw {
+  0% {
+    stroke-dashoffset: 420;
+    opacity: 0.9;
+  }
+  36% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  70% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -420;
+    opacity: 0.9;
+  }
+}
+
+.previewDot {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation: dot-pulse 3.2s ease-in-out infinite;
+}
+
+.dot1 {
+  animation-delay: 0s;
+}
+
+.dot2 {
+  animation-delay: 0.2s;
+}
+
+.dot3 {
+  animation-delay: 0.4s;
+}
+
+.dot4 {
+  animation-delay: 0.6s;
+}
+
+@keyframes dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .previewGridPattern,
+  .previewLine,
+  .previewDot {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .previewLine {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}
