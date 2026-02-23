@@ -576,8 +576,8 @@ export default function HomePage() {
                       : activeView === "matching"
                         ? "/fotos_home/iphone_resultados.jpeg"
                         : activeView === "resultados"
-                          ? "/fotos_home/franquicias-personalizadas.png"
-                          : "/fotos_home/contacto.png"
+                          ? "/fotos_home/screen_results_franquicias.jpeg"
+                        : "/fotos_home/screen_atencion.jpeg"
                   }
                   alt={
                     activeView === "quiz"
