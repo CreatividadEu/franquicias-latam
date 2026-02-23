@@ -12,6 +12,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { SectorOption } from "@/types";
 import { LatamDepthBackground } from "@/components/LatamDepthBackground";
+import { HomeHeroFranchise } from "@/components/home/HomeHeroFranchise";
 
 const countries = [
   { flag: "\u{1F1E8}\u{1F1F4}", name: "Colombia" },
@@ -383,11 +384,11 @@ export default function HomePage() {
             </h1>
 
             <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-2">
-              Te conectamos con las mejores franquicias en LATAM.
+              Desarrollamos y Vendemos las Mejores Franquicias. 
               <br className="hidden sm:block" />
-              <span className="text-gray-500">
-                Sin complicaciones. Sin intermediarios.
-              </span>
+              <strong className="text-gray-500 font-semibold">
+                ¿Cómo quieres crecer hoy?
+              </strong>
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 px-2">
@@ -395,13 +396,13 @@ export default function HomePage() {
                 href="/quiz"
                 className="bg-[#2860E7] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg hover:bg-[#1F52CC] transition-all font-semibold text-base sm:text-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
               >
-                Comenzar Quiz
+                Invertir en Franquicias
               </Link>
               <a
                 href="#proceso"
                 className="bg-white border-2 border-gray-200 text-black px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg hover:border-gray-800 transition-all font-semibold text-base sm:text-lg"
               >
-                Ver el proceso
+                Franquiciar mi Negocio
               </a>
             </div>
 
@@ -513,6 +514,8 @@ export default function HomePage() {
         </section>
       </LatamDepthBackground>
 
+      <HomeHeroFranchise />
+
       {/* ─── Platform Features (Stoika OS section) ─── */}
       <section id="plataforma" className="py-16 sm:py-20 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -615,63 +618,6 @@ export default function HomePage() {
             >
               Comenzar Quiz
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Feature Block 1: Proceso ─── */}
-      <section id="proceso" className="py-16 sm:py-20 lg:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
-            <div className="order-2 lg:order-1">
-              <span className="section-label mb-3 sm:mb-4 block">
-                Proceso
-              </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                Financiados por el
-                <br className="hidden sm:block" /> Banco Interamericano de
-                Desarrollo.
-              </h2>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8">
-                Hemos sido reconocidos y premiados por diferentes gobiernos y organizaciones internacionales. 
-              </p>
-
-              <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
-                {[
-                  "Financiado por BID",
-                  "Ganadores Retos 4.0",
-                  "Locomotora de la Innovación",
-                  "MinTIC Colombia",
-                  "Plataforma Validada",
-                  "Tecnología Propia",
-                ].map((chip) => (
-                  <span
-                    key={chip}
-                    className="feature-chip px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium"
-                  >
-                    {chip}
-                  </span>
-                ))}
-              </div>
-
-              <Link
-                href="/quiz"
-                className="inline-block bg-black text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg hover:bg-gray-800 transition-all font-semibold text-base sm:text-lg"
-              >
-                Comenzar Quiz
-              </Link>
-            </div>
-
-            <div className="order-1 lg:order-2 scroll-fade-in">
-              <div className="hero-image bg-gradient-to-br from-green-50 to-emerald-50 aspect-square relative flex items-center justify-center">
-                <Image
-                  src="/premio-franquicias/premio_latam.png"
-                  alt="Premio LATAM"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
           </div>
         </div>
       </section>
