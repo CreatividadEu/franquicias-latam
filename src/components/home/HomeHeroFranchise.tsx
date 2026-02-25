@@ -1,171 +1,179 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import {
-  CheckCircle2,
-  FolderKanban,
-  LineChart,
-  Megaphone,
-  type LucideIcon,
-} from "lucide-react";
 import { DashboardPreview } from "@/components/home/DashboardPreview";
+import { ExpressDiagnosisWidget } from "@/components/ExpressDiagnosisWidget";
 
-const trustPoints = [
-  "Financiado por BID",
-  "Ejecutado con Naciones Unidas",
-  "+500 negocios desarrollados",
-  "Metodolog\u00eda validada globalmente",
-];
-
-const programCards: Array<{
-  title: string;
-  bullets: string[];
-  icon: LucideIcon;
-}> = [
+const programShowcaseCards = [
   {
-    title: "DESARROLLAMOS",
-    bullets: ["Modelo de negocio", "Manuales y procesos", "Estructura financiera"],
-    icon: FolderKanban,
+    title: "Diagn\u00f3stico & Roadmap",
+    line: "Validaci\u00f3n real + plan accionable.",
   },
   {
-    title: "OPTIMIZAMOS",
-    bullets: ["Rentabilidad", "Operaciones", "Pricing efectivo"],
-    icon: LineChart,
+    title: "Sistema Replicable",
+    line: "Procesos y control para crecer sin caos.",
   },
   {
-    title: "COMERCIALIZAMOS",
-    bullets: [
-      "Venta de franquicias",
-      "Leads e inversionistas",
-      "Expansi\u00f3n estructurada",
-    ],
-    icon: Megaphone,
+    title: "Expansi\u00f3n & Colocaci\u00f3n",
+    line: "Activaci\u00f3n comercial y operadores listos.",
   },
 ];
 
-const processSteps = [
-  {
-    title: "Diagn\u00f3stico estrat\u00e9gico",
-    description: "Evaluamos si tu negocio es franquiciable.",
-  },
-  {
-    title: "Desarrollo del sistema",
-    description: "Creamos modelo financiero, manuales y estructura.",
-  },
-  {
-    title: "Expansi\u00f3n y comercializaci\u00f3n",
-    description: "Generamos demanda e inversionistas.",
-  },
+const programBadgeClasses = [
+  "bg-[#2860E7]/15 text-[#2860E7] ring-1 ring-[#2860E7]/20",
+  "bg-orange-500/15 text-orange-600 ring-1 ring-orange-500/20",
+  "bg-emerald-500/15 text-emerald-600 ring-1 ring-emerald-500/20",
 ];
 
 function MiniDiagnosticForm() {
   return (
-    <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-[0_20px_70px_-45px_rgba(15,23,42,0.55)] sm:p-7">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-        Diagn&oacute;stico express
-      </p>
-      <h3 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
-        &iquest;TU NEGOCIO ES FRANQUICIABLE?
-      </h3>
-      <p className="mt-2 text-sm text-slate-600 sm:text-base">
-        En 30 segundos te lo decimos.
-      </p>
-
-      <form className="mt-6 space-y-4">
-        <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-700">Tipo de negocio</span>
-          <select
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-[#2860E7] focus:outline-none focus:ring-4 focus:ring-[rgba(40,96,231,0.18)]"
-            defaultValue=""
-            aria-label="Tipo de negocio"
-          >
-            <option value="" disabled>
-              Selecciona una opci&oacute;n
-            </option>
-            <option value="retail">Retail</option>
-            <option value="servicios">Servicios</option>
-            <option value="restaurantes">Restaurantes</option>
-            <option value="salud">Salud y bienestar</option>
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-700">
-            Facturaci&oacute;n mensual
-          </span>
-          <select
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-[#2860E7] focus:outline-none focus:ring-4 focus:ring-[rgba(40,96,231,0.18)]"
-            defaultValue=""
-            aria-label="Facturaci&oacute;n mensual"
-          >
-            <option value="" disabled>
-              Selecciona un rango
-            </option>
-            <option value="under-50m">Menos de $50M COP</option>
-            <option value="50m-150m">$50M - $150M COP</option>
-            <option value="150m-300m">$150M - $300M COP</option>
-            <option value="300m-plus">M&aacute;s de $300M COP</option>
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-700">N&uacute;mero de sedes</span>
-          <select
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-[#2860E7] focus:outline-none focus:ring-4 focus:ring-[rgba(40,96,231,0.18)]"
-            defaultValue=""
-            aria-label="N&uacute;mero de sedes"
-          >
-            <option value="" disabled>
-              Selecciona una opci&oacute;n
-            </option>
-            <option value="1">1 sede</option>
-            <option value="2-5">2 a 5 sedes</option>
-            <option value="6-15">6 a 15 sedes</option>
-            <option value="15-plus">M&aacute;s de 15 sedes</option>
-          </select>
-        </label>
-
-        <button
-          type="button"
-          className="w-full rounded-xl bg-[#2860E7] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#1F52CC] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)] sm:text-base"
-        >
-          Obtener diagn&oacute;stico &rarr;
-        </button>
-      </form>
+    <div
+      id="diagnostico"
+      className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-[0_20px_70px_-45px_rgba(15,23,42,0.55)] sm:p-7"
+    >
+      <ExpressDiagnosisWidget />
     </div>
   );
 }
 
-function HowItWorks() {
+type HowItWorksProps = {
+  hideDiagnosis?: boolean;
+};
+
+function HowItWorks({ hideDiagnosis = false }: HowItWorksProps) {
   return (
     <section id="como-funciona" className="bg-[#f8fafc] py-16 sm:py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-          C&Oacute;MO FUNCIONA
-        </h2>
-        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
-          <div className="space-y-4 sm:space-y-5">
-            {processSteps.map((step, index) => (
-              <article
-                key={step.title}
-                className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_18px_50px_-45px_rgba(15,23,42,0.5)] sm:p-6"
-              >
-                <div className="flex items-start gap-4">
-                  <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#2860E7] text-sm font-semibold text-white">
-                    {index + 1}
-                  </span>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900 sm:text-xl">
-                      {step.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-600 sm:text-base">
-                      {step.description}
-                    </p>
+        <div
+          className={`grid grid-cols-1 items-start gap-8 lg:gap-12 ${
+            hideDiagnosis ? "lg:grid-cols-1" : "lg:grid-cols-[1.1fr_0.9fr]"
+          }`}
+        >
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2860E7]">
+              ADMISI&Oacute;N / PROGRAMA PRIVADO
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              Aplica a Nuestro Programa
+            </h2>
+            <p className="mt-3 text-lg font-semibold text-slate-900 sm:text-xl">
+              Escala con nuestro programa premiado y reconocido a nivel internacional.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-2 ring-1 ring-slate-200">
+                <span className="text-2xl font-bold text-slate-900">1.200+</span>
+                <span className="text-sm font-semibold text-slate-700">negocios evaluados</span>
+              </div>
+              <span className="text-xs text-slate-500">
+                Resultados en 45s + siguiente paso recomendado
+              </span>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-800">
+                Aplicaci&oacute;n selectiva
+              </span>
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-800">
+                Cohortes limitadas
+              </span>
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-gradient-to-br from-white via-white to-slate-50 p-4 ring-1 ring-slate-200 shadow-sm sm:p-5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-700">
+                  ADMISIONES EN CURSO
+                </p>
+                <span className="rounded-full bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-800 ring-1 ring-orange-500/20">
+                  Cohortes limitadas
+                </span>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <div className="rounded-2xl bg-red-50 p-4 ring-1 ring-red-200/70 shadow-sm shadow-red-900/5">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm font-semibold text-slate-800">MARZO 2025</span>
+                    <span className="rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-sm">
+                      AGOTADO
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-end">
+                    <span className="text-3xl font-extrabold leading-none text-red-700 sm:text-4xl">
+                      100%
+                    </span>
+                    <span className="ml-2 text-xs font-bold uppercase tracking-[0.18em] text-red-700/80">
+                      COMPLETO
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs font-semibold text-slate-600">Cohorte cerrada.</p>
+                </div>
+
+                <div className="rounded-2xl bg-orange-50 p-4 ring-1 ring-orange-200/70 shadow-sm shadow-orange-900/5">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm font-semibold text-slate-800">ABRIL 2025</span>
+                    <span className="rounded-full bg-orange-600 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-sm">
+                      ÚLTIMOS CUPOS
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-end">
+                    <span className="text-3xl font-extrabold leading-none text-orange-700 sm:text-4xl">
+                      65%
+                    </span>
+                    <span className="ml-2 text-xs font-bold uppercase tracking-[0.18em] text-orange-700/80">
+                      COMPLETO
+                    </span>
+                  </div>
+                  <div className="mt-3 h-3 w-full rounded-full bg-orange-200/80">
+                    <div className="h-3 rounded-full bg-orange-600" style={{ width: "65%" }} />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-orange-800">
+                      Cierre estimado en 6 días
+                    </span>
+                    <span className="text-xs font-semibold text-slate-700">
+                      Consultar disponibilidad
+                    </span>
                   </div>
                 </div>
-              </article>
-            ))}
+              </div>
+
+              <p className="mt-3 text-xs font-semibold text-slate-600">
+                Las admisiones cierran cuando se completa la cohorte.
+              </p>
+            </div>
+
+            <div className="mt-7 space-y-4 sm:space-y-5">
+              {programShowcaseCards.map((card, index) => (
+                <article
+                  key={card.title}
+                  className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6"
+                >
+                  <div className="flex items-start gap-4">
+                    <span
+                      className={`inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold ${programBadgeClasses[index]}`}
+                    >
+                      {index + 1}
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 sm:text-xl">
+                        {card.title}
+                      </h3>
+                      <p className="mt-2 text-base font-medium text-slate-700">{card.line}</p>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <p className="mt-8 text-base font-semibold text-slate-900 sm:text-lg">
+              Para quienes est&aacute;n listos para escalar a otras ligas.
+            </p>
           </div>
-          <MiniDiagnosticForm />
+
+          {!hideDiagnosis && (
+            <div className="lg:sticky lg:top-24">
+              <MiniDiagnosticForm />
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -204,6 +212,30 @@ function MethodologyStrip() {
 }
 
 export function HomeHeroFranchise() {
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [isSwitchingPanel, setIsSwitchingPanel] = useState(false);
+  const panelSwitchTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (panelSwitchTimerRef.current !== null) {
+        window.clearTimeout(panelSwitchTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleShowQuiz = () => {
+    if (showQuiz || isSwitchingPanel) {
+      return;
+    }
+
+    setIsSwitchingPanel(true);
+    panelSwitchTimerRef.current = window.setTimeout(() => {
+      setShowQuiz(true);
+      setIsSwitchingPanel(false);
+    }, 260);
+  };
+
   return (
     <>
       <section
@@ -215,46 +247,132 @@ export function HomeHeroFranchise() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
             <div className="relative">
               <h1 className="text-4xl font-bold leading-[1.02] tracking-tight text-slate-900 sm:text-5xl lg:text-[3.5rem]">
-                Convierte tu Negocio en una Franquicia.
+                Convierte tu Negocio en Franquicia.
               </h1>
-              <p className="mt-5 max-w-2xl text-base text-slate-600 sm:text-lg">
-                Escala tu negocio como una franquicia global. Aplica a nuestro programa que ha sido premiado por el Banco Interamericano de Desarrollo y Naciones Unidas, para convertir empresas en operaciones replicables, rentables y listas para crecimiento internacional.
+              <p className="mt-4 max-w-2xl text-lg font-medium text-slate-800 sm:text-xl">
+                Sistema premiado por el BID, Naciones Unidas, MinTIC y Propaís para escalar
+                negocios en redes de escala.
+              </p>
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
+                Estandarizamos operación, optimizamos la unidad económica y estructuramos tu
+                expansión comercial con metodología clara, foco financiero y decisiones medibles.
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Link
-                  href="/quiz"
-                  className="inline-flex items-center justify-center rounded-xl bg-[#2860E7] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[#1F52CC] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
+                <button
+                  type="button"
+                  onClick={handleShowQuiz}
+                  aria-controls="diagnostico"
+                  disabled={showQuiz || isSwitchingPanel}
+                  className="inline-flex items-center justify-center rounded-xl bg-[#2860E7] px-6 py-3.5 text-base font-semibold text-white shadow-[0_16px_34px_-20px_rgba(40,96,231,0.7)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-[#1f52cc] hover:shadow-[0_20px_40px_-22px_rgba(40,96,231,0.75)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Evaluar mi negocio &rarr;
-                </Link>
+                  Evaluar mi negocio
+                </button>
                 <a
                   href="#como-funciona"
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-base font-semibold text-slate-900 transition hover:border-slate-400 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-200"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/80 px-5 py-3 text-base font-semibold text-slate-700 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-slate-400 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(148,163,184,0.28)]"
                 >
                   Ver c&oacute;mo funciona
                 </a>
               </div>
 
-              <ul className="mt-7 grid gap-3 text-sm sm:grid-cols-2 sm:text-base">
-                {trustPoints.map((point) => (
-                  <li
-                    key={point}
-                    className="flex items-start gap-2 rounded-xl border border-slate-200/90 bg-white/80 px-3.5 py-2.5 text-slate-700"
-                  >
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
-                    <span>{point}</span>
+              <div className="mt-5 flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-3 py-1.5 text-xs font-medium text-slate-700">
+                  <Image
+                    src="/logos_clientes/logo_bid.svg"
+                    alt="BID"
+                    width={58}
+                    height={16}
+                    className="h-3.5 w-auto opacity-80"
+                  />
+                  Premiado por BID
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-3 py-1.5 text-xs font-medium text-slate-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#2860E7]/75" />
+                  Ejecutado junto a Naciones Unidas
+                </span>
+              </div>
+
+              <div className="mt-8 max-w-xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  METODOLOG&Iacute;A
+                </p>
+                <p className="mt-2 text-sm font-semibold text-slate-900">
+                  En 90 d&iacute;as, dejamos listo tu sistema para escalar.
+                </p>
+                <ul className="mt-4 space-y-3 text-base text-slate-800 sm:text-[15px]">
+                  <li className="flex items-start gap-3">
+                    <span className="mt-0.5 inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-[#2860E7]">
+                      <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5">
+                        <path
+                          d="M4 10.2 8 14l8-8"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <span>Sistema replicable (manuales + entrenamiento)</span>
                   </li>
-                ))}
-              </ul>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-0.5 inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-[#2860E7]">
+                      <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5">
+                        <path
+                          d="M4 10.2 8 14l8-8"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <span>Unidad econ&oacute;mica viable (escenarios + palancas)</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-0.5 inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-[#2860E7]">
+                      <svg aria-hidden="true" viewBox="0 0 20 20" className="h-3.5 w-3.5">
+                        <path
+                          d="M4 10.2 8 14l8-8"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <span>Expansi&oacute;n comercial (pipeline + leads)</span>
+                  </li>
+                </ul>
+                <div
+                  aria-label="Pilares del programa"
+                  className="mt-4 flex flex-wrap items-center gap-2.5 text-xs sm:text-sm"
+                >
+                  <span className="inline-flex items-center rounded-full border border-slate-300/70 bg-white/85 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-700 sm:text-xs">
+                    Estrategia
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-slate-300/70 bg-white/85 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-700 sm:text-xs">
+                    Finanzas
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-slate-300/70 bg-white/85 px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-700 sm:text-xs">
+                    Operaciones
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="mt-8 lg:mt-0 scroll-fade-in">
-              <DashboardPreview />
-            </div>
+            <DashboardPreview
+              className={`mt-8 lg:mt-0 scroll-fade-in transition-all duration-500 ease-out ${
+                isSwitchingPanel ? "translate-y-4 opacity-0" : "translate-y-0 opacity-100"
+              }`}
+              showQuiz={showQuiz}
+            />
           </div>
         </div>
       </section>
-      <HowItWorks />
+      <HowItWorks hideDiagnosis={showQuiz} />
       <MethodologyStrip />
     </>
   );

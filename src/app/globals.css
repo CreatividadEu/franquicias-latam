@@ -522,23 +522,46 @@ html {
   transform-box: fill-box;
   transform-origin: center;
   will-change: transform, opacity;
-  animation: blob-float 4s ease-in-out infinite alternate,
-             blob-breathe 4s ease-in-out infinite;
-  opacity: 0.75; /* base suave, sin cambiar el fill */
+  animation:
+    blob-float 8.4s ease-in-out infinite,
+    blob-breathe 5.6s ease-in-out infinite;
+}
+
+.blobA {
+  animation-delay: 0s, 0s;
+}
+
+.blobB {
+  animation-delay: -2.1s, -1.3s;
+}
+
+.blobC {
+  animation-delay: -4.2s, -2.6s;
 }
 
 @keyframes blob-float {
-  from { transform: translate(0px, 0px); }
-  to   { transform: translate(6px, -4px); }
+  0% {
+    transform: translate(0, 0);
+  }
+  35% {
+    transform: translate(5px, -4px);
+  }
+  70% {
+    transform: translate(-4px, 6px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
 }
 
 @keyframes blob-breathe {
-  0%, 100% { opacity: 0.65; }
-  50%      { opacity: 0.9; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .previewBlob { animation: none !important; }
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .previewLine {
@@ -604,6 +627,7 @@ html {
 
 @media (prefers-reduced-motion: reduce) {
   .previewGridPattern,
+  .previewBlob,
   .previewLine,
   .previewDot {
     animation: none !important;
