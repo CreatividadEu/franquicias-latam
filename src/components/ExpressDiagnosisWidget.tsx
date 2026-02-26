@@ -658,12 +658,7 @@ export function ExpressDiagnosisWidget({
             Aplicar al Programa &rarr;
           </button>
 
-          <a
-            href="#diagnostico"
-            className="mt-4 inline-flex text-sm font-medium text-slate-700 underline-offset-2 transition hover:text-slate-900 hover:underline"
-          >
-            &iquest;Tienes invitaci&oacute;n directa? Escr&iacute;benos.
-          </a>
+
         </div>
       )}
 
@@ -912,10 +907,7 @@ export function ExpressDiagnosisWidget({
         </div>
       )}
 
-      <p className="mt-4 text-center text-sm font-medium text-slate-600 sm:text-base">
-        M&aacute;s de <span className="font-semibold text-slate-900">1.200 negocios</span> ya
-        evaluaron su potencial.
-      </p>
+
     </div>
   );
 }

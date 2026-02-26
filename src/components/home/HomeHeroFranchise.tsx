@@ -45,9 +45,8 @@ function HowItWorks() {
               <span className="block">en Franquicia.</span>
             </h1>
             <p className="mt-4 max-w-2xl text-lg font-medium text-slate-800 sm:text-xl">
-              Sistema premiado por el BID, Naciones Unidas, MinTIC y Propa&iacute;s para
-              <br className="hidden md:block" />
-              escalar negocios en redes de escala.
+              Sistema premiado por el BID, Naciones Unidas, MinTIC y Propa&iacute;s.
+            </p>
 
 
             <div className="mt-8 max-w-2xl space-y-4 sm:space-y-5">
@@ -64,18 +63,13 @@ function HowItWorks() {
                     </span>
                     <div className="min-w-0">
                       <h3 className="text-lg font-bold text-slate-900 sm:text-xl">{card.title}</h3>
-                      <p className="mt-1.5 text-base text-slate-700">{card.line}</p>
                     </div>
                   </div>
                 </article>
               ))}
 
-              <p className="mt-5 text-sm font-semibold tracking-wide text-slate-800 sm:text-[15px] md:text-base">
-                <span
-                  aria-hidden="true"
-                  className="mr-3 inline-block h-4 w-1 rounded-full bg-slate-300 align-middle"
-                />
-                <span className="align-middle">Reconocido y ejecutado con apoyo institucional:</span>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-500 sm:text-sm">
+                Programa implementado por:
               </p>
 
               <div
@@ -128,8 +122,7 @@ function HowItWorks() {
                 Aplica a Nuestro Programa
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
-                Indicadores promedio observados en negocios acompa&ntilde;ados con nuestro
-                m&eacute;todo de estandarizaci&oacute;n y expansi&oacute;n.
+                Indicadores promedio observados en negocios participantes.
               </p>
 
               <div className="mt-6 flex-0">
@@ -145,14 +138,14 @@ function HowItWorks() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                         &ge;20% EBITDA
                       </p>
-                      <div className="mt-2 flex items-end justify-between gap-3">
-                        <p className="break-words text-4xl font-extrabold leading-none text-slate-900 sm:text-5xl md:text-6xl">
+                      <div className="mt-2 flex items-center justify-between gap-3">
+                        <p className="break-words text-3xl font-extrabold leading-none text-slate-900 sm:text-4xl md:text-5xl">
                           87%
                         </p>
                         <svg
                           viewBox="0 0 36 36"
                           aria-hidden="true"
-                          className="h-10 w-10 shrink-0 text-emerald-500"
+                          className="metric-ring h-11 w-11 shrink-0 text-emerald-500"
                         >
                           <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="4" />
                           <circle
@@ -175,14 +168,14 @@ function HowItWorks() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                         MARGEN BRUTO
                       </p>
-                      <p className="mt-2 break-words text-4xl font-extrabold leading-none text-slate-900 sm:text-5xl md:text-6xl">
+                      <p className="mt-2 break-words text-3xl font-extrabold leading-none text-slate-900 sm:text-4xl md:text-5xl">
                         +9.4%
                       </p>
                       <svg
                         viewBox="0 0 120 26"
                         preserveAspectRatio="none"
                         aria-hidden="true"
-                        className="mt-2 h-6 w-full text-[#2860E7]"
+                        className="metric-sparkline mt-2 h-6 w-full text-[#2860E7]"
                       >
                         <polyline
                           fill="none"
@@ -203,8 +196,8 @@ function HowItWorks() {
                       <p className="mt-2 break-words text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl">
                         90 d&iacute;as
                       </p>
-                      <div className="mt-2 h-1.5 w-full rounded-full bg-slate-200">
-                        <div className="h-1.5 w-[72%] rounded-full bg-[#2860E7]" />
+                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+                        <div className="metric-progress-fill h-1.5 w-[72%] rounded-full bg-[#2860E7]" />
                       </div>
                       <p className="mt-1 text-xs font-medium text-slate-600">tiempo promedio</p>
                     </article>
@@ -213,7 +206,7 @@ function HowItWorks() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                         PROYECTOS DESARROLLADOS
                       </p>
-                      <p className="mt-2 break-words text-4xl font-extrabold leading-none text-slate-900 sm:text-5xl md:text-6xl">
+                      <p className="mt-2 break-words text-3xl font-extrabold leading-none text-slate-900 sm:text-4xl md:text-5xl">
                         750+
                       </p>
                       <p className="mt-1 text-xs font-medium text-slate-600">
@@ -229,9 +222,7 @@ function HowItWorks() {
                   >
                     Quiero estos resultados &rarr;
                   </button>
-                  <p className="mt-3 text-center text-xs font-medium text-slate-500">
-                    Evaluaci&oacute;n confidencial &middot; Respuesta en 24&mdash;48h
-                  </p>
+                
                 </div>
 
                 <div
@@ -262,6 +253,59 @@ function HowItWorks() {
           </aside>
         </div>
       </div>
+      <style jsx>{`
+        .metric-ring {
+          animation: ring-float 4.8s ease-in-out infinite;
+          transform-origin: center;
+        }
+
+        .metric-sparkline {
+          animation: sparkline-slide 3.8s ease-in-out infinite;
+        }
+
+        .metric-progress-fill {
+          animation: progress-breath 3.4s ease-in-out infinite;
+          transform-origin: left center;
+        }
+
+        @keyframes ring-float {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-2px);
+          }
+        }
+
+        @keyframes sparkline-slide {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          50% {
+            transform: translateX(2px);
+          }
+        }
+
+        @keyframes progress-breath {
+          0%,
+          100% {
+            transform: scaleX(0.94);
+          }
+          50% {
+            transform: scaleX(1);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .metric-ring,
+          .metric-sparkline,
+          .metric-progress-fill {
+            animation: none !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
