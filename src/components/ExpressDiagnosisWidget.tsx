@@ -101,6 +101,7 @@ type AccentConfig = {
 
 type ExpressDiagnosisWidgetProps = {
   onComplete?: (payload: DiagnosisPayload) => void;
+  startDirectly?: boolean;
 };
 
 const QUESTION_ORDER: QuestionId[] = [
@@ -371,8 +372,11 @@ function compactProgramName(name: string): string {
   return name.replace("(4 horas)", "(4h)");
 }
 
-export function ExpressDiagnosisWidget({ onComplete }: ExpressDiagnosisWidgetProps) {
-  const [hasStarted, setHasStarted] = useState(false);
+export function ExpressDiagnosisWidget({
+  onComplete,
+  startDirectly = false,
+}: ExpressDiagnosisWidgetProps) {
+  const [hasStarted, setHasStarted] = useState(startDirectly);
   const [isEnteringQuiz, setIsEnteringQuiz] = useState(false);
   const [answers, setAnswers] = useState<DiagnosisAnswers>({});
   const [currentStep, setCurrentStep] = useState(0);
@@ -575,7 +579,7 @@ export function ExpressDiagnosisWidget({ onComplete }: ExpressDiagnosisWidgetPro
       window.localStorage.removeItem(STORAGE_KEY);
     }
 
-    setHasStarted(false);
+    setHasStarted(startDirectly);
     setIsEnteringQuiz(false);
     setAnswers({});
     setCurrentStep(0);
