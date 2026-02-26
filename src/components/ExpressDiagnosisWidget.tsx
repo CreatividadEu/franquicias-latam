@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const CALENDLY_URL =
   "https://calendly.com/franquicias_latam/programa_aceleradora_franquicias";
@@ -12,18 +12,12 @@ type BusinessType =
   | "retail"
   | "restaurants"
   | "services"
-  | "health"
-  | "education";
+  | "health";
 type OperatingTime = "under1" | "1to3" | "3to7" | "7plus";
 type Units = "single" | "2to3" | "4to10" | "10plus";
-type RevenueStop = 1 | 2 | 3 | 4 | 5;
+type RevenueStop = 1 | 2 | 3 | 4;
 type Profitability = "profitable" | "unstable" | "notYet";
-type Bottleneck =
-  | "sales"
-  | "operations"
-  | "marketing"
-  | "finance"
-  | "standardization";
+type Bottleneck = "sales" | "operations" | "marketing" | "finance";
 type AnswerValue =
   | BusinessType
   | OperatingTime
@@ -80,24 +74,14 @@ type StoredDiagnosisPayload = DiagnosisPayload & {
   };
 };
 
-type ChatMessage = {
-  id: string;
-  role: "system" | "user";
-  text: string;
-};
-
 type Option<T extends string | number> = {
   value: T;
   label: string;
 };
 
-type ChipOption = Option<BusinessType | OperatingTime | Units | Profitability | Bottleneck>;
-
-type AccentConfig = {
-  selected: string;
-  hover: string;
-  selectedIcon: string;
-};
+type ChipOption = Option<
+  BusinessType | OperatingTime | Units | RevenueStop | Profitability | Bottleneck
+>;
 
 type ExpressDiagnosisWidgetProps = {
   onComplete?: (payload: DiagnosisPayload) => void;
@@ -127,7 +111,6 @@ const BUSINESS_TYPE_OPTIONS: Option<BusinessType>[] = [
   { value: "restaurants", label: "Restaurantes / Cafés" },
   { value: "services", label: "Servicios" },
   { value: "health", label: "Salud y bienestar" },
-  { value: "education", label: "Educación / Formación" },
 ];
 
 const OPERATING_TIME_OPTIONS: Option<OperatingTime>[] = [
@@ -145,11 +128,10 @@ const UNITS_OPTIONS: Option<Units>[] = [
 ];
 
 const REVENUE_STOPS: Option<RevenueStop>[] = [
-  { value: 1, label: "< $3k" },
-  { value: 2, label: "$3k – $8k" },
-  { value: 3, label: "$8k – $15k" },
-  { value: 4, label: "$15k – $30k" },
-  { value: 5, label: "> $30k" },
+  { value: 1, label: "Hasta $5k" },
+  { value: 2, label: "$5k–$12k" },
+  { value: 3, label: "$12k–$30k" },
+  { value: 4, label: "+$30k" },
 ];
 
 const PROFITABILITY_OPTIONS: Option<Profitability>[] = [
@@ -159,11 +141,10 @@ const PROFITABILITY_OPTIONS: Option<Profitability>[] = [
 ];
 
 const BOTTLENECK_OPTIONS: Option<Bottleneck>[] = [
-  { value: "sales", label: "Ventas / demanda" },
-  { value: "operations", label: "Operaciones (calidad, tiempos, personal)" },
-  { value: "marketing", label: "Marketing / marca" },
-  { value: "finance", label: "Finanzas / control" },
-  { value: "standardization", label: "Estandarización (manuales / procesos)" },
+  { value: "sales", label: "Ventas" },
+  { value: "operations", label: "Operaciones" },
+  { value: "marketing", label: "Marketing" },
+  { value: "finance", label: "Finanzas" },
 ];
 
 const TIME_POINTS: Record<OperatingTime, 0 | 20> = {
@@ -185,7 +166,6 @@ const REVENUE_POINTS: Record<RevenueStop, 0 | 20> = {
   2: 0,
   3: 20,
   4: 20,
-  5: 20,
 };
 
 const PROFITABILITY_POINTS: Record<Profitability, 0 | 20> = {
@@ -199,7 +179,6 @@ const OPERABILITY_POINTS: Record<Bottleneck, 0 | 20> = {
   operations: 0,
   marketing: 20,
   finance: 20,
-  standardization: 0,
 };
 
 const PROGRAM_MAP: Record<Bottleneck, ProgramRecommendation> = {
@@ -219,39 +198,7 @@ const PROGRAM_MAP: Record<Bottleneck, ProgramRecommendation> = {
     name: "Sprint de Excelencia Operativa (4 horas)",
     subtitle: "Eleva consistencia operativa para escalar sin perder calidad.",
   },
-  standardization: {
-    name: "Sprint de Estandarización (4 horas)",
-    subtitle: "Documenta y empaqueta procesos para una expansión replicable.",
-  },
 };
-
-const ACCENT_CONFIGS: AccentConfig[] = [
-  {
-    selected: "border-[#2860E7] bg-[#2860E7] text-white",
-    hover: "hover:border-[#2860E7]/30 hover:bg-[#2860E7]/10 hover:text-[#1f52cc]",
-    selectedIcon: "text-white",
-  },
-  {
-    selected: "border-violet-600 bg-violet-600 text-white",
-    hover: "hover:border-violet-200 hover:bg-violet-50 hover:text-violet-800",
-    selectedIcon: "text-white",
-  },
-  {
-    selected: "border-emerald-600 bg-emerald-600 text-white",
-    hover: "hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800",
-    selectedIcon: "text-white",
-  },
-  {
-    selected: "border-orange-500 bg-orange-500 text-white",
-    hover: "hover:border-orange-200 hover:bg-orange-50 hover:text-orange-800",
-    selectedIcon: "text-white",
-  },
-  {
-    selected: "border-amber-500 bg-amber-500 text-slate-900",
-    hover: "hover:border-amber-200 hover:bg-amber-50 hover:text-amber-800",
-    selectedIcon: "text-slate-900",
-  },
-];
 
 function hasCompleteAnswers(answers: DiagnosisAnswers): answers is CompleteDiagnosisAnswers {
   return QUESTION_ORDER.every((questionId) => answers[questionId] !== undefined);
@@ -268,26 +215,7 @@ function findLabel<T extends string | number>(
   return options.find((option) => option.value === value)?.label ?? null;
 }
 
-function getAnswerLabel(questionId: QuestionId, answers: DiagnosisAnswers): string | null {
-  switch (questionId) {
-    case "businessType":
-      return findLabel(BUSINESS_TYPE_OPTIONS, answers.businessType);
-    case "operatingTime":
-      return findLabel(OPERATING_TIME_OPTIONS, answers.operatingTime);
-    case "units":
-      return findLabel(UNITS_OPTIONS, answers.units);
-    case "revenueStop":
-      return findLabel(REVENUE_STOPS, answers.revenueStop);
-    case "profitability":
-      return findLabel(PROFITABILITY_OPTIONS, answers.profitability);
-    case "bottleneck":
-      return findLabel(BOTTLENECK_OPTIONS, answers.bottleneck);
-    default:
-      return null;
-  }
-}
-
-function getChipOptions(questionId: Exclude<QuestionId, "revenueStop">): ChipOption[] {
+function getQuestionOptions(questionId: QuestionId): ChipOption[] {
   switch (questionId) {
     case "businessType":
       return BUSINESS_TYPE_OPTIONS;
@@ -295,6 +223,8 @@ function getChipOptions(questionId: Exclude<QuestionId, "revenueStop">): ChipOpt
       return OPERATING_TIME_OPTIONS;
     case "units":
       return UNITS_OPTIONS;
+    case "revenueStop":
+      return REVENUE_STOPS;
     case "profitability":
       return PROFITABILITY_OPTIONS;
     case "bottleneck":
@@ -302,10 +232,6 @@ function getChipOptions(questionId: Exclude<QuestionId, "revenueStop">): ChipOpt
     default:
       return [];
   }
-}
-
-function getAccentConfig(index: number): AccentConfig {
-  return ACCENT_CONFIGS[index % ACCENT_CONFIGS.length];
 }
 
 function computePayload(answers: CompleteDiagnosisAnswers): DiagnosisPayload {
@@ -343,7 +269,6 @@ function getCriticalAreas(answers: CompleteDiagnosisAnswers): string[] {
 
   if (
     answers.bottleneck === "operations" ||
-    answers.bottleneck === "standardization" ||
     answers.units === "single"
   ) {
     areas.push("Estandarización");
@@ -368,6 +293,22 @@ function getCriticalAreas(answers: CompleteDiagnosisAnswers): string[] {
   return Array.from(new Set(areas)).slice(0, 3);
 }
 
+function getFocusAreas(answers: CompleteDiagnosisAnswers): string[] {
+  const mapped = getCriticalAreas(answers).map((area) =>
+    area === "Tracción comercial" ? "Tracción" : area,
+  );
+  const unique = Array.from(new Set(mapped));
+  const defaults = ["Estandarización", "Tracción"];
+
+  for (const fallback of defaults) {
+    if (!unique.includes(fallback) && unique.length < 2) {
+      unique.push(fallback);
+    }
+  }
+
+  return unique.slice(0, 2);
+}
+
 function compactProgramName(name: string): string {
   return name.replace("(4 horas)", "(4h)");
 }
@@ -385,15 +326,15 @@ export function ExpressDiagnosisWidget({
   const [pendingSelection, setPendingSelection] = useState<AnswerValue | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showWhatsAppCapture, setShowWhatsAppCapture] = useState(false);
-  const [revenuePreview, setRevenuePreview] = useState<RevenueStop>(3);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [whatsapp, setWhatsapp] = useState("");
   const [wantsEmail, setWantsEmail] = useState(false);
   const [email, setEmail] = useState("");
 
-  const transcriptRef = useRef<HTMLDivElement>(null);
   const transitionTimerRef = useRef<number | null>(null);
   const confirmationTimerRef = useRef<number | null>(null);
   const startTimerRef = useRef<number | null>(null);
+  const celebrationTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {
@@ -406,61 +347,11 @@ export function ExpressDiagnosisWidget({
       if (startTimerRef.current !== null) {
         window.clearTimeout(startTimerRef.current);
       }
+      if (celebrationTimerRef.current !== null) {
+        window.clearTimeout(celebrationTimerRef.current);
+      }
     };
   }, []);
-
-  const transcriptMessages = useMemo<ChatMessage[]>(() => {
-    const messages: ChatMessage[] = [];
-
-    for (let i = 0; i < QUESTION_ORDER.length; i += 1) {
-      const questionId = QUESTION_ORDER[i];
-      const answerLabel = getAnswerLabel(questionId, answers);
-
-      if (answerLabel) {
-        messages.push({
-          id: `q-${questionId}`,
-          role: "system",
-          text: QUESTION_PROMPTS[questionId],
-        });
-        messages.push({
-          id: `a-${questionId}`,
-          role: "user",
-          text: answerLabel,
-        });
-        continue;
-      }
-
-      if (!resultPayload && i === currentStep) {
-        messages.push({
-          id: `q-${questionId}`,
-          role: "system",
-          text: QUESTION_PROMPTS[questionId],
-        });
-      }
-      break;
-    }
-
-    if (resultPayload) {
-      messages.push({
-        id: "result-ready",
-        role: "system",
-        text: resultPayload.isFranchisable
-          ? "Resultado listo: tienes perfil franquiciable."
-          : "Resultado listo: identificamos áreas claras para fortalecer.",
-      });
-    }
-
-    return messages;
-  }, [answers, currentStep, resultPayload]);
-
-  useEffect(() => {
-    const node = transcriptRef.current;
-    if (!node) {
-      return;
-    }
-
-    node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
-  }, [transcriptMessages.length, isTransitioning]);
 
   useEffect(() => {
     if (!resultPayload || typeof window === "undefined") {
@@ -482,12 +373,26 @@ export function ExpressDiagnosisWidget({
   const activeQuestionId = resultPayload ? null : QUESTION_ORDER[currentStep];
   const visualStep = resultPayload ? TOTAL_STEPS : Math.min(currentStep + 1, TOTAL_STEPS);
   const progressPercentage = (visualStep / TOTAL_STEPS) * 100;
+  const focusAreas = resultPayload ? getFocusAreas(resultPayload.answers) : [];
 
   const completeDiagnosis = (completeAnswers: CompleteDiagnosisAnswers) => {
     const payload = computePayload(completeAnswers);
     setResultPayload(payload);
     setShowWhatsAppCapture(false);
     setCurrentStep(TOTAL_STEPS);
+    if (typeof window !== "undefined") {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setShowCelebration(false);
+      } else {
+        if (celebrationTimerRef.current !== null) {
+          window.clearTimeout(celebrationTimerRef.current);
+        }
+        setShowCelebration(true);
+        celebrationTimerRef.current = window.setTimeout(() => {
+          setShowCelebration(false);
+        }, 1200);
+      }
+    }
 
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -558,10 +463,6 @@ export function ExpressDiagnosisWidget({
     setCurrentStep(previousStep);
     setPendingSelection(null);
     setShowConfirmation(false);
-
-    if (previousQuestionId === "revenueStop") {
-      setRevenuePreview(3);
-    }
   };
 
   const handleReset = () => {
@@ -588,15 +489,10 @@ export function ExpressDiagnosisWidget({
     setShowWhatsAppCapture(false);
     setPendingSelection(null);
     setShowConfirmation(false);
-    setRevenuePreview(3);
+    setShowCelebration(false);
     setWhatsapp("");
     setWantsEmail(false);
     setEmail("");
-  };
-
-  const handleRevenueChange = (value: RevenueStop) => {
-    setRevenuePreview(value);
-    handleAnswer("revenueStop", value);
   };
 
   const handleStart = () => {
@@ -616,17 +512,14 @@ export function ExpressDiagnosisWidget({
   };
 
   return (
-    <div>
+    <div className="flex h-full min-h-0 flex-col">
       {!hasStarted && !resultPayload && (
         <div
           className={`rounded-2xl border border-slate-200 bg-gradient-to-br from-[#2860E7]/6 to-white p-5 transition-all duration-200 sm:p-6 ${
             isEnteringQuiz ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
           }`}
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2860E7]">
-            DIAGN&Oacute;STICO EXPRESS
-          </p>
-          <h3 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-[1.7rem]">
+          <h3 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-[1.7rem]">
             Obt&eacute;n tu score de escalabilidad
           </h3>
           <p className="mt-3 text-sm text-slate-700 sm:text-base">
@@ -663,57 +556,51 @@ export function ExpressDiagnosisWidget({
       )}
 
       {hasStarted && !resultPayload && (
-        <>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Diagn&oacute;stico express
-          </p>
-          <h3 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+        <div className="mt-1 flex min-h-0 flex-1 flex-col">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={currentStep === 0 || isTransitioning}
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-all duration-200 hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <span aria-hidden="true">&larr;</span>
+              <span>Volver</span>
+            </button>
+            <span className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
+              Paso {visualStep} de {TOTAL_STEPS}
+            </span>
+          </div>
+          <h3 className="text-xl font-bold leading-tight tracking-tight text-slate-900 sm:text-[1.35rem]">
             &iquest;TU NEGOCIO ES FRANQUICIABLE?
           </h3>
-          <p className="mt-2 text-sm text-slate-700 sm:text-base">
-            En menos de 45 segundos te lo decimos.
+          <p className="mt-1.5 text-sm text-slate-700 sm:text-base">
+            Responde una pregunta por paso.
           </p>
 
-          <div className="mt-5">
-            <div className="text-[0.75rem] font-semibold tracking-[0.02em] text-slate-700">
-              Paso {visualStep} de {TOTAL_STEPS} &middot; 30 segundos
-            </div>
-            <div className="mt-2 h-2 rounded-full bg-slate-100">
-              <div
-                className="h-2 rounded-full bg-[#2860E7] transition-all duration-300 ease-out"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-          </div>
-
-          <div
-            ref={transcriptRef}
-            className="mt-5 max-h-[260px] space-y-3 overflow-y-auto rounded-xl border border-slate-200/80 bg-white/80 p-4"
-          >
-            {transcriptMessages.map((message) => (
-              <div
-                key={message.id}
-                className={
-                  message.role === "system"
-                    ? "max-w-[90%] rounded-2xl rounded-tl-md bg-slate-100 px-4 py-3 text-base font-semibold leading-snug text-slate-900 sm:text-lg"
-                    : "ml-auto max-w-[84%] rounded-2xl rounded-tr-md border border-[#2860E7]/20 bg-[#2860E7]/10 px-3 py-2.5 text-sm font-semibold text-[#1f52cc]"
-                }
-              >
-                {message.text}
-              </div>
-            ))}
-          </div>
-
-          {!resultPayload && activeQuestionId && (
+          <div className="mt-4 h-2 rounded-full bg-slate-100">
             <div
-              className={`mt-5 rounded-2xl border border-slate-200 bg-gradient-to-br from-[#2860E7]/5 to-white p-5 transition-all duration-300 ${
-                isTransitioning ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
-              }`}
-            >
-              {activeQuestionId !== "revenueStop" ? (
-                <div className="grid gap-3.5 sm:grid-cols-2">
-                  {getChipOptions(activeQuestionId).map((option, index) => {
-                    const accent = getAccentConfig(index);
+              className="h-2 rounded-full bg-[#2860E7] transition-all duration-300 ease-out"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+
+          {activeQuestionId && (
+            <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+              <div
+                className={`rounded-2xl border border-slate-200 bg-gradient-to-br from-[#2860E7]/5 to-white p-5 transition-all duration-300 ${
+                  isTransitioning ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
+                }`}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Pregunta actual
+                </p>
+                <p className="mt-1.5 text-base font-semibold text-slate-900 sm:text-lg">
+                  {QUESTION_PROMPTS[activeQuestionId]}
+                </p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {getQuestionOptions(activeQuestionId).map((option) => {
                     const isSelected = pendingSelection === option.value;
                     return (
                       <button
@@ -722,155 +609,139 @@ export function ExpressDiagnosisWidget({
                         aria-pressed={isSelected}
                         disabled={isTransitioning}
                         onClick={() => handleAnswer(activeQuestionId, option.value)}
-                        className={`rounded-xl border px-3.5 py-4 text-left text-base font-medium focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.25)] ${
+                        className={`rounded-xl border px-4 py-3.5 text-left text-sm font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.22)] sm:text-base ${
                           isSelected
-                            ? `scale-105 shadow-md transition-all duration-150 ${accent.selected}`
-                            : `border-slate-200 bg-slate-50 text-slate-800 transition-all duration-200 ${accent.hover}`
+                            ? "border-[#2860E7]/40 bg-[#2860E7]/10 text-[#1f52cc] shadow-sm ring-1 ring-[#2860E7]/15"
+                            : "border-slate-300 bg-white text-slate-800 shadow-sm hover:border-slate-400 hover:bg-slate-50"
                         } disabled:cursor-not-allowed disabled:opacity-70`}
                       >
                         <span className="flex items-center justify-between gap-2">
                           <span>{option.label}</span>
-                          {isSelected ? (
-                            <span className={`text-sm font-semibold ${accent.selectedIcon}`}>✓</span>
-                          ) : null}
+                          {isSelected ? <span className="text-sm font-semibold">✓</span> : null}
                         </span>
                       </button>
                     );
                   })}
                 </div>
-              ) : (
-                <div>
-                  <div className="rounded-lg border border-slate-200 bg-white px-3 py-3 text-base font-semibold text-slate-900">
-                    {findLabel(REVENUE_STOPS, revenuePreview)}
-                  </div>
-                  <input
-                    type="range"
-                    min={1}
-                    max={5}
-                    step={1}
-                    value={revenuePreview}
-                    onChange={(event) =>
-                      handleRevenueChange(Number(event.currentTarget.value) as RevenueStop)
-                    }
-                    className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-[#2860E7]"
-                    aria-label="Facturación mensual aproximada en USD"
-                  />
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    {REVENUE_STOPS.map((stop, index) => {
-                      const accent = getAccentConfig(index);
-                      const isSelectedStop = revenuePreview === stop.value;
-                      return (
-                        <button
-                          key={stop.value}
-                          type="button"
-                          aria-pressed={isSelectedStop}
-                          disabled={isTransitioning}
-                          onClick={() => handleRevenueChange(stop.value)}
-                          className={`rounded-full border px-4 py-3 text-base font-medium focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.25)] ${
-                            isSelectedStop
-                              ? `scale-105 shadow-md transition-all duration-150 ${accent.selected}`
-                              : `border-slate-200 bg-slate-50 text-slate-800 transition-all duration-200 ${accent.hover}`
-                          } disabled:cursor-not-allowed disabled:opacity-70`}
-                        >
-                          {stop.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                {activeQuestionId === "revenueStop" ? (
                   <p className="mt-3 text-sm font-medium text-slate-600">
-                    Aprox. en USD. No pedimos n&uacute;meros exactos.
+                    Selecciona el rango m&aacute;s cercano en USD.
                   </p>
-                </div>
-              )}
+                ) : null}
 
-              <p
-                className={`mt-3 text-xs font-medium text-[#2860E7] transition-opacity duration-150 ${
-                  showConfirmation ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                Perfecto.
-              </p>
-
-              <div className="mt-3 flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  disabled={currentStep === 0 || isTransitioning}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+                <p
+                  className={`mt-3 text-xs font-medium text-[#2860E7] transition-opacity duration-150 ${
+                    showConfirmation ? "opacity-100" : "opacity-0"
+                  }`}
                 >
-                  &larr; Volver
-                </button>
-                  <span className="text-[0.68rem] text-slate-500">Responde en 1 toque por paso</span>
+                  Perfecto.
+                </p>
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {resultPayload && (
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+        <div className="relative mt-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+          {showCelebration && (
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-16 overflow-hidden">
+              {Array.from({ length: 9 }).map((_, index) => (
+                <span
+                  key={`celebration-${index}`}
+                  className={`celebration-dot absolute h-1.5 w-1.5 rounded-full ${
+                    index % 3 === 0
+                      ? "bg-[#2860E7]/75"
+                      : index % 3 === 1
+                        ? "bg-emerald-400/80"
+                        : "bg-orange-400/80"
+                  }`}
+                  style={{
+                    left: `${10 + index * 9}%`,
+                    animationDelay: `${index * 0.05}s`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
           <div className="flex items-start justify-between gap-4">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
               RESULTADO INSTANT&Aacute;NEO
             </p>
-            <div className="text-right">
-              <p className="text-4xl font-bold leading-none text-[#2860E7]">{resultPayload.score}</p>
-              <p className="mt-1 text-sm text-slate-500">/100</p>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="mt-2 text-xs font-medium text-slate-500 transition hover:text-slate-900"
-              >
-                Reiniciar
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="text-xs font-semibold text-slate-500 transition hover:text-slate-900"
+            >
+              Reiniciar
+            </button>
           </div>
 
-          <h4 className="mt-3 text-2xl font-bold text-slate-900">
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#2860E7]/20 bg-[#2860E7]/10 px-3 py-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2860E7]">
+              Score
+            </span>
+            <span className="text-lg font-bold leading-none text-[#1f52cc]">
+              {resultPayload.score}/100
+            </span>
+          </div>
+
+          <h4 className="mt-3 text-[26px] font-extrabold tracking-tight text-slate-900 sm:text-[28px]">
             {resultPayload.isFranchisable
-              ? "Tienes perfil franquiciable."
-              : "A&uacute;n no est&aacute;s listo para franquiciar."}
+              ? "Listo para escalar, pero con ajustes."
+              : "Necesitas 2 ajustes clave para escalar."}
           </h4>
+          <p className="mt-1.5 text-base text-slate-700">
+            Te decimos exactamente d&oacute;nde enfocar el esfuerzo para avanzar m&aacute;s
+            r&aacute;pido.
+          </p>
 
-          {!resultPayload.isFranchisable && (
-            <>
-              <p className="mt-3 text-base font-semibold text-slate-900">&Aacute;reas cr&iacute;ticas:</p>
-              <ul className="mt-2 space-y-1 text-base text-slate-700">
-                {getCriticalAreas(resultPayload.answers).map((area) => (
-                  <li key={area}>• {area}</li>
-                ))}
-              </ul>
-            </>
-          )}
+          <ul className="mt-4 space-y-2 text-base font-semibold text-slate-800">
+            {focusAreas.map((focus) => (
+              <li key={focus} className="flex items-start gap-2">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#2860E7]" />
+                <span>{focus}</span>
+              </li>
+            ))}
+          </ul>
 
-          {resultPayload.isFranchisable && (
-            <p className="mt-2 text-base text-slate-700">
-              Tienes base para escalar con m&eacute;todo.
+          <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+              SIGUIENTE PASO RECOMENDADO
             </p>
-          )}
+            <p className="mt-1 text-lg font-bold text-slate-900">
+              {compactProgramName(resultPayload.recommendedProgram.name)}
+            </p>
+            <p className="mt-1 text-sm text-slate-600">Plan + m&eacute;tricas + pr&oacute;ximos 14 d&iacute;as</p>
+          </div>
 
-          <p className="mt-5 text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
-            Siguiente paso recomendado
-          </p>
-          <p className="mt-2 text-lg font-bold text-slate-900">
-            {compactProgramName(resultPayload.recommendedProgram.name)}
-          </p>
-          <p className="mt-1 text-base text-slate-700">
-            Diagn&oacute;stico + Plan 14 d&iacute;as + Entregable accionable
-          </p>
+          <div className="mt-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+              Qu&eacute; sigue
+            </p>
+            <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-semibold text-slate-700">
+              <span className="rounded-lg border border-slate-200 bg-white/80 px-2.5 py-2 text-center">
+                Diagn&oacute;stico
+              </span>
+              <span className="rounded-lg border border-slate-200 bg-white/80 px-2.5 py-2 text-center">
+                Plan acci&oacute;n
+              </span>
+              <span className="rounded-lg border border-slate-200 bg-white/80 px-2.5 py-2 text-center">
+                Implementaci&oacute;n
+              </span>
+            </div>
+          </div>
 
           <a
             href={CALENDLY_URL}
             target="_blank"
             rel="noreferrer"
             onClick={() => setShowWhatsAppCapture(true)}
-            className="mt-4 w-full rounded-xl bg-[#2860E7] px-5 py-4 text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-[1px] hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)] inline-flex items-center justify-center"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#2860E7] px-5 py-[0.95rem] text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-[1px] hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
           >
-            {resultPayload.isFranchisable
-              ? "Agendar siguiente paso →"
-              : "Acceder al plan de mejora →"}
+            Agendar siguiente paso
           </a>
-          <p className="mt-2 text-center text-xs text-slate-500">Cupos limitados por cohorte.</p>
+          <p className="mt-2 text-center text-sm text-slate-600">Cupos limitados por cohorte.</p>
 
           {showWhatsAppCapture && (
             <div className="mt-4 animate-in fade-in duration-200 rounded-xl border border-slate-200 bg-white p-3">
@@ -908,6 +779,33 @@ export function ExpressDiagnosisWidget({
       )}
 
 
+      <style jsx>{`
+        .celebration-dot {
+          top: 8px;
+          animation: confetti-fall 1.2s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+          0% {
+            opacity: 0;
+            transform: translateY(0) scale(0.7);
+          }
+          12% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(48px) scale(1);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .celebration-dot {
+            animation: none !important;
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }

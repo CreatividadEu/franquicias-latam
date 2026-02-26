@@ -68,7 +68,7 @@ function HowItWorks() {
                 </article>
               ))}
 
-              <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-500 sm:text-sm">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Programa implementado por:
               </p>
 
@@ -118,134 +118,153 @@ function HowItWorks() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2860E7]">
                 RESULTADOS REALES
               </p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              <h2 className="mt-1.5 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                 Aplica a Nuestro Programa
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base">
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-600 sm:text-base">
                 Indicadores promedio observados en negocios participantes.
               </p>
 
-              <div className="mt-6 flex-0">
-                <div
-                  className={`transition-all duration-300 ease-out ${
-                    showQuiz
-                      ? "pointer-events-none max-h-0 -translate-y-2 overflow-hidden opacity-0"
-                      : "max-h-[1400px] translate-y-0 opacity-100"
-                  }`}
-                >
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:auto-rows-fr">
-                    <article className="h-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        &ge;20% EBITDA
-                      </p>
-                      <div className="mt-2 flex items-center justify-between gap-3">
-                        <p className="break-words text-3xl font-extrabold leading-none text-slate-900 sm:text-4xl md:text-5xl">
-                          87%
-                        </p>
-                        <svg
-                          viewBox="0 0 36 36"
-                          aria-hidden="true"
-                          className="metric-ring h-11 w-11 shrink-0 text-emerald-500"
-                        >
-                          <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeOpacity="0.2" strokeWidth="4" />
-                          <circle
-                            cx="18"
-                            cy="18"
-                            r="14"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                            strokeDasharray="65 88"
-                            transform="rotate(-90 18 18)"
-                          />
-                        </svg>
-                      </div>
-                      <p className="mt-1 text-xs font-medium text-slate-600">de empresas</p>
-                    </article>
-
-                    <article className="h-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        MARGEN BRUTO
-                      </p>
-                      <p className="mt-2 break-words text-3xl font-extrabold leading-none text-slate-900 sm:text-4xl md:text-5xl">
-                        +9.4%
-                      </p>
-                      <svg
-                        viewBox="0 0 120 26"
-                        preserveAspectRatio="none"
-                        aria-hidden="true"
-                        className="metric-sparkline mt-2 h-6 w-full text-[#2860E7]"
-                      >
-                        <polyline
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          points="4,20 26,18 46,14 68,15 88,9 116,6"
-                        />
-                      </svg>
-                      <p className="mt-1 text-xs font-medium text-slate-600">mejora promedio</p>
-                    </article>
-
-                    <article className="h-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        MODELO FRANQUICIABLE
-                      </p>
-                      <p className="mt-2 break-words text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl">
-                        90 d&iacute;as
-                      </p>
-                      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-                        <div className="metric-progress-fill h-1.5 w-[72%] rounded-full bg-[#2860E7]" />
-                      </div>
-                      <p className="mt-1 text-xs font-medium text-slate-600">tiempo promedio</p>
-                    </article>
-
-                    <article className="h-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        PROYECTOS DESARROLLADOS
-                      </p>
-                      <p className="mt-2 break-words text-3xl font-extrabold leading-none text-slate-900 sm:text-4xl md:text-5xl">
-                        750+
-                      </p>
-                      <p className="mt-1 text-xs font-medium text-slate-600">
-                        implementados con nuestro m&eacute;todo
-                      </p>
-                    </article>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowQuiz(true)}
-                    className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-orange-500 px-5 py-3 text-base font-semibold text-white shadow-[0_16px_32px_-20px_rgba(249,115,22,0.85)] transition hover:bg-orange-600"
+              <div className="mt-3 flex-0">
+                <div className="relative h-[490px] overflow-hidden sm:h-[500px] lg:h-[515px]">
+                  <div
+                    aria-hidden={showQuiz}
+                    inert={showQuiz}
+                    className={`absolute inset-0 flex flex-col transition-all duration-300 ease-out motion-reduce:duration-150 motion-reduce:translate-y-0 ${
+                      showQuiz
+                        ? "pointer-events-none translate-y-2 opacity-0"
+                        : "pointer-events-auto translate-y-0 opacity-100"
+                    }`}
                   >
-                    Quiero estos resultados &rarr;
-                  </button>
-                
-                </div>
+                    <div className="flex flex-1 min-h-0 flex-col justify-center">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:auto-rows-fr">
+                        <article className="h-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            &ge;20% EBITDA
+                          </p>
+                          <div className="mt-2 flex items-center justify-between gap-3">
+                            <p className="break-words text-3xl font-extrabold leading-none text-slate-900 sm:text-4xl md:text-5xl">
+                              87%
+                            </p>
+                            <svg
+                              viewBox="0 0 36 36"
+                              aria-hidden="true"
+                              className="metric-ring h-11 w-11 shrink-0 text-emerald-500"
+                            >
+                              <circle
+                                cx="18"
+                                cy="18"
+                                r="14"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeOpacity="0.2"
+                                strokeWidth="4"
+                              />
+                              <circle
+                                cx="18"
+                                cy="18"
+                                r="14"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                                strokeDasharray="65 88"
+                                transform="rotate(-90 18 18)"
+                              />
+                            </svg>
+                          </div>
+                          <p className="mt-1 text-xs font-medium text-slate-600">de empresas</p>
+                        </article>
 
-                <div
-                  className={`transition-all duration-300 ease-out ${
-                    showQuiz
-                      ? "max-h-[2200px] translate-y-0 opacity-100"
-                      : "pointer-events-none max-h-0 translate-y-2 overflow-hidden opacity-0"
-                  }`}
-                >
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        Diagn&oacute;stico Express
-                      </p>
+                        <article className="h-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            MARGEN BRUTO
+                          </p>
+                          <p className="mt-2 break-words text-3xl font-extrabold leading-none text-slate-900 sm:text-4xl md:text-5xl">
+                            +9.4%
+                          </p>
+                          <svg
+                            viewBox="0 0 120 26"
+                            preserveAspectRatio="none"
+                            aria-hidden="true"
+                            className="metric-sparkline mt-2 h-6 w-full text-[#2860E7]"
+                          >
+                            <polyline
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              points="4,20 26,18 46,14 68,15 88,9 116,6"
+                            />
+                          </svg>
+                          <p className="mt-1 text-xs font-medium text-slate-600">mejora promedio</p>
+                        </article>
+
+                        <article className="h-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            MODELO FRANQUICIABLE
+                          </p>
+                          <p className="mt-2 break-words text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl">
+                            90 d&iacute;as
+                          </p>
+                          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+                            <div className="metric-progress-fill h-1.5 w-[72%] rounded-full bg-[#2860E7]" />
+                          </div>
+                          <p className="mt-1 text-xs font-medium text-slate-600">tiempo promedio</p>
+                        </article>
+
+                        <article className="h-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            PROYECTOS DESARROLLADOS
+                          </p>
+                          <p className="mt-2 break-words text-3xl font-extrabold leading-none text-slate-900 sm:text-4xl md:text-5xl">
+                            750+
+                          </p>
+                          <p className="mt-1 text-xs font-medium text-slate-600">
+                            implementados con nuestro m&eacute;todo
+                          </p>
+                        </article>
+                      </div>
+
                       <button
                         type="button"
-                        onClick={() => setShowQuiz(false)}
-                        className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-800"
+                        onClick={() => setShowQuiz(true)}
+                        disabled={showQuiz}
+                        className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-orange-500 px-5 py-3 text-base font-semibold text-white shadow-[0_16px_32px_-20px_rgba(249,115,22,0.85)] transition hover:bg-orange-600 disabled:pointer-events-none disabled:opacity-70"
                       >
-                        Cerrar
+                        Quiero Aplicar
                       </button>
                     </div>
-                    <ExpressDiagnosisWidget />
+                  </div>
+
+                  <div
+                    aria-hidden={!showQuiz}
+                    inert={!showQuiz}
+                    className={`absolute inset-0 flex flex-col transition-all duration-300 ease-out motion-reduce:duration-150 motion-reduce:translate-y-0 ${
+                      showQuiz
+                        ? "pointer-events-auto translate-y-0 opacity-100"
+                        : "pointer-events-none translate-y-2 opacity-0"
+                    }`}
+                  >
+                    <div className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          Diagn&oacute;stico Express
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setShowQuiz(false)}
+                          disabled={!showQuiz}
+                          className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-800 disabled:pointer-events-none disabled:opacity-70"
+                        >
+                          Cerrar
+                        </button>
+                      </div>
+                      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                        <ExpressDiagnosisWidget />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
