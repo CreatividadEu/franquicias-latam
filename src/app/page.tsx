@@ -660,6 +660,80 @@ export default function HomePage() {
 
       <HomeHeroFranchise />
 
+      <section id="video-hero" className="relative overflow-hidden bg-[#063B3A] py-20 sm:py-24">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.06] bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.15)_1px,transparent_0)] bg-[size:24px_24px]"
+        />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-sm tracking-[0.2em] uppercase text-emerald-300 font-semibold">
+              WHY WE&apos;RE THE RIGHT CHOICE
+            </p>
+            <h2 className="mt-4 text-4xl sm:text-5xl font-semibold text-white leading-[1.05]">
+              Why we&apos;re the right choice
+            </h2>
+            <p className="mt-6 text-lg text-emerald-100/80 max-w-2xl mx-auto">
+              We create impactful strategies, refine brand positioning, and drive real results through smart content and scalable campaigns.
+            </p>
+          </div>
+
+          <div className="mt-14">
+            <div className="relative mx-auto max-w-5xl">
+              <div className="absolute -left-8 top-1/2 z-10 hidden -translate-y-1/2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white shadow-lg backdrop-blur-md md:block">
+                10+ Years of Experience
+              </div>
+
+              <div className="absolute -right-10 top-10 z-10 hidden rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white shadow-lg backdrop-blur-md md:block">
+                <p className="text-sm">Growth-Driven</p>
+                <p className="mt-1 text-xs text-white/70">KPI-focused for real growth.</p>
+              </div>
+
+              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)] transition-transform duration-500 hover:-translate-y-1 motion-reduce:transform-none motion-reduce:transition-none">
+                <div className="relative aspect-video">
+                  <iframe
+                    className="h-full w-full aspect-video"
+                    src="https://www.youtube.com/embed/YOUR_VIDEO_ID?rel=0&autoplay=0"
+                    title="Franquicias LATAM"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                  >
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 shadow-xl transition-colors">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="ml-0.5 h-6 w-6 text-white"
+                      >
+                        <path d="M8 6.8v10.4c0 .7.8 1.1 1.4.8l8.5-5.2a1 1 0 0 0 0-1.7L9.4 6c-.6-.4-1.4.1-1.4.8Z" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+            <div>
+              <p className="text-4xl font-semibold text-white">98%</p>
+              <p className="mt-2 text-sm text-emerald-100/70">Client Success Rate</p>
+            </div>
+            <div>
+              <p className="text-4xl font-semibold text-white">200+</p>
+              <p className="mt-2 text-sm text-emerald-100/70">Campaigns Launched</p>
+            </div>
+            <div>
+              <p className="text-4xl font-semibold text-white">$250K+</p>
+              <p className="mt-2 text-sm text-emerald-100/70">Revenue Generated</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── Platform Features (Stoika OS section) ─── */}
       <section id="plataforma" className="py-16 sm:py-20 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
