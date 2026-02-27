@@ -515,6 +515,8 @@ export default function HomePage() {
         </section>
       </LatamDepthBackground>
 
+      <HomeHeroFranchise />
+
       <section
         id="decision"
         className="relative border-t border-b border-slate-200/70 bg-slate-50/60 py-14 sm:py-[4.5rem] lg:py-20"
@@ -657,8 +659,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <HomeHeroFranchise />
 
       <section id="video-hero" className="relative overflow-hidden bg-[#063B3A] py-20 sm:py-24">
         <div
