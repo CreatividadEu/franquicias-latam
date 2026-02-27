@@ -13,6 +13,7 @@ import Image from "next/image";
 import type { SectorOption } from "@/types";
 import { LatamDepthBackground } from "@/components/LatamDepthBackground";
 import { HomeHeroFranchise } from "@/components/home/HomeHeroFranchise";
+import { WorkCarousel } from "@/components/home/WorkCarousel";
 import { Button } from "@/components/ui/button";
 
 const countries = [
@@ -1012,6 +1013,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <WorkCarousel />
 
       {/* ─── Case Studies ─── */}
       <section id="casos" className="py-16 sm:py-20 lg:py-24 bg-gray-50">
