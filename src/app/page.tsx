@@ -13,6 +13,7 @@ import Image from "next/image";
 import type { SectorOption } from "@/types";
 import { LatamDepthBackground } from "@/components/LatamDepthBackground";
 import { HomeHeroFranchise } from "@/components/home/HomeHeroFranchise";
+import { Button } from "@/components/ui/button";
 
 const countries = [
   { flag: "\u{1F1E8}\u{1F1F4}", name: "Colombia" },
@@ -513,6 +514,149 @@ export default function HomePage() {
           </div>
         </section>
       </LatamDepthBackground>
+
+      <section
+        id="decision"
+        className="relative border-t border-b border-slate-200/70 bg-slate-50/60 py-14 sm:py-[4.5rem] lg:py-20"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="text-[11px] tracking-[0.2em] text-slate-500 font-semibold uppercase">
+              DOS CAMINOS
+            </p>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold leading-[1.05] text-slate-900">
+              Dos caminos para crecer. Solo uno escala.
+            </h2>
+            <p className="mt-4 max-w-2xl text-base sm:text-lg text-slate-600">
+              La mayoría de negocios crece reaccionando. Solo algunos crecen diseñando su expansión.
+            </p>
+          </div>
+
+          <p className="mt-6 text-center text-sm font-medium text-slate-600 md:hidden">
+            La diferencia no es crecer. Es cómo creces.
+          </p>
+
+          <div className="relative">
+            <p className="pointer-events-none absolute left-1/2 top-6 z-10 hidden -translate-x-1/2 rounded-full border border-slate-200/80 bg-white/90 px-4 py-1 text-xs font-medium text-slate-600 shadow-sm md:block">
+              La diferencia no es crecer. Es cómo creces.
+            </p>
+
+            <div className="mt-10 grid gap-5 md:grid-cols-2 md:gap-6 items-stretch">
+              <article className="group relative h-full flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/70 p-6 sm:p-7 shadow-[0_10px_30px_-20px_rgba(15,23,42,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-24px_rgba(15,23,42,0.35)] motion-reduce:transition-none motion-reduce:hover:transform-none">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-y-4 left-0 w-px bg-rose-400/50"
+                />
+                <h3 className="pr-8 text-xl font-semibold text-slate-900">
+                  Crecimiento Reactivo (sin sistema)
+                </h3>
+                <ul className="mt-5 space-y-3 text-slate-700">
+                  {[
+                    "Cada nueva sede depende de tu capital",
+                    "Crecimiento lento y financieramente pesado",
+                    "Procesos no estandarizados",
+                    "Margen inestable",
+                    "Dependencia de personas clave",
+                    "Escalar implica más riesgo, no menos",
+                  ].map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <span className="mt-1 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-rose-200 bg-rose-50/50 text-rose-500 opacity-80 transition-opacity duration-300 group-hover:opacity-100 motion-reduce:transition-none">
+                        <svg
+                          aria-hidden="true"
+                          viewBox="0 0 18 18"
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                        >
+                          <path d="M5.25 9h7.5" strokeLinecap="round" />
+                        </svg>
+                      </span>
+                      <span className="text-sm sm:text-[15px] leading-6">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+
+              <article className="group relative h-full flex flex-col overflow-hidden rounded-2xl border border-emerald-200/80 bg-white/85 p-6 sm:p-7 shadow-[0_14px_36px_-22px_rgba(16,185,129,0.34)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_42px_-24px_rgba(14,116,144,0.36)] motion-reduce:transition-none motion-reduce:hover:transform-none">
+                <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent" />
+                <span className="absolute right-5 top-5 inline-flex items-center rounded-full border border-emerald-200/80 bg-white/85 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                  RECOMENDADO
+                </span>
+                <div className="relative">
+                  <h3 className="pr-28 text-xl font-semibold text-slate-900">
+                    Crecimiento Estructurado (modelo de franquicia)
+                  </h3>
+                  <ul className="mt-5 space-y-3 text-slate-700">
+                    {[
+                      "Expansión con capital de terceros",
+                      "Modelo probado y replicable",
+                      "Manuales + procesos estandarizados",
+                      "Control financiero y visibilidad total",
+                      "EBITDA optimizado desde diseño",
+                      "Escalabilidad sin diluir control",
+                    ].map((item) => (
+                      <li key={item} className="flex gap-3">
+                        <span className="mt-1 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/60 text-emerald-600 opacity-85 transition-opacity duration-300 group-hover:opacity-100 motion-reduce:transition-none">
+                          <svg
+                            aria-hidden="true"
+                            viewBox="0 0 18 18"
+                            className="h-3.5 w-3.5"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                          >
+                            <path d="M4.75 9.5 7.45 12 13.25 6.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                        <span className="text-sm sm:text-[15px] leading-6">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-xl border border-slate-200/70 bg-white/60 px-5 py-4">
+              <p className="text-xl font-semibold text-slate-900">+750</p>
+              <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
+                Proyectos desarrollados
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200/70 bg-white/60 px-5 py-4">
+              <p className="text-xl font-semibold text-slate-900">+35 años</p>
+              <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
+                Estructurando marcas
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200/70 bg-white/60 px-5 py-4">
+              <p className="text-xl font-semibold text-slate-900">BID + ONU</p>
+              <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
+                Programas y ejecución
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
+            <Button
+              asChild
+              className="h-auto rounded-xl bg-[#2860E7] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_-20px_rgba(40,96,231,0.7)] transition-all duration-300 hover:bg-[#1F52CC] hover:shadow-[0_18px_34px_-20px_rgba(40,96,231,0.82)] focus-visible:ring-[rgba(40,96,231,0.35)] motion-reduce:transition-none"
+            >
+              <Link href="/quiz">Quiero estructurar mi crecimiento</Link>
+            </Button>
+
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto rounded-xl border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-800 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.55)] transition-all duration-300 hover:border-slate-400 hover:bg-white focus-visible:ring-[rgba(40,96,231,0.3)] motion-reduce:transition-none"
+            >
+              <a href="#proceso">Evaluar mi negocio</a>
+            </Button>
+          </div>
+        </div>
+      </section>
 
       <HomeHeroFranchise />
 
