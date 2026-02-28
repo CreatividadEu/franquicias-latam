@@ -581,10 +581,15 @@ export default function HomePage() {
                 </div>
                 <a
                   href="#diagnostico"
-                  className="absolute bottom-6 left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#2860E7] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_40px_rgba(40,96,231,0.35)] transition-all hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-[0_18px_55px_rgba(40,96,231,0.42)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:bottom-7 md:px-7 md:py-3.5 md:text-base"
+                  className="absolute bottom-8 left-1/2 z-30 inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-full bg-[#2860E7] px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_20px_60px_rgba(15,23,42,0.45)] ring-1 ring-white/15 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-[0_26px_75px_rgba(15,23,42,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:bottom-10 md:px-8 md:py-4 md:text-base"
                 >
-                  <span>Quiero escalar mi negocio</span>
-                  <span aria-hidden="true">→</span>
+                  <span
+                    className="grid h-9 w-9 place-items-center rounded-full bg-white/12 ring-1 ring-white/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] md:h-10 md:w-10"
+                    aria-hidden="true"
+                  >
+                    <span className="text-base text-white/95 md:text-lg">→</span>
+                  </span>
+                  <span className="whitespace-nowrap">Quiero escalar mi negocio</span>
                 </a>
               </div>
             </div>
