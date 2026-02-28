@@ -239,7 +239,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#fafafa] text-[#171717]">
       {/* ─── Navigation ─── */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100">
+      <nav className="sticky top-0 z-50 border-b border-gray-100/90 bg-white/90 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 sm:py-2">
           <div className="flex items-center justify-between">
             <Image
@@ -372,7 +372,7 @@ export default function HomePage() {
         intensity="normal"
         className="min-h-[70vh] pt-12 sm:pt-16 lg:pt-20 pb-16 sm:pb-24 lg:pb-32"
       >
-        <section className="max-w-7xl mx-auto px-4 sm:px-6">
+        <section id="diagnostico" className="max-w-7xl mx-auto scroll-mt-28 px-4 sm:px-6 sm:scroll-mt-36">
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-block mb-4 sm:mb-6">
               <span className="section-label bg-gray-100 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full">
@@ -518,75 +518,106 @@ export default function HomePage() {
 
       <HomeHeroFranchise />
 
-      <section id="video-hero" className="relative overflow-hidden bg-[#063B3A] py-20 sm:py-24">
+      <section
+        id="video-hero"
+        className="relative isolate overflow-hidden scroll-mt-28 bg-gradient-to-b from-white via-slate-50 to-slate-100/70 py-20 md:py-24"
+      >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.06] bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.15)_1px,transparent_0)] bg-[size:24px_24px]"
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            backgroundImage:
+              "radial-gradient(960px 440px at 50% -2%, rgba(40,96,231,0.12), transparent 60%), radial-gradient(760px 360px at 50% 100%, rgba(148,163,184,0.16), transparent 70%)",
+          }}
         />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-sm tracking-[0.2em] uppercase text-emerald-300 font-semibold">
-              WHY WE&apos;RE THE RIGHT CHOICE
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 opacity-[0.025] bg-[radial-gradient(circle_at_1px_1px,rgba(15,23,42,0.35)_1px,transparent_0)] bg-[size:22px_22px]"
+        />
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 md:text-sm">
+              CASOS DE ÉXITO · TOTTO X FRANQUICIAS LATAM
             </p>
-            <h2 className="mt-4 text-4xl sm:text-5xl font-semibold text-white leading-[1.05]">
-              Why we&apos;re the right choice
+            <h2 className="mt-4 text-4xl font-semibold leading-[1.05] tracking-tight text-slate-900 sm:text-5xl md:mt-5 md:text-6xl">
+              Totto: de 0 a 450 tiendas.
             </h2>
-            <p className="mt-6 text-lg text-emerald-100/80 max-w-2xl mx-auto">
-              We create impactful strategies, refine brand positioning, and drive real results through smart content and scalable campaigns.
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
+              Escala real con control: operación replicable, números sanos y crecimiento sostenido.
             </p>
           </div>
 
-          <div className="mt-14">
-            <div className="relative mx-auto max-w-5xl">
-              <div className="absolute -left-8 top-1/2 z-10 hidden -translate-y-1/2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white shadow-lg backdrop-blur-md md:block">
-                10+ Years of Experience
-              </div>
+          <div className="relative mx-auto mt-10 w-full max-w-5xl md:mt-12">
+            <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md md:left-6 md:text-sm">
+              Founder TOTTO
+            </div>
 
-              <div className="absolute -right-10 top-10 z-10 hidden rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white shadow-lg backdrop-blur-md md:block">
-                <p className="text-sm">Growth-Driven</p>
-                <p className="mt-1 text-xs text-white/70">KPI-focused for real growth.</p>
-              </div>
+            <div className="pointer-events-none absolute right-4 top-10 z-10 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md md:right-6 md:top-12 md:text-sm">
+              45 países · +US$200M/año
+            </div>
 
-              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)] transition-transform duration-500 hover:-translate-y-1 motion-reduce:transform-none motion-reduce:transition-none">
-                <div className="relative aspect-video">
-                  <iframe
-                    className="h-full w-full aspect-video"
-                    src="https://www.youtube.com/embed/YOUR_VIDEO_ID?rel=0&autoplay=0"
-                    title="Franquicias LATAM"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 flex items-center justify-center"
-                  >
-                    <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 shadow-xl transition-colors">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        className="ml-0.5 h-6 w-6 text-white"
-                      >
-                        <path d="M8 6.8v10.4c0 .7.8 1.1 1.4.8l8.5-5.2a1 1 0 0 0 0-1.7L9.4 6c-.6-.4-1.4.1-1.4.8Z" />
-                      </svg>
-                    </span>
-                  </div>
+            <div className="group relative overflow-hidden rounded-[28px] border border-slate-200/70 bg-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:rounded-[34px]">
+              <div className="relative aspect-[16/10] bg-slate-950 md:aspect-[16/9]">
+                <iframe
+                  className="h-full w-full"
+                  src="https://www.youtube.com/embed/YOUR_VIDEO_ID?rel=0&autoplay=0"
+                  title="Testimonio de Natan Bursztyn"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                >
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#2860E7] shadow-[0_14px_32px_rgba(40,96,231,0.34)] transition-all duration-300 group-hover:scale-[1.03] group-hover:shadow-[0_18px_38px_rgba(40,96,231,0.4)] md:h-16 md:w-16">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="ml-0.5 h-5 w-5 text-white md:h-6 md:w-6"
+                    >
+                      <path d="M8 6.8v10.4c0 .7.8 1.1 1.4.8l8.5-5.2a1 1 0 0 0 0-1.7L9.4 6c-.6-.4-1.4.1-1.4.8Z" />
+                    </svg>
+                  </span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-            <div>
-              <p className="text-4xl font-semibold text-white">98%</p>
-              <p className="mt-2 text-sm text-emerald-100/70">Client Success Rate</p>
-            </div>
-            <div>
-              <p className="text-4xl font-semibold text-white">200+</p>
-              <p className="mt-2 text-sm text-emerald-100/70">Campaigns Launched</p>
-            </div>
-            <div>
-              <p className="text-4xl font-semibold text-white">$250K+</p>
-              <p className="mt-2 text-sm text-emerald-100/70">Revenue Generated</p>
+          <div className="mb-10 mt-7 flex justify-center md:mb-12 md:mt-8">
+            <a
+              href="#diagnostico"
+              className="group inline-flex items-center gap-2 rounded-full bg-[#2860E7] px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_32px_rgba(40,96,231,0.2)] transition-all hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:px-7 md:py-3.5 md:text-base"
+            >
+              <span>Quiero escalar mi negocio</span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.22 4.47a.75.75 0 0 1 1.06 0l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 1 1-1.06-1.06l2.72-2.72H5.25a.75.75 0 0 1 0-1.5h7.69l-2.72-2.72a.75.75 0 0 1 0-1.06Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </a>
+          </div>
+
+          <div className="mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-white/70 bg-white/60 shadow-[0_10px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+            <div className="grid grid-cols-1 divide-y divide-slate-200/70 text-center sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+              <div className="py-6 md:py-7">
+                <p className="text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">+450</p>
+                <p className="mt-2 text-xs text-slate-600 md:text-sm">Tiendas</p>
+              </div>
+              <div className="py-6 md:py-7">
+                <p className="text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">45</p>
+                <p className="mt-2 text-xs text-slate-600 md:text-sm">Países</p>
+              </div>
+              <div className="py-6 md:py-7">
+                <p className="text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">+US$200M</p>
+                <p className="mt-2 text-xs text-slate-600 md:text-sm">Ventas anuales</p>
+              </div>
             </div>
           </div>
         </div>
