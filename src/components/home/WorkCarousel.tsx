@@ -260,7 +260,11 @@ export function WorkCarousel() {
   };
 
   return (
-    <section id="work" aria-label="Work and clients" className="bg-white py-16 sm:py-20 lg:py-24">
+    <section
+      id="work"
+      aria-label="Work and clients"
+      className="bg-white pt-8 md:pt-10 pb-16 sm:pb-20 lg:pb-24"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl lg:text-[3.2rem]">
@@ -311,4 +315,3 @@ export function WorkCarousel() {
     </section>
   );
 }
-

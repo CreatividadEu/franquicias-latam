@@ -618,7 +618,7 @@ export default function HomePage() {
 
       <section
         id="video-hero"
-        className="relative isolate overflow-hidden scroll-mt-28 bg-gradient-to-b from-white via-slate-50 to-slate-100/70 py-20 md:py-24"
+        className="relative isolate overflow-hidden scroll-mt-28 bg-gradient-to-b from-white via-slate-50 to-slate-100/70 pt-20 md:pt-24 pb-10 md:pb-12"
       >
         <div
           aria-hidden="true"
@@ -733,6 +733,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <WorkCarousel />
 
       <section
         id="decision"
@@ -1155,8 +1157,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <WorkCarousel />
 
       {/* ─── Case Studies ─── */}
       <section id="casos" className="py-16 sm:py-20 lg:py-24 bg-gray-50">
