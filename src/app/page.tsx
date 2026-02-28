@@ -84,6 +84,8 @@ export default function HomePage() {
       : false
   );
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const tottoVideoRef = useRef<HTMLIFrameElement | null>(null);
+  const [tottoIsPlaying, setTottoIsPlaying] = useState(false);
 
   // Hero quiz embed
   const [heroSectors, setHeroSectors] = useState<SectorOption[]>([]);
@@ -167,6 +169,102 @@ export default function HomePage() {
     });
     router.push(`/quiz?${params.toString()}`);
   };
+
+  const postTottoPlayerCommand = useCallback(
+    (func: string, args: unknown[] = []) => {
+      tottoVideoRef.current?.contentWindow?.postMessage(
+        JSON.stringify({
+          event: "command",
+          func,
+          args,
+        }),
+        "*"
+      );
+    },
+    []
+  );
+
+  const registerTottoPlayerEvents = useCallback(() => {
+    postTottoPlayerCommand("addEventListener", ["onStateChange"]);
+  }, [postTottoPlayerCommand]);
+
+  const handleTottoIframeLoad = useCallback(() => {
+    registerTottoPlayerEvents();
+    window.setTimeout(registerTottoPlayerEvents, 250);
+  }, [registerTottoPlayerEvents]);
+
+  const handleTottoPlayClick = useCallback(() => {
+    setTottoIsPlaying(true);
+    registerTottoPlayerEvents();
+    postTottoPlayerCommand("playVideo");
+  }, [postTottoPlayerCommand, registerTottoPlayerEvents]);
+
+  useEffect(() => {
+    const handleTottoPlayerMessage = (event: MessageEvent) => {
+      if (
+        typeof event.origin !== "string" ||
+        (!event.origin.includes("youtube.com") &&
+          !event.origin.includes("youtube-nocookie.com"))
+      ) {
+        return;
+      }
+
+      let payload = event.data;
+
+      if (typeof payload === "string") {
+        try {
+          payload = JSON.parse(payload);
+        } catch {
+          return;
+        }
+      }
+
+      if (!payload || typeof payload !== "object") {
+        return;
+      }
+
+      const message = payload as {
+        event?: string;
+        info?: unknown;
+      };
+
+      let nextState: number | null = null;
+
+      if (
+        message.event === "onStateChange" &&
+        typeof message.info === "number"
+      ) {
+        nextState = message.info;
+      }
+
+      if (
+        nextState === null &&
+        message.event === "infoDelivery" &&
+        message.info &&
+        typeof message.info === "object" &&
+        "playerState" in message.info
+      ) {
+        const info = message.info as {
+          playerState?: unknown;
+        };
+
+        if (typeof info.playerState === "number") {
+          nextState = info.playerState;
+        }
+      }
+
+      if (nextState === 1) {
+        setTottoIsPlaying(true);
+      }
+
+      if (nextState === 0 || nextState === 2 || nextState === 5) {
+        setTottoIsPlaying(false);
+      }
+    };
+
+    window.addEventListener("message", handleTottoPlayerMessage);
+    return () => window.removeEventListener("message", handleTottoPlayerMessage);
+  }, []);
 
   const toggleMobileMenu = useCallback(() => {
     setMobileMenuOpen((prev) => {
@@ -548,28 +646,46 @@ export default function HomePage() {
           </div>
 
           <div className="relative mx-auto mt-10 w-full max-w-5xl md:mt-12">
-            <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md md:left-6 md:text-sm">
+            <div
+              className={`pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md transition-opacity duration-200 md:left-6 md:text-sm ${
+                tottoIsPlaying ? "opacity-0" : "opacity-100"
+              }`}
+            >
               Founder TOTTO
             </div>
 
-            <div className="pointer-events-none absolute right-4 top-10 z-10 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md md:right-6 md:top-12 md:text-sm">
+            <div
+              className={`pointer-events-none absolute right-4 top-10 z-10 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md transition-opacity duration-200 md:right-6 md:top-12 md:text-sm ${
+                tottoIsPlaying ? "opacity-0" : "opacity-100"
+              }`}
+            >
               45 países · +US$200M/año
             </div>
 
             <div className="group relative overflow-hidden rounded-[28px] border border-slate-200/70 bg-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:rounded-[34px]">
               <div className="relative aspect-[16/10] bg-slate-950 md:aspect-[16/9]">
                 <iframe
+                  ref={tottoVideoRef}
                   className="h-full w-full"
-                  src="https://www.youtube.com/embed/YOUR_VIDEO_ID?rel=0&autoplay=0"
+                  src="https://www.youtube.com/embed/r0Qc7FsEQRU?rel=0&autoplay=0&enablejsapi=1&playsinline=1"
                   title="Testimonio de Natan Bursztyn"
+                  onLoad={handleTottoIframeLoad}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
                 <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                  className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+                    tottoIsPlaying
+                      ? "scale-95 opacity-0"
+                      : "scale-100 opacity-100"
+                  }`}
                 >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#2860E7] shadow-[0_14px_32px_rgba(40,96,231,0.34)] transition-all duration-300 group-hover:scale-[1.03] group-hover:shadow-[0_18px_38px_rgba(40,96,231,0.4)] md:h-16 md:w-16">
+                  <button
+                    type="button"
+                    aria-label="Reproducir testimonio de Natan Bursztyn"
+                    onClick={handleTottoPlayClick}
+                    className="pointer-events-auto relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#2860E7] shadow-[0_14px_32px_rgba(40,96,231,0.34)] transition-all duration-300 group-hover:scale-[1.03] group-hover:shadow-[0_18px_38px_rgba(40,96,231,0.4)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:h-16 md:w-16"
+                  >
                     <svg
                       viewBox="0 0 24 24"
                       fill="currentColor"
@@ -577,11 +693,15 @@ export default function HomePage() {
                     >
                       <path d="M8 6.8v10.4c0 .7.8 1.1 1.4.8l8.5-5.2a1 1 0 0 0 0-1.7L9.4 6c-.6-.4-1.4.1-1.4.8Z" />
                     </svg>
-                  </span>
+                  </button>
                 </div>
                 <a
                   href="#diagnostico"
-                  className="absolute bottom-8 left-1/2 z-30 inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-full bg-[#2860E7] px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_20px_60px_rgba(15,23,42,0.45)] ring-1 ring-white/15 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-[0_26px_75px_rgba(15,23,42,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:bottom-10 md:px-8 md:py-4 md:text-base"
+                  className={`absolute bottom-8 left-1/2 z-30 inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-full bg-[#2860E7] px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_20px_60px_rgba(15,23,42,0.45)] ring-1 ring-white/15 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-[0_26px_75px_rgba(15,23,42,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:bottom-10 md:px-8 md:py-4 md:text-base ${
+                    tottoIsPlaying
+                      ? "pointer-events-none opacity-0"
+                      : "opacity-100"
+                  }`}
                 >
                   <span
                     className="grid h-9 w-9 place-items-center rounded-full bg-white/12 ring-1 ring-white/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] md:h-10 md:w-10"
