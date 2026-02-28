@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Add real client images under `public/images/work/` and replace each `imageUrl` below.
 type WorkItem = {
@@ -57,18 +57,52 @@ const WORK_ITEMS: WorkItem[] = [
   },
 ];
 
+const EDGE_MASK = {
+  WebkitMaskImage:
+    "linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 8%, rgba(0,0,0,1) 92%, rgba(0,0,0,0) 100%)",
+  maskImage:
+    "linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 8%, rgba(0,0,0,1) 92%, rgba(0,0,0,0) 100%)",
+};
+
+const SCROLL_SPEED = 32;
+const DEFAULT_GAP = 24;
+
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setPrefersReducedMotion(media.matches);
+    onChange();
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
+
+  return prefersReducedMotion;
+}
+
 function WorkCard({ item }: { item: WorkItem }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
-    <article className="w-full">
+    <article className="w-[280px] shrink-0 sm:w-[320px] md:w-[344px] lg:w-[360px]">
       <div className="relative h-[429px] overflow-hidden rounded-[24px] bg-gradient-to-br from-slate-300 via-slate-200 to-slate-100">
         {!imageFailed && (
           <Image
             src={item.imageUrl}
             alt={item.title}
             fill
-            sizes="344px"
+            sizes="(min-width: 1024px) 360px, (min-width: 768px) 344px, (min-width: 640px) 320px, 280px"
             className="object-cover"
             onError={() => setImageFailed(true)}
           />
@@ -90,7 +124,140 @@ function WorkCard({ item }: { item: WorkItem }) {
 }
 
 export function WorkCarousel() {
-  const visibleWorkItems = WORK_ITEMS.slice(0, 3);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const firstLoopRef = useRef<HTMLDivElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastFrameRef = useRef<number | null>(null);
+  const xRef = useRef(0);
+  const loopWidthRef = useRef(0);
+  const isHoveredRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const dragStartOffsetRef = useRef(0);
+
+  const applyTransform = useCallback(() => {
+    if (!trackRef.current) return;
+    trackRef.current.style.transform = `translate3d(${-xRef.current}px, 0, 0)`;
+  }, []);
+
+  const normalizeOffset = useCallback((value: number) => {
+    const loopWidth = loopWidthRef.current;
+    if (loopWidth <= 0) return 0;
+
+    let normalized = value % loopWidth;
+    if (normalized < 0) {
+      normalized += loopWidth;
+    }
+    return normalized;
+  }, []);
+
+  const setOffset = useCallback(
+    (nextValue: number) => {
+      xRef.current = normalizeOffset(nextValue);
+      applyTransform();
+    },
+    [applyTransform, normalizeOffset],
+  );
+
+  useEffect(() => {
+    const measure = () => {
+      if (!trackRef.current || !firstLoopRef.current) return;
+
+      const computed = window.getComputedStyle(trackRef.current);
+      const parsedGap = Number.parseFloat(computed.columnGap || computed.gap || "");
+      const groupGap = Number.isFinite(parsedGap) ? parsedGap : DEFAULT_GAP;
+      loopWidthRef.current = firstLoopRef.current.getBoundingClientRect().width + groupGap;
+      xRef.current = normalizeOffset(xRef.current);
+      applyTransform();
+    };
+
+    measure();
+
+    const resizeHandler = () => measure();
+    window.addEventListener("resize", resizeHandler);
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && firstLoopRef.current) {
+      observer = new ResizeObserver(() => measure());
+      observer.observe(firstLoopRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", resizeHandler);
+      observer?.disconnect();
+    };
+  }, [applyTransform, normalizeOffset]);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
+      rafRef.current = null;
+      lastFrameRef.current = null;
+      return;
+    }
+
+    const tick = (timestamp: number) => {
+      if (lastFrameRef.current === null) {
+        lastFrameRef.current = timestamp;
+      }
+
+      const deltaSeconds = (timestamp - lastFrameRef.current) / 1000;
+      lastFrameRef.current = timestamp;
+
+      if (!isHoveredRef.current && !isDraggingRef.current && loopWidthRef.current > 0) {
+        setOffset(xRef.current + SCROLL_SPEED * deltaSeconds);
+      }
+
+      rafRef.current = window.requestAnimationFrame(tick);
+    };
+
+    rafRef.current = window.requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
+      rafRef.current = null;
+      lastFrameRef.current = null;
+    };
+  }, [prefersReducedMotion, setOffset]);
+
+  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    const horizontalDelta =
+      Math.abs(event.deltaX) > 0 ? event.deltaX : event.shiftKey ? event.deltaY : 0;
+
+    if (horizontalDelta === 0) return;
+
+    event.preventDefault();
+    setOffset(xRef.current + horizontalDelta);
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== "mouse") return;
+
+    isDraggingRef.current = true;
+    dragStartXRef.current = event.clientX;
+    dragStartOffsetRef.current = xRef.current;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    const deltaX = event.clientX - dragStartXRef.current;
+    setOffset(dragStartOffsetRef.current - deltaX);
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
 
   return (
     <section
@@ -107,11 +274,42 @@ export function WorkCarousel() {
             A glimpse into our most impactful projects and success stories.
           </p>
         </div>
+      </div>
 
-        <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
-          {visibleWorkItems.map((item) => (
-            <WorkCard key={item.title} item={item} />
-          ))}
+      <div className="mx-auto mt-12 w-full max-w-[1100px] px-4 sm:px-6 lg:px-0">
+        <div
+          ref={viewportRef}
+          className="cursor-grab select-none overflow-hidden active:cursor-grabbing"
+          style={EDGE_MASK}
+          onMouseEnter={() => {
+            isHoveredRef.current = true;
+          }}
+          onMouseLeave={() => {
+            isHoveredRef.current = false;
+          }}
+          onWheel={handleWheel}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        >
+          <div
+            ref={trackRef}
+            className="flex w-max gap-6 will-change-transform"
+            style={{ transform: "translate3d(0,0,0)" }}
+          >
+            {[0, 1].map((loopIndex) => (
+              <div
+                key={`work-loop-${loopIndex}`}
+                ref={loopIndex === 0 ? firstLoopRef : null}
+                className="flex shrink-0 gap-6"
+              >
+                {WORK_ITEMS.map((item, cardIndex) => (
+                  <WorkCard key={`work-card-${loopIndex}-${cardIndex}`} item={item} />
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
