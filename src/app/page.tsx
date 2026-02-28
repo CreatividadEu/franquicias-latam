@@ -536,10 +536,10 @@ export default function HomePage() {
         />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 md:text-sm">
+            <p className="text-[14px] font-semibold uppercase tracking-[0.18em] text-slate-600 md:text-[17px]">
               CASOS DE ÉXITO · TOTTO X FRANQUICIAS LATAM
             </p>
-            <h2 className="mt-4 text-4xl font-semibold leading-[1.05] tracking-tight text-slate-900 sm:text-5xl md:mt-5 md:text-6xl">
+            <h2 className="mt-4 text-[1.9rem] font-semibold leading-[1.05] tracking-tight text-slate-900 sm:text-[2.55rem] md:mt-5 md:text-[3.2rem]">
               Totto: de 0 a 450 tiendas.
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
@@ -579,32 +579,18 @@ export default function HomePage() {
                     </svg>
                   </span>
                 </div>
+                <a
+                  href="#diagnostico"
+                  className="absolute bottom-6 left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-[#2860E7] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_40px_rgba(40,96,231,0.35)] transition-all hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-[0_18px_55px_rgba(40,96,231,0.42)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:bottom-7 md:px-7 md:py-3.5 md:text-base"
+                >
+                  <span>Quiero escalar mi negocio</span>
+                  <span aria-hidden="true">→</span>
+                </a>
               </div>
             </div>
           </div>
 
-          <div className="mb-10 mt-7 flex justify-center md:mb-12 md:mt-8">
-            <a
-              href="#diagnostico"
-              className="group inline-flex items-center gap-2 rounded-full bg-[#2860E7] px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_32px_rgba(40,96,231,0.2)] transition-all hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-md focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:px-7 md:py-3.5 md:text-base"
-            >
-              <span>Quiero escalar mi negocio</span>
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.22 4.47a.75.75 0 0 1 1.06 0l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 1 1-1.06-1.06l2.72-2.72H5.25a.75.75 0 0 1 0-1.5h7.69l-2.72-2.72a.75.75 0 0 1 0-1.06Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </a>
-          </div>
-
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-white/70 bg-white/60 shadow-[0_10px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+          <div className="mt-10 mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-white/70 bg-white/60 shadow-[0_10px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm md:mt-12">
             <div className="grid grid-cols-1 divide-y divide-slate-200/70 text-center sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               <div className="py-6 md:py-7">
                 <p className="text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">+450</p>
