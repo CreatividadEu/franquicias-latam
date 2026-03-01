@@ -1,9 +1,13 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { BookOpenCheck, GraduationCap, Handshake } from "lucide-react";
+import { BookOpenCheck, Download, GraduationCap, Handshake, PlayCircle } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { matchesFranchiseSlug } from "@/lib/franchiseSlug";
+import { ensureFranchiseLandingConfig } from "@/lib/franchiseLanding";
+import { formatCurrency } from "@/lib/utils";
+import { FranchiseAssist } from "@/components/franchise/FranchiseAssist";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const marqueeText = "✅ Franquicia Desarrollada x Franquicias LATAM";
@@ -13,181 +17,6 @@ const valueProps = [
   { icon: BookOpenCheck, label: "Know-How" },
   { icon: Handshake, label: "Acompanamiento" },
 ];
-
-type FranchiseMock = {
-  name: string;
-  heroDescription: string;
-  chatBubbles: string[];
-  suggestedQuestions: string[];
-  models: { name: string; description: string }[];
-  commercialTitle: string;
-  commercialDescription: string;
-  metrics: { label: string; value: string }[];
-  carouselItems: string[];
-};
-
-const FRANCHISE_MOCKS: Record<string, FranchiseMock> = {
-  subway: {
-    name: "Subway",
-    heroDescription:
-      "Descubre una oportunidad de franquicia con respaldo internacional, procesos claros y acompanamiento para crecer con estructura desde el inicio.",
-    chatBubbles: [
-      "Hola, soy tu asistente virtual de franquicias.",
-      "Subway combina marca global con operacion estandarizada.",
-      "Cuando quieras, te guio con la inversion y los siguientes pasos.",
-    ],
-    suggestedQuestions: [
-      "Cual es la inversion inicial?",
-      "Que incluye el soporte de apertura?",
-      "Cual es el tiempo estimado de retorno?",
-    ],
-    models: [
-      {
-        name: "Express",
-        description: "Formato agil para zonas de alto flujo con huella compacta.",
-      },
-      {
-        name: "Flagship",
-        description:
-          "Modelo completo para liderar presencia de marca en la ciudad.",
-      },
-    ],
-    commercialTitle: "Impulsa una franquicia con traccion comercial real",
-    commercialDescription:
-      "Subway ofrece una operacion probada, herramientas de marketing y acompanamiento de equipo experto para acelerar apertura, estandarizar procesos y sostener crecimiento en el tiempo.",
-    metrics: [
-      { label: "Inversion Total", value: "USD 180K - 260K" },
-      { label: "Fee de Entrada", value: "USD 35K" },
-      { label: "Regalias", value: "8% mensual" },
-      { label: "Payback", value: "24 - 36 meses" },
-    ],
-    carouselItems: ["Imagen 1", "Imagen 2", "Imagen 3", "Imagen 4"],
-  },
-  "burger-master": {
-    name: "Burger Master",
-    heroDescription:
-      "Una franquicia de comida rapida con operacion estandarizada, marca en crecimiento y soporte comercial para escalar en ubicaciones estrategicas.",
-    chatBubbles: [
-      "Hola, te acompano a evaluar Burger Master.",
-      "Este modelo se enfoca en alta rotacion y procesos simples.",
-      "Puedo ayudarte con inversion, tiempos y operacion.",
-    ],
-    suggestedQuestions: [
-      "Cuantos colaboradores necesito?",
-      "Cual es el ticket promedio estimado?",
-      "Que soporte de marketing incluye?",
-    ],
-    models: [
-      {
-        name: "Express",
-        description:
-          "Formato para patios de comida y locales de rapida implementacion.",
-      },
-      {
-        name: "Flagship",
-        description:
-          "Concepto completo para zonas premium de alto trafico peatonal.",
-      },
-    ],
-    commercialTitle: "Acelera ventas con una marca de consumo masivo",
-    commercialDescription:
-      "Burger Master integra manuales operativos, entrenamiento inicial y acompanamiento para mejorar rentabilidad desde la apertura.",
-    metrics: [
-      { label: "Inversion Total", value: "USD 150K - 230K" },
-      { label: "Fee de Entrada", value: "USD 28K" },
-      { label: "Regalias", value: "7% mensual" },
-      { label: "Payback", value: "20 - 30 meses" },
-    ],
-    carouselItems: ["Local 1", "Local 2", "Producto 1", "Producto 2"],
-  },
-  "coffee-lab": {
-    name: "Coffee Lab",
-    heroDescription:
-      "Franquicia premium de cafe de especialidad con experiencia de marca, foco en calidad y acompanamiento integral para operar con excelencia.",
-    chatBubbles: [
-      "Bienvenido, revisemos la franquicia Coffee Lab.",
-      "Tiene un enfoque premium con experiencia de cliente diferenciada.",
-      "Te comparto rangos de inversion y retorno estimado.",
-    ],
-    suggestedQuestions: [
-      "Que perfil de inversionista buscan?",
-      "Cuanto dura la capacitacion inicial?",
-      "Hay exclusividad territorial?",
-    ],
-    models: [
-      {
-        name: "Kiosk",
-        description:
-          "Modelo compacto para corporativos, universidades y centros comerciales.",
-      },
-      {
-        name: "Signature",
-        description:
-          "Formato completo con menu ampliado y experiencia de permanencia.",
-      },
-    ],
-    commercialTitle: "Conecta con el mercado premium de cafe",
-    commercialDescription:
-      "Coffee Lab combina estandarizacion, entrenamiento barista y herramientas de control para sostener calidad y crecimiento operativo.",
-    metrics: [
-      { label: "Inversion Total", value: "USD 120K - 210K" },
-      { label: "Fee de Entrada", value: "USD 22K" },
-      { label: "Regalias", value: "6% mensual" },
-      { label: "Payback", value: "18 - 28 meses" },
-    ],
-    carouselItems: ["Barra 1", "Barra 2", "Bebida 1", "Bebida 2"],
-  },
-  "green-bowl": {
-    name: "Green Bowl",
-    heroDescription:
-      "Concepto de alimentacion saludable con procesos simples, costos controlados y soporte continuo para una expansion eficiente.",
-    chatBubbles: [
-      "Hola, exploremos Green Bowl juntos.",
-      "Es una propuesta saludable con operacion ligera y rapida.",
-      "Te muestro un resumen comercial y financiero base.",
-    ],
-    suggestedQuestions: [
-      "Que margen operativo promedio manejan?",
-      "Cuanto tarda la apertura del local?",
-      "Incluye soporte en seleccion de ubicacion?",
-    ],
-    models: [
-      {
-        name: "Express",
-        description:
-          "Punto de venta agil para food courts y corredores de oficinas.",
-      },
-      {
-        name: "Flagship",
-        description:
-          "Modelo de experiencia completa con mayor capacidad y menu amplio.",
-      },
-    ],
-    commercialTitle: "Crece en el segmento healthy con una operacion ligera",
-    commercialDescription:
-      "Green Bowl brinda playbooks de apertura, acompanamiento comercial y soporte operativo para reducir fricciones en cada etapa.",
-    metrics: [
-      { label: "Inversion Total", value: "USD 95K - 170K" },
-      { label: "Fee de Entrada", value: "USD 18K" },
-      { label: "Regalias", value: "5% mensual" },
-      { label: "Payback", value: "16 - 24 meses" },
-    ],
-    carouselItems: ["Tienda 1", "Tienda 2", "Menu 1", "Menu 2"],
-  },
-};
-
-const FRANCHISE_MOCK_ALIASES: Record<string, FranchiseMock> = {
-  "mood-heladeria": FRANCHISE_MOCKS["green-bowl"],
-  "techhub-academy": FRANCHISE_MOCKS["coffee-lab"],
-  "bella-vita-spa": FRANCHISE_MOCKS["green-bowl"],
-  "fashion-box": FRANCHISE_MOCKS["burger-master"],
-  "cleanpro-services": FRANCHISE_MOCKS["green-bowl"],
-};
-
-const FRANCHISE_MOCKS_BY_SLUG: Record<string, FranchiseMock> = {
-  ...FRANCHISE_MOCKS,
-  ...FRANCHISE_MOCK_ALIASES,
-};
 
 function GlassPanel({
   className,
@@ -208,79 +37,185 @@ function GlassPanel({
   );
 }
 
-function PlaceholderBlock({
-  label,
-  className,
+function buildEmbedUrl(url: string) {
+  if (url.includes("youtube.com/watch")) {
+    const videoId = new URL(url).searchParams.get("v");
+    return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : url;
+  }
+
+  if (url.includes("youtu.be/")) {
+    const videoId = url.split("youtu.be/")[1]?.split("?")[0];
+    return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : url;
+  }
+
+  return url;
+}
+
+function HeroMedia({
+  imageUrl,
+  videoUrl,
+  showVideo,
+  name,
 }: {
-  label: string;
-  className?: string;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  showVideo: boolean;
+  name: string;
 }) {
+  if (showVideo && videoUrl) {
+    if (videoUrl.endsWith(".mp4")) {
+      return (
+        <div className="relative h-full min-h-[320px] overflow-hidden rounded-2xl">
+          <video
+            controls
+            playsInline
+            className="h-full w-full object-cover"
+            src={videoUrl}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative h-full min-h-[320px] overflow-hidden rounded-2xl">
+        <iframe
+          className="h-full w-full"
+          src={buildEmbedUrl(videoUrl)}
+          title={`Video de ${name}`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  if (imageUrl) {
+    return (
+      <div className="relative h-full min-h-[320px] overflow-hidden rounded-2xl bg-slate-100">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={cn(
-        "flex items-center justify-center rounded-xl border border-white/80 bg-gradient-to-br from-emerald-200/75 via-white to-sky-200/75 p-4 text-center text-sm font-medium text-slate-700",
-        className
-      )}
-    >
-      {label}
+    <div className="flex h-full min-h-[320px] items-center justify-center rounded-2xl border border-white/80 bg-gradient-to-br from-emerald-200/75 via-white to-sky-200/75">
+      <div className="text-center">
+        <PlayCircle className="mx-auto size-12 text-slate-700" />
+        <p className="mt-3 text-sm font-medium text-slate-700">
+          Media principal pendiente
+        </p>
+      </div>
     </div>
   );
 }
 
-function MiniChatMock({
-  data,
+function ContactPanel({
+  name,
+  contactEmail,
 }: {
-  data?: {
-    chatBubbles?: string[];
-    suggestedQuestions?: string[];
-  };
+  name: string;
+  contactEmail?: string | null;
 }) {
-  const { chatBubbles = [], suggestedQuestions = [] } = data || {};
   return (
     <GlassPanel className="h-full">
-      <CardContent className="flex h-full min-h-[360px] flex-col gap-4 p-5 sm:p-6">
-        <div className="space-y-1">
+      <CardContent className="flex h-full min-h-[360px] flex-col justify-between gap-5 p-5 sm:p-6">
+        <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
-            Chat embebido
+            Contacto directo
           </p>
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">
-            Mini Asistente de Franquicia
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+            Conecta con el equipo de {name}
           </h2>
+          <p className="text-sm leading-relaxed text-slate-600">
+            Activa una conversacion comercial y recibe detalles de inversion,
+            soporte, ubicaciones y siguientes pasos.
+          </p>
         </div>
 
-        <div className="flex flex-1 flex-col gap-2 rounded-xl border border-white/80 bg-white/80 p-3">
-          {chatBubbles.map((message) => (
-            <div
-              key={message}
-              className="max-w-[90%] rounded-2xl rounded-bl-md bg-slate-100 px-3 py-2 text-sm text-slate-700 shadow-sm"
-            >
-              {message}
-            </div>
-          ))}
-        </div>
+        <div className="space-y-3">
+          {contactEmail ? (
+            <p className="text-sm text-slate-600">
+              Correo de contacto:{" "}
+              <a
+                href={`mailto:${contactEmail}`}
+                className="font-medium text-blue-700 underline-offset-4 hover:underline"
+              >
+                {contactEmail}
+              </a>
+            </p>
+          ) : (
+            <p className="text-sm text-slate-600">
+              Nuestro equipo te ayudara a validar fit, inversion y tiempos de
+              apertura.
+            </p>
+          )}
 
-        <Input
-          disabled
-          placeholder="Escribe tu mensaje..."
-          className="border-slate-200 bg-white/85 text-slate-500 disabled:opacity-100"
-        />
-
-        <div className="flex flex-wrap gap-2">
-          {suggestedQuestions.map((question) => (
-            <Button
-              key={question}
-              disabled
-              size="sm"
-              variant="outline"
-              className="h-auto rounded-full border-slate-200 bg-white/90 px-3 py-1 text-xs text-slate-600 disabled:opacity-100"
-            >
-              {question}
-            </Button>
-          ))}
+          <Button asChild className="w-full rounded-xl bg-[#2860E7] hover:bg-[#1F52CC]">
+            <Link href="/quiz">Quiero esta franquicia</Link>
+          </Button>
         </div>
       </CardContent>
     </GlassPanel>
   );
+}
+
+async function getFranchiseBySlug(slug: string) {
+  const candidates = await prisma.franchise.findMany({
+    where: { active: true },
+    include: {
+      sector: true,
+      coverageCountries: {
+        include: {
+          country: true,
+        },
+      },
+      profile: true,
+      featureFlags: true,
+      botConfig: true,
+      botFaqs: {
+        where: { enabled: true },
+        orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+      },
+    },
+  });
+
+  const franchise = candidates.find((candidate) =>
+    matchesFranchiseSlug(candidate, slug)
+  );
+
+  if (!franchise) {
+    return null;
+  }
+
+  await ensureFranchiseLandingConfig(prisma, {
+    id: franchise.id,
+    name: franchise.name,
+    description: franchise.description,
+    logo: franchise.logo,
+    video: franchise.video,
+    investmentMin: franchise.investmentMin,
+    investmentMax: franchise.investmentMax,
+  });
+
+  return prisma.franchise.findUnique({
+    where: { id: franchise.id },
+    include: {
+      sector: true,
+      coverageCountries: {
+        include: {
+          country: true,
+        },
+      },
+      profile: true,
+      featureFlags: true,
+      botConfig: true,
+      botFaqs: {
+        where: { enabled: true },
+        orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+      },
+    },
+  });
 }
 
 export default async function FranchiseLandingPage({
@@ -289,13 +224,7 @@ export default async function FranchiseLandingPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const normalizedSlug = slug.toLowerCase();
-  const slugWithoutGeneratedSuffix = normalizedSlug
-    .replace(/-[a-z0-9]{8}$/, "")
-    .replace(/-\d+$/, "");
-  const franchise =
-    FRANCHISE_MOCKS_BY_SLUG[normalizedSlug] ??
-    FRANCHISE_MOCKS_BY_SLUG[slugWithoutGeneratedSuffix];
+  const franchise = await getFranchiseBySlug(slug.toLowerCase());
 
   if (!franchise) {
     return (
@@ -307,7 +236,7 @@ export default async function FranchiseLandingPage({
                 Franquicia no encontrada
               </h1>
               <p className="text-sm text-slate-600 sm:text-base">
-                No encontramos informacion mock para la franquicia solicitada.
+                No encontramos informacion para la franquicia solicitada.
               </p>
               <Button asChild>
                 <Link href="/quiz">Volver al quiz</Link>
@@ -320,6 +249,40 @@ export default async function FranchiseLandingPage({
   }
 
   const marqueeLoop: string[] = Array.from({ length: 8 }, () => marqueeText);
+  const profile = franchise.profile;
+  const featureFlags = franchise.featureFlags;
+  const botConfig = franchise.botConfig;
+
+  const headline = profile?.headline || `Bienvenidos a ${franchise.name}`;
+  const subheadline = profile?.subheadline || franchise.description;
+  const heroImageUrl = profile?.heroImageUrl || franchise.logo;
+  const heroVideoUrl = profile?.heroVideoUrl || franchise.video;
+  const galleryUrls = profile?.galleryUrls || [];
+  const coverageLabel =
+    profile?.countryCoverage ||
+    franchise.coverageCountries.map((item) => item.country.name).join(", ");
+  const metrics = [
+    {
+      label: "Inversion minima",
+      value: formatCurrency(
+        profile?.investmentMin ?? franchise.investmentMin
+      ),
+    },
+    {
+      label: "Inversion maxima",
+      value: formatCurrency(
+        profile?.investmentMax ?? franchise.investmentMax
+      ),
+    },
+    {
+      label: "Cobertura",
+      value: coverageLabel || "LATAM",
+    },
+    {
+      label: "Sector",
+      value: `${franchise.sector.emoji} ${franchise.sector.name}`,
+    },
+  ];
 
   return (
     <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top_left,#def7ec_0%,#edf6ff_45%,#f8fafc_100%)] px-4 py-8 sm:px-6 sm:py-10 lg:py-12">
@@ -327,11 +290,14 @@ export default async function FranchiseLandingPage({
         <section>
           <GlassPanel>
             <CardContent className="space-y-3 p-5 sm:p-7">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                Landing editable
+              </p>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-                Bienvenidos a {franchise.name}
+                {headline}
               </h1>
-              <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-                {franchise.heroDescription}
+              <p className="max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
+                {subheadline}
               </p>
             </CardContent>
           </GlassPanel>
@@ -340,13 +306,27 @@ export default async function FranchiseLandingPage({
         <section className="grid gap-4 md:grid-cols-2 md:items-stretch">
           <GlassPanel className="h-full">
             <CardContent className="h-full min-h-[360px] p-5 sm:p-6">
-              <PlaceholderBlock
-                label="Imagen principal de franquicia (placeholder)"
-                className="h-full min-h-[300px]"
+              <HeroMedia
+                imageUrl={heroImageUrl}
+                videoUrl={heroVideoUrl}
+                showVideo={Boolean(featureFlags?.showVideo)}
+                name={franchise.name}
               />
             </CardContent>
           </GlassPanel>
-          <MiniChatMock data={franchise} />
+
+          {featureFlags?.showBot && botConfig?.enabled ? (
+            <FranchiseAssist
+              franchiseId={franchise.id}
+              initialQuestions={franchise.botFaqs.slice(0, 3).map((faq) => faq.question)}
+              fallbackMessage={
+                botConfig.fallbackMessage ||
+                "No encontre una respuesta especifica para esa pregunta."
+              }
+            />
+          ) : (
+            <ContactPanel name={franchise.name} contactEmail={franchise.contactEmail} />
+          )}
         </section>
       </div>
 
@@ -355,7 +335,7 @@ export default async function FranchiseLandingPage({
           {[...marqueeLoop, ...marqueeLoop].map((item, index) => (
             <span
               key={`${item}-${index}`}
-              className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-medium whitespace-nowrap text-white sm:text-sm"
+              className="whitespace-nowrap rounded-full bg-slate-900 px-4 py-1.5 text-xs font-medium text-white sm:text-sm"
             >
               {item}
             </span>
@@ -364,135 +344,103 @@ export default async function FranchiseLandingPage({
       </section>
 
       <div className="mx-auto mt-6 w-full max-w-6xl space-y-6 sm:mt-8 sm:space-y-8">
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
-            Nuestros modelos de franquicia son los siguientes:
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {franchise.models.map((model) => (
-              <GlassPanel
-                key={model.name}
-                className="transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_28px_65px_-32px_rgba(15,23,42,0.55)]"
-              >
-                <CardContent className="space-y-3 p-5">
-                  <PlaceholderBlock
-                    label={`Imagen ${model.name}`}
-                    className="h-40"
-                  />
-                  <h3 className="text-lg font-semibold text-slate-900">
-                    {model.name}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-slate-600">
-                    {model.description}
+        {featureFlags?.showKpis && (
+          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {metrics.map((metric) => (
+              <GlassPanel key={metric.label}>
+                <CardContent className="space-y-2 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    {metric.label}
+                  </p>
+                  <p className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">
+                    {metric.value}
                   </p>
                 </CardContent>
               </GlassPanel>
             ))}
-          </div>
-        </section>
+          </section>
+        )}
 
-        <section>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {valueProps.map((item) => {
-              const Icon = item.icon;
-              return (
-                <GlassPanel key={item.label}>
-                  <CardContent className="flex flex-col items-center justify-center gap-2 p-5 text-center">
-                    <div className="rounded-xl border border-white/80 bg-emerald-100/75 p-2.5 text-emerald-700">
-                      <Icon className="size-5" />
+        {featureFlags?.showGallery && galleryUrls.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+              Galeria de la franquicia
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {galleryUrls.map((imageUrl, index) => (
+                <GlassPanel key={`${imageUrl}-${index}`}>
+                  <CardContent className="p-3">
+                    <div className="overflow-hidden rounded-xl bg-slate-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imageUrl}
+                        alt={`${franchise.name} galeria ${index + 1}`}
+                        className="h-56 w-full object-cover"
+                      />
                     </div>
-                    <p className="text-sm font-semibold text-slate-800">
-                      {item.label}
-                    </p>
                   </CardContent>
                 </GlassPanel>
-              );
-            })}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
-        <section className="grid gap-4 md:grid-cols-2 md:items-stretch">
-          <GlassPanel className="h-full">
-            <CardContent className="flex h-full flex-col justify-center p-5 sm:p-6">
-              <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-                {franchise.commercialTitle}
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-                {franchise.commercialDescription}
-              </p>
-            </CardContent>
-          </GlassPanel>
+        {featureFlags?.showTestimonials && (
+          <section>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {valueProps.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <GlassPanel key={item.label}>
+                    <CardContent className="flex flex-col items-center justify-center gap-2 p-5 text-center">
+                      <div className="rounded-xl border border-white/80 bg-emerald-100/75 p-2.5 text-emerald-700">
+                        <Icon className="size-5" />
+                      </div>
+                      <p className="text-sm font-semibold text-slate-800">
+                        {item.label}
+                      </p>
+                    </CardContent>
+                  </GlassPanel>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
-          <GlassPanel className="h-full">
-            <CardContent className="p-5 sm:p-6">
-              <h3 className="text-base font-semibold text-slate-900 sm:text-lg">
-                Metricas Comerciales y Financieras
-              </h3>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {franchise.metrics.map((metric) => (
-                  <div
-                    key={metric.label}
-                    className="rounded-xl border border-white/80 bg-white/85 p-3"
-                  >
-                    <p className="text-[11px] font-semibold tracking-[0.12em] text-slate-500 uppercase">
-                      {metric.label}
+        {(featureFlags?.showDownloads && profile?.brochureUrl) ||
+        featureFlags?.showContactForm ? (
+          <section className="grid gap-4 md:grid-cols-2">
+            {featureFlags?.showDownloads && profile?.brochureUrl && (
+              <GlassPanel>
+                <CardContent className="flex h-full flex-col justify-between gap-4 p-5 sm:p-6">
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                      Descargables
                     </p>
-                    <p className="mt-1 text-lg font-bold text-emerald-700 sm:text-xl">
-                      {metric.value}
+                    <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+                      Material comercial
+                    </h2>
+                    <p className="text-sm leading-relaxed text-slate-600">
+                      Descarga el brochure oficial y comparte el material con tu
+                      equipo comercial o socios.
                     </p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </GlassPanel>
-        </section>
+                  <Button asChild className="w-full rounded-xl bg-[#2860E7] hover:bg-[#1F52CC]">
+                    <a href={profile.brochureUrl} target="_blank" rel="noreferrer">
+                      <Download className="mr-2 size-4" />
+                      Descargar brochure
+                    </a>
+                  </Button>
+                </CardContent>
+              </GlassPanel>
+            )}
 
-        <section>
-          <GlassPanel>
-            <CardContent className="space-y-3 p-5 sm:p-6">
-              <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
-                Video de presentacion
-              </h2>
-              <div className="aspect-video w-full rounded-xl border border-white/80 bg-gradient-to-br from-slate-900/85 to-slate-700/85 p-4">
-                <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-white/45 text-center text-sm text-white/90">
-                  Placeholder para embed de YouTube
-                </div>
-              </div>
-            </CardContent>
-          </GlassPanel>
-        </section>
-
-        <section>
-          <GlassPanel>
-            <CardContent className="space-y-3 p-5 sm:p-6">
-              <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
-                Carousel de imagenes (placeholder)
-              </h2>
-              <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
-                {franchise.carouselItems.map((item) => (
-                  <div
-                    key={item}
-                    className="min-w-[72%] snap-start sm:min-w-[46%] lg:min-w-[24%]"
-                  >
-                    <PlaceholderBlock label={item} className="h-44" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </GlassPanel>
-        </section>
+            {featureFlags?.showContactForm && (
+              <ContactPanel name={franchise.name} contactEmail={franchise.contactEmail} />
+            )}
+          </section>
+        ) : null}
       </div>
-
-      <style>{`
-        @keyframes latam-marquee {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-50%);
-          }
-        }
-      `}</style>
     </main>
   );
 }
