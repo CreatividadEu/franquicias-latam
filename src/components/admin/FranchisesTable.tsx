@@ -28,6 +28,40 @@ interface FranchiseRow {
   active: boolean;
   sector: { id: string; name: string; emoji: string };
   coverageCountries: { country: { id: string; name: string; flag: string } }[];
+  profile: {
+    headline: string;
+    subheadline: string;
+    heroImageUrl: string | null;
+    heroVideoUrl: string | null;
+    galleryUrls: string[];
+    brochureUrl: string | null;
+    investmentMin: number | null;
+    investmentMax: number | null;
+    countryCoverage: string | null;
+  } | null;
+  featureFlags: {
+    showVideo: boolean;
+    showGallery: boolean;
+    showTestimonials: boolean;
+    showKpis: boolean;
+    showBot: boolean;
+    showDownloads: boolean;
+    showContactForm: boolean;
+    planTier: "BASIC" | "PLUS" | "PRO";
+  } | null;
+  botConfig: {
+    enabled: boolean;
+    systemInstructions: string;
+    fallbackMessage: string;
+    tone: string | null;
+  } | null;
+  botFaqs: {
+    id: string;
+    question: string;
+    answer: string;
+    priority: number;
+    enabled: boolean;
+  }[];
   _count: { matches: number };
 }
 
@@ -138,6 +172,54 @@ export function FranchisesTable({
         countryIds: editingFranchise.coverageCountries.map(
           (c) => c.country.id
         ),
+        profile: {
+          headline: editingFranchise.profile?.headline || editingFranchise.name,
+          subheadline:
+            editingFranchise.profile?.subheadline || editingFranchise.description,
+          heroImageUrl:
+            editingFranchise.profile?.heroImageUrl || editingFranchise.logo || "",
+          heroVideoUrl:
+            editingFranchise.profile?.heroVideoUrl || editingFranchise.video || "",
+          galleryUrls: editingFranchise.profile?.galleryUrls || [],
+          brochureUrl: editingFranchise.profile?.brochureUrl || "",
+          investmentMin:
+            editingFranchise.profile?.investmentMin !== null &&
+            editingFranchise.profile?.investmentMin !== undefined
+              ? String(editingFranchise.profile.investmentMin)
+              : String(editingFranchise.investmentMin),
+          investmentMax:
+            editingFranchise.profile?.investmentMax !== null &&
+            editingFranchise.profile?.investmentMax !== undefined
+              ? String(editingFranchise.profile.investmentMax)
+              : String(editingFranchise.investmentMax),
+          countryCoverage: editingFranchise.profile?.countryCoverage || "",
+        },
+        featureFlags: {
+          showVideo: editingFranchise.featureFlags?.showVideo || false,
+          showGallery: editingFranchise.featureFlags?.showGallery ?? true,
+          showTestimonials:
+            editingFranchise.featureFlags?.showTestimonials || false,
+          showKpis: editingFranchise.featureFlags?.showKpis ?? true,
+          showBot: editingFranchise.featureFlags?.showBot || false,
+          showDownloads: editingFranchise.featureFlags?.showDownloads || false,
+          showContactForm:
+            editingFranchise.featureFlags?.showContactForm ?? true,
+          planTier: editingFranchise.featureFlags?.planTier || "BASIC",
+        },
+        botConfig: {
+          enabled: editingFranchise.botConfig?.enabled || false,
+          systemInstructions:
+            editingFranchise.botConfig?.systemInstructions || "",
+          fallbackMessage: editingFranchise.botConfig?.fallbackMessage || "",
+          tone: editingFranchise.botConfig?.tone || "",
+          faqs: editingFranchise.botFaqs.map((faq) => ({
+            id: faq.id,
+            question: faq.question,
+            answer: faq.answer,
+            priority: faq.priority,
+            enabled: faq.enabled,
+          })),
+        },
       }
     : null;
 

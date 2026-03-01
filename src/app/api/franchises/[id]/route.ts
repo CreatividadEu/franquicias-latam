@@ -3,6 +3,23 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 import { validateCountryIds } from "@/lib/validation/countries";
+import {
+  ensureFranchiseLandingConfig,
+  syncFranchiseBotFaqs,
+  toGalleryUrls,
+} from "@/lib/franchiseLanding";
+
+const adminFranchiseInclude = {
+  sector: true,
+  coverageCountries: { include: { country: true } },
+  profile: true,
+  featureFlags: true,
+  botConfig: true,
+  botFaqs: {
+    orderBy: [{ priority: "desc" as const }, { createdAt: "asc" as const }],
+  },
+  _count: { select: { matches: true } },
+};
 
 // GET - Get franchise detail
 export async function GET(
@@ -24,18 +41,29 @@ export async function GET(
 
   const franchise = await prisma.franchise.findUnique({
     where: { id },
-    include: {
-      sector: true,
-      coverageCountries: { include: { country: true } },
-      _count: { select: { matches: true } },
-    },
+    include: adminFranchiseInclude,
   });
 
   if (!franchise) {
     return NextResponse.json({ error: "Franquicia no encontrada" }, { status: 404 });
   }
 
-  return NextResponse.json(franchise);
+  await ensureFranchiseLandingConfig(prisma, {
+    id: franchise.id,
+    name: franchise.name,
+    description: franchise.description,
+    logo: franchise.logo,
+    video: franchise.video,
+    investmentMin: franchise.investmentMin,
+    investmentMax: franchise.investmentMax,
+  });
+
+  const refreshedFranchise = await prisma.franchise.findUnique({
+    where: { id },
+    include: adminFranchiseInclude,
+  });
+
+  return NextResponse.json(refreshedFranchise);
 }
 
 // PATCH - Update franchise
@@ -70,7 +98,32 @@ export async function PATCH(
       featured,
       active,
       countryIds,
+      profile,
+      featureFlags,
+      botConfig,
     } = body;
+
+    const existingFranchise = await prisma.franchise.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        logo: true,
+        video: true,
+        investmentMin: true,
+        investmentMax: true,
+      },
+    });
+
+    if (!existingFranchise) {
+      return NextResponse.json(
+        { error: "Franquicia no encontrada" },
+        { status: 404 }
+      );
+    }
+
+    await ensureFranchiseLandingConfig(prisma, existingFranchise);
 
     // Build update data only with provided fields
     const updateData: Record<string, unknown> = {};
@@ -84,6 +137,27 @@ export async function PATCH(
     if (contactEmail !== undefined) updateData.contactEmail = contactEmail || null;
     if (featured !== undefined) updateData.featured = featured;
     if (active !== undefined) updateData.active = active;
+
+    if (profile !== undefined) {
+      if (profile.heroImageUrl !== undefined && logo === undefined) {
+        updateData.logo = profile.heroImageUrl || null;
+      }
+      if (profile.heroVideoUrl !== undefined && video === undefined) {
+        updateData.video = profile.heroVideoUrl || null;
+      }
+      if (profile.investmentMin !== undefined && investmentMin === undefined) {
+        updateData.investmentMin =
+          profile.investmentMin === "" || profile.investmentMin === null
+            ? null
+            : parseFloat(profile.investmentMin);
+      }
+      if (profile.investmentMax !== undefined && investmentMax === undefined) {
+        updateData.investmentMax =
+          profile.investmentMax === "" || profile.investmentMax === null
+            ? null
+            : parseFloat(profile.investmentMax);
+      }
+    }
 
     // If countryIds are provided, rebuild coverage
     if (countryIds !== undefined) {
@@ -112,13 +186,87 @@ export async function PATCH(
       }
     }
 
-    const franchise = await prisma.franchise.update({
+    await prisma.franchise.update({
       where: { id },
       data: updateData,
-      include: {
-        sector: true,
-        coverageCountries: { include: { country: true } },
-      },
+    });
+
+    if (profile !== undefined) {
+      const profileUpdate: Record<string, unknown> = {};
+
+      if (profile.headline !== undefined) profileUpdate.headline = profile.headline;
+      if (profile.subheadline !== undefined) {
+        profileUpdate.subheadline = profile.subheadline;
+      }
+      if (profile.heroImageUrl !== undefined) {
+        profileUpdate.heroImageUrl = profile.heroImageUrl || null;
+      }
+      if (profile.heroVideoUrl !== undefined) {
+        profileUpdate.heroVideoUrl = profile.heroVideoUrl || null;
+      }
+      if (profile.galleryUrls !== undefined) {
+        profileUpdate.galleryUrls = toGalleryUrls(profile.galleryUrls);
+      }
+      if (profile.brochureUrl !== undefined) {
+        profileUpdate.brochureUrl = profile.brochureUrl || null;
+      }
+      if (profile.investmentMin !== undefined) {
+        profileUpdate.investmentMin =
+          profile.investmentMin === "" || profile.investmentMin === null
+            ? null
+            : parseFloat(profile.investmentMin);
+      }
+      if (profile.investmentMax !== undefined) {
+        profileUpdate.investmentMax =
+          profile.investmentMax === "" || profile.investmentMax === null
+            ? null
+            : parseFloat(profile.investmentMax);
+      }
+      if (profile.countryCoverage !== undefined) {
+        profileUpdate.countryCoverage = profile.countryCoverage || null;
+      }
+
+      await prisma.franchiseProfile.update({
+        where: { franchiseId: id },
+        data: profileUpdate,
+      });
+    }
+
+    if (featureFlags !== undefined) {
+      await prisma.franchiseFeatureFlags.update({
+        where: { franchiseId: id },
+        data: {
+          showVideo: featureFlags.showVideo,
+          showGallery: featureFlags.showGallery,
+          showTestimonials: featureFlags.showTestimonials,
+          showKpis: featureFlags.showKpis,
+          showBot: featureFlags.showBot,
+          showDownloads: featureFlags.showDownloads,
+          showContactForm: featureFlags.showContactForm,
+          planTier: featureFlags.planTier || "BASIC",
+        },
+      });
+    }
+
+    if (botConfig !== undefined) {
+      await prisma.franchiseBotConfig.update({
+        where: { franchiseId: id },
+        data: {
+          enabled: Boolean(botConfig.enabled),
+          systemInstructions: botConfig.systemInstructions || "",
+          fallbackMessage: botConfig.fallbackMessage || "",
+          tone: botConfig.tone || null,
+        },
+      });
+
+      if (Array.isArray(botConfig.faqs)) {
+        await syncFranchiseBotFaqs(prisma, id, botConfig.faqs);
+      }
+    }
+
+    const franchise = await prisma.franchise.findUnique({
+      where: { id },
+      include: adminFranchiseInclude,
     });
 
     return NextResponse.json(franchise);
