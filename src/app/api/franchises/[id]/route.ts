@@ -48,7 +48,7 @@ export async function GET(
     return NextResponse.json({ error: "Franquicia no encontrada" }, { status: 404 });
   }
 
-  await ensureFranchiseLandingConfig(prisma, {
+  await ensureFranchiseLandingConfig({
     id: franchise.id,
     name: franchise.name,
     description: franchise.description,
@@ -98,10 +98,15 @@ export async function PATCH(
       featured,
       active,
       countryIds,
+      coverageCountryIds,
       profile,
       featureFlags,
       botConfig,
     } = body;
+
+    const resolvedCountryIds = Array.isArray(coverageCountryIds)
+      ? coverageCountryIds
+      : countryIds;
 
     const existingFranchise = await prisma.franchise.findUnique({
       where: { id },
@@ -123,7 +128,7 @@ export async function PATCH(
       );
     }
 
-    await ensureFranchiseLandingConfig(prisma, existingFranchise);
+    await ensureFranchiseLandingConfig(existingFranchise);
 
     // Build update data only with provided fields
     const updateData: Record<string, unknown> = {};
@@ -160,10 +165,10 @@ export async function PATCH(
     }
 
     // If countryIds are provided, rebuild coverage
-    if (countryIds !== undefined) {
+    if (resolvedCountryIds !== undefined) {
       // Validate country IDs
-      if (countryIds.length > 0) {
-        const validation = await validateCountryIds(countryIds, prisma);
+      if (resolvedCountryIds.length > 0) {
+        const validation = await validateCountryIds(resolvedCountryIds, prisma);
         if (!validation.valid) {
           return NextResponse.json(
             { error: `IDs de pais invalidos: ${validation.invalidIds.join(", ")}` },
@@ -176,9 +181,9 @@ export async function PATCH(
         where: { franchiseId: id },
       });
 
-      if (countryIds.length > 0) {
+      if (resolvedCountryIds.length > 0) {
         await prisma.franchiseCoverage.createMany({
-          data: countryIds.map((countryId: string) => ({
+          data: resolvedCountryIds.map((countryId: string) => ({
             franchiseId: id,
             countryId,
           })),

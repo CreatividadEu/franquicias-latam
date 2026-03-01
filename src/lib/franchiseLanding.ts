@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 type FranchiseSeedShape = {
   id: string;
@@ -123,7 +124,6 @@ export function buildDefaultFranchiseBotConfig() {
 }
 
 export async function ensureFranchiseLandingConfig(
-  prisma: PrismaClient,
   franchise: FranchiseSeedShape
 ) {
   await prisma.franchiseProfile.upsert({

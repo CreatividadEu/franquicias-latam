@@ -188,7 +188,7 @@ async function getFranchiseBySlug(slug: string) {
     return null;
   }
 
-  await ensureFranchiseLandingConfig(prisma, {
+  await ensureFranchiseLandingConfig({
     id: franchise.id,
     name: franchise.name,
     description: franchise.description,

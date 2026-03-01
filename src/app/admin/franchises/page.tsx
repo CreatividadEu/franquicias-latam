@@ -3,32 +3,87 @@
 import { useState, useEffect, useCallback } from "react";
 import { FranchisesTable } from "@/components/admin/FranchisesTable";
 
+interface AdminSectorOption {
+  id: string;
+  name: string;
+  emoji: string;
+}
+
+interface AdminCountryOption {
+  id: string;
+  name: string;
+  flag: string;
+  code: string;
+}
+
+type AdminFranchiseRow = Parameters<typeof FranchisesTable>[0]["franchises"][number];
+
+async function fetchJson<T>(
+  url: string,
+  init?: RequestInit,
+  fallbackIfEmpty?: T
+): Promise<T> {
+  const res = await fetch(url, init);
+  const text = await res.text();
+
+  if (!res.ok) {
+    throw new Error(`[${res.status}] ${url} -> ${text.slice(0, 300)}`);
+  }
+
+  if (!text) {
+    if (fallbackIfEmpty !== undefined) {
+      return fallbackIfEmpty;
+    }
+
+    throw new Error(`Empty JSON response from ${url}`);
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`Invalid JSON from ${url}: ${text.slice(0, 300)}`);
+  }
+}
+
 export default function FranchisesPage() {
-  const [franchises, setFranchises] = useState([]);
-  const [sectors, setSectors] = useState([]);
-  const [countries, setCountries] = useState([]);
+  const [franchises, setFranchises] = useState<AdminFranchiseRow[]>([]);
+  const [sectors, setSectors] = useState<AdminSectorOption[]>([]);
+  const [countries, setCountries] = useState<AdminCountryOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    try {
-      const [franchiseRes, sectorRes, countryRes] = await Promise.all([
-        fetch("/api/franchises"),
-        fetch("/api/sectors"),
-        fetch("/api/countries"),
-      ]);
+    setLoadError(null);
 
+    try {
       const [franchiseData, sectorData, countryData] = await Promise.all([
-        franchiseRes.json(),
-        sectorRes.json(),
-        countryRes.json(),
+        fetchJson<AdminFranchiseRow[]>("/api/franchises", undefined, []),
+        fetchJson<{ sectors: AdminSectorOption[] }>(
+          "/api/sectors",
+          undefined,
+          { sectors: [] }
+        ),
+        fetchJson<{ countries: AdminCountryOption[] }>(
+          "/api/countries",
+          undefined,
+          { countries: [] }
+        ),
       ]);
 
       setFranchises(franchiseData);
-      setSectors(sectorData);
-      setCountries(countryData);
-    } catch (error) {
-      console.error("Error loading data:", error);
+      setSectors(sectorData.sectors);
+      setCountries(countryData.countries);
+    } catch (err) {
+      console.error("Error loading data:", err);
+      setFranchises([]);
+      setSectors([]);
+      setCountries([]);
+      setLoadError(
+        err instanceof Error
+          ? err.message
+          : "No se pudieron cargar las franquicias."
+      );
     } finally {
       setLoading(false);
     }
@@ -65,6 +120,12 @@ export default function FranchisesPage() {
           Gestiona las franquicias disponibles
         </p>
       </div>
+
+      {loadError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {loadError}
+        </div>
+      )}
 
       <FranchisesTable
         franchises={franchises}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import type { SectorOption } from "@/types";
+import { fetchJsonSafely } from "@/lib/safeApiJson";
 import { cn } from "@/lib/utils";
 import {
   chatbotHelperTextClass,
@@ -39,9 +40,8 @@ export function SectorStep({ onSelect }: SectorStepProps) {
   const [selected, setSelected] = useState<string[]>([]);
 
   useEffect(() => {
-    fetch("/api/sectors")
-      .then((r) => r.json())
-      .then(setSectors)
+    fetchJsonSafely<{ sectors: SectorOption[] }>("/api/sectors")
+      .then((data) => setSectors(data.sectors))
       .catch(console.error);
   }, []);
 

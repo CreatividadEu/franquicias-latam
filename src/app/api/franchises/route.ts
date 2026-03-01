@@ -29,40 +29,55 @@ const adminFranchiseInclude = {
 
 // GET - List all franchises (admin)
 export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_token")?.value;
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_token")?.value;
 
-  if (!token) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    if (!token) {
+      return Response.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== "ADMIN") {
+      return Response.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const existingFranchises = await prisma.franchise.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        logo: true,
+        video: true,
+        investmentMin: true,
+        investmentMax: true,
+      },
+    });
+
+    for (const franchise of existingFranchises) {
+      try {
+        await ensureFranchiseLandingConfig(franchise);
+      } catch (error) {
+        console.error(
+          `GET /api/franchises: failed to ensure landing config for franchise ${franchise.id}`,
+          error
+        );
+      }
+    }
+
+    const franchises = await prisma.franchise.findMany({
+      orderBy: { createdAt: "desc" },
+      include: adminFranchiseInclude,
+    });
+
+    return Response.json(franchises);
+  } catch (error) {
+    console.error("GET /api/franchises failed:", error);
+    return Response.json(
+      { error: "Error al cargar las franquicias" },
+      { status: 500 }
+    );
   }
-
-  const payload = verifyToken(token);
-  if (!payload || payload.role !== "ADMIN") {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
-
-  const existingFranchises = await prisma.franchise.findMany({
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      logo: true,
-      video: true,
-      investmentMin: true,
-      investmentMax: true,
-    },
-  });
-
-  for (const franchise of existingFranchises) {
-    await ensureFranchiseLandingConfig(prisma, franchise);
-  }
-
-  const franchises = await prisma.franchise.findMany({
-    orderBy: { createdAt: "desc" },
-    include: adminFranchiseInclude,
-  });
-
-  return NextResponse.json(franchises);
 }
 
 // POST - Create a new franchise (admin)
@@ -93,10 +108,15 @@ export async function POST(request: NextRequest) {
       featured,
       active,
       countryIds,
+      coverageCountryIds,
       profile,
       featureFlags,
       botConfig,
     } = body;
+
+    const resolvedCountryIds = Array.isArray(coverageCountryIds)
+      ? coverageCountryIds
+      : countryIds;
 
     if (!name || !description || !sectorId || !investmentMin || !investmentMax) {
       return NextResponse.json(
@@ -106,8 +126,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate country IDs
-    if (countryIds && countryIds.length > 0) {
-      const validation = await validateCountryIds(countryIds, prisma);
+    if (resolvedCountryIds && resolvedCountryIds.length > 0) {
+      const validation = await validateCountryIds(resolvedCountryIds, prisma);
       if (!validation.valid) {
         return NextResponse.json(
           { error: `IDs de pais invalidos: ${validation.invalidIds.join(", ")}` },
@@ -229,7 +249,7 @@ export async function POST(request: NextRequest) {
             ),
         },
         coverageCountries: {
-          create: (countryIds || []).map((countryId: string) => ({
+          create: (resolvedCountryIds || []).map((countryId: string) => ({
             countryId,
           })),
         },

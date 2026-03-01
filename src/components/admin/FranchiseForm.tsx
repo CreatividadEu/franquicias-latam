@@ -1,7 +1,18 @@
 "use client";
 
-import { useState, useEffect, type ChangeEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type KeyboardEvent,
+} from "react";
+import { Check, ChevronDown, Search, X } from "lucide-react";
+import { Popover as PopoverPrimitive, Select as SelectPrimitive } from "radix-ui";
+import { z } from "zod";
 import { buildFranchiseSlug } from "@/lib/franchiseSlug";
+import { fetchJsonSafely } from "@/lib/safeApiJson";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -77,7 +88,7 @@ export interface FranchiseFormData {
   contactEmail: string;
   featured: boolean;
   active: boolean;
-  countryIds: string[];
+  coverageCountryIds: string[];
   profile: FranchiseProfileFormData;
   featureFlags: FranchiseFeatureFlagsFormData;
   botConfig: FranchiseBotConfigFormData;
@@ -94,49 +105,60 @@ interface FranchiseFormProps {
 
 type FormTab = "landing" | "features" | "bot" | "preview";
 
-const emptyForm: FranchiseFormData = {
-  name: "",
-  description: "",
-  logo: "",
-  video: "",
-  investmentMin: "",
-  investmentMax: "",
-  sectorId: "",
-  contactEmail: "",
-  featured: false,
-  active: true,
-  countryIds: [],
-  profile: {
-    headline: "",
-    subheadline: "",
-    heroImageUrl: "",
-    heroVideoUrl: "",
-    galleryUrls: [],
-    brochureUrl: "",
-    investmentMin: "",
-    investmentMax: "",
-    countryCoverage: "",
-  },
-  featureFlags: {
-    showVideo: false,
-    showGallery: true,
-    showTestimonials: false,
-    showKpis: true,
-    showBot: false,
-    showDownloads: false,
-    showContactForm: true,
-    planTier: "BASIC",
-  },
-  botConfig: {
-    enabled: false,
-    systemInstructions:
-      "Responde unicamente con la informacion cargada para esta franquicia. Si no tienes una respuesta, usa el mensaje de fallback.",
-    fallbackMessage:
-      "Puedo ayudarte con informacion general de esta franquicia. Si necesitas detalles especificos, deja tus datos y un asesor te contacta.",
-    tone: "consultivo",
-    faqs: [],
-  },
-};
+const franchiseFormSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(1, "Ingresa el nombre de la franquicia."),
+  description: z.string().trim().min(1, "Ingresa una descripcion."),
+  logo: z.string(),
+  video: z.string(),
+  investmentMin: z.string().trim().min(1, "Ingresa la inversion minima."),
+  investmentMax: z.string().trim().min(1, "Ingresa la inversion maxima."),
+  sectorId: z.string().min(1, "Selecciona un sector"),
+  contactEmail: z
+    .union([z.literal(""), z.string().email("Ingresa un email valido.")])
+    .default(""),
+  featured: z.boolean(),
+  active: z.boolean(),
+  coverageCountryIds: z
+    .array(z.string())
+    .min(1, "Selecciona al menos 1 pais"),
+  profile: z.object({
+    headline: z.string(),
+    subheadline: z.string(),
+    heroImageUrl: z.string(),
+    heroVideoUrl: z.string(),
+    galleryUrls: z.array(z.string()),
+    brochureUrl: z.string(),
+    investmentMin: z.string(),
+    investmentMax: z.string(),
+    countryCoverage: z.string(),
+  }),
+  featureFlags: z.object({
+    showVideo: z.boolean(),
+    showGallery: z.boolean(),
+    showTestimonials: z.boolean(),
+    showKpis: z.boolean(),
+    showBot: z.boolean(),
+    showDownloads: z.boolean(),
+    showContactForm: z.boolean(),
+    planTier: z.enum(["BASIC", "PLUS", "PRO"]),
+  }),
+  botConfig: z.object({
+    enabled: z.boolean(),
+    systemInstructions: z.string(),
+    fallbackMessage: z.string(),
+    tone: z.string(),
+    faqs: z.array(
+      z.object({
+        id: z.string().optional(),
+        question: z.string(),
+        answer: z.string(),
+        priority: z.number(),
+        enabled: z.boolean(),
+      })
+    ),
+  }),
+});
 
 const tabs: { id: FormTab; label: string }[] = [
   { id: "landing", label: "Landing" },
@@ -145,31 +167,226 @@ const tabs: { id: FormTab; label: string }[] = [
   { id: "preview", label: "Preview" },
 ];
 
+function createEmptyForm(): FranchiseFormData {
+  return {
+    name: "",
+    description: "",
+    logo: "",
+    video: "",
+    investmentMin: "",
+    investmentMax: "",
+    sectorId: "",
+    contactEmail: "",
+    featured: false,
+    active: true,
+    coverageCountryIds: [],
+    profile: {
+      headline: "",
+      subheadline: "",
+      heroImageUrl: "",
+      heroVideoUrl: "",
+      galleryUrls: [],
+      brochureUrl: "",
+      investmentMin: "",
+      investmentMax: "",
+      countryCoverage: "",
+    },
+    featureFlags: {
+      showVideo: false,
+      showGallery: true,
+      showTestimonials: false,
+      showKpis: true,
+      showBot: false,
+      showDownloads: false,
+      showContactForm: true,
+      planTier: "BASIC",
+    },
+    botConfig: {
+      enabled: false,
+      systemInstructions:
+        "Responde unicamente con la informacion cargada para esta franquicia. Si no tienes una respuesta, usa el mensaje de fallback.",
+      fallbackMessage:
+        "Puedo ayudarte con informacion general de esta franquicia. Si necesitas detalles especificos, deja tus datos y un asesor te contacta.",
+      tone: "consultivo",
+      faqs: [],
+    },
+  };
+}
+
+function cloneFormData(data?: FranchiseFormData | null): FranchiseFormData {
+  if (!data) {
+    return createEmptyForm();
+  }
+
+  return {
+    ...data,
+    coverageCountryIds: [...data.coverageCountryIds],
+    profile: {
+      ...data.profile,
+      galleryUrls: [...data.profile.galleryUrls],
+    },
+    featureFlags: {
+      ...data.featureFlags,
+    },
+    botConfig: {
+      ...data.botConfig,
+      faqs: data.botConfig.faqs.map((faq) => ({ ...faq })),
+    },
+  };
+}
+
 export function FranchiseForm({
   open,
   onClose,
   onSubmit,
   initialData,
-  sectors,
-  countries,
+  sectors: initialSectors,
+  countries: initialCountries,
 }: FranchiseFormProps) {
-  const [form, setForm] = useState<FranchiseFormData>(emptyForm);
+  const [form, setForm] = useState<FranchiseFormData>(() =>
+    cloneFormData(initialData)
+  );
   const [saving, setSaving] = useState(false);
   const [uploadingAsset, setUploadingAsset] = useState<"hero" | "gallery" | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState<FormTab>("landing");
+  const [availableSectors, setAvailableSectors] = useState<Sector[]>(initialSectors);
+  const [availableCountries, setAvailableCountries] =
+    useState<Country[]>(initialCountries);
+  const [loadingSectors, setLoadingSectors] = useState(false);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [optionsError, setOptionsError] = useState<string | null>(null);
+  const [countryPickerOpen, setCountryPickerOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
 
   const isEditing = !!initialData?.id;
   const previewHref =
     isEditing && form.id ? `/franquicia/${buildFranchiseSlug(form.name, form.id)}` : null;
 
   useEffect(() => {
-    setForm(initialData || emptyForm);
+    setAvailableSectors(initialSectors);
+  }, [initialSectors]);
+
+  useEffect(() => {
+    setAvailableCountries(initialCountries);
+  }, [initialCountries]);
+
+  useEffect(() => {
+    setForm(cloneFormData(initialData));
     setError(null);
+    setFieldErrors({});
     setActiveTab("landing");
+    setCountryPickerOpen(false);
+    setCountrySearch("");
   }, [initialData, open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadOptions() {
+      setOptionsError(null);
+      setLoadingSectors(true);
+      setLoadingCountries(true);
+
+      const [sectorResult, countryResult] = await Promise.allSettled([
+        fetchJsonSafely<{ sectors: Sector[] }>("/api/sectors"),
+        fetchJsonSafely<{ countries: Country[] }>("/api/countries"),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      let hasError = false;
+
+      if (sectorResult.status === "fulfilled") {
+        setAvailableSectors(sectorResult.value.sectors);
+      } else {
+        hasError = true;
+      }
+
+      if (countryResult.status === "fulfilled") {
+        setAvailableCountries(countryResult.value.countries);
+      } else {
+        hasError = true;
+      }
+
+      setLoadingSectors(false);
+      setLoadingCountries(false);
+      setOptionsError(
+        hasError
+          ? "No se pudieron actualizar sectores o paises. Usa la informacion cargada."
+          : null
+      );
+    }
+
+    void loadOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!countryPickerOpen) {
+      setCountrySearch("");
+    }
+  }, [countryPickerOpen]);
+
+  const selectedCountries = useMemo(() => {
+    const orderMap = new Map(
+      form.coverageCountryIds.map((countryId, index) => [countryId, index])
+    );
+
+    return availableCountries
+      .filter((country) => orderMap.has(country.id))
+      .sort(
+        (a, b) =>
+          (orderMap.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+          (orderMap.get(b.id) ?? Number.MAX_SAFE_INTEGER)
+      );
+  }, [availableCountries, form.coverageCountryIds]);
+
+  const filteredCountries = useMemo(() => {
+    const query = countrySearch.trim().toLowerCase();
+    if (!query) {
+      return availableCountries;
+    }
+
+    return availableCountries.filter((country) =>
+      `${country.name} ${country.code}`.toLowerCase().includes(query)
+    );
+  }, [availableCountries, countrySearch]);
+
+  const clearFieldError = (field: string) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) {
+        return prev;
+      }
+
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const setRootField = <K extends keyof FranchiseFormData>(
+    key: K,
+    value: FranchiseFormData[K]
+  ) => {
+    clearFieldError(String(key));
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
   const setProfileField = <K extends keyof FranchiseProfileFormData>(
     key: K,
@@ -210,13 +427,29 @@ export function FranchiseForm({
     }));
   };
 
-  const toggleCountry = (countryId: string) => {
+  const toggleCoverageCountry = (countryId: string) => {
+    clearFieldError("coverageCountryIds");
     setForm((prev) => ({
       ...prev,
-      countryIds: prev.countryIds.includes(countryId)
-        ? prev.countryIds.filter((id) => id !== countryId)
-        : [...prev.countryIds, countryId],
+      coverageCountryIds: prev.coverageCountryIds.includes(countryId)
+        ? prev.coverageCountryIds.filter((id) => id !== countryId)
+        : [...prev.coverageCountryIds, countryId],
     }));
+  };
+
+  const removeCoverageCountry = (countryId: string) => {
+    clearFieldError("coverageCountryIds");
+    setForm((prev) => ({
+      ...prev,
+      coverageCountryIds: prev.coverageCountryIds.filter((id) => id !== countryId),
+    }));
+  };
+
+  const handleCountryTriggerKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      setCountryPickerOpen((prev) => !prev);
+    }
   };
 
   const uploadSingleImage = async (file: File) => {
@@ -325,31 +558,53 @@ export function FranchiseForm({
     e.preventDefault();
     setError(null);
 
-    if (!form.name || !form.description || !form.sectorId) {
-      setError("Por favor completa nombre, descripcion y sector.");
+    const validation = franchiseFormSchema.safeParse(form);
+    if (!validation.success) {
+      const nextErrors: Record<string, string> = {};
+
+      for (const issue of validation.error.issues) {
+        const key = issue.path.join(".") || "form";
+        if (!nextErrors[key]) {
+          nextErrors[key] = issue.message;
+        }
+      }
+
+      setFieldErrors(nextErrors);
       setActiveTab("landing");
+      setError(nextErrors.form || "Revisa los campos obligatorios.");
       return;
     }
 
-    if (!form.investmentMin || !form.investmentMax) {
-      setError("Por favor indica el rango de inversion.");
+    const parsedInvestmentMin = Number(form.investmentMin);
+    const parsedInvestmentMax = Number(form.investmentMax);
+
+    if (
+      !Number.isFinite(parsedInvestmentMin) ||
+      !Number.isFinite(parsedInvestmentMax)
+    ) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        investmentMin: "Usa valores numericos validos.",
+        investmentMax: "Usa valores numericos validos.",
+      }));
       setActiveTab("landing");
+      setError("Usa valores numericos validos para la inversion.");
       return;
     }
 
-    if (parseFloat(form.investmentMin) >= parseFloat(form.investmentMax)) {
+    if (parsedInvestmentMin >= parsedInvestmentMax) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        investmentMin: "La inversion minima debe ser menor que la maxima.",
+        investmentMax: "La inversion maxima debe ser mayor que la minima.",
+      }));
+      setActiveTab("landing");
       setError("La inversion minima debe ser menor que la maxima.");
-      setActiveTab("landing");
-      return;
-    }
-
-    if (form.countryIds.length === 0) {
-      setError("Selecciona al menos un pais de cobertura.");
-      setActiveTab("landing");
       return;
     }
 
     setSaving(true);
+
     try {
       await onSubmit({
         ...form,
@@ -365,8 +620,15 @@ export function FranchiseForm({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto">
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          onClose();
+        }
+      }}
+    >
+      <DialogContent className="max-w-5xl max-h-[92vh] overflow-y-auto overflow-x-visible">
         <DialogHeader>
           <DialogTitle className="text-xl">
             {isEditing ? "Editar Franquicia" : "Nueva Franquicia"}
@@ -406,40 +668,92 @@ export function FranchiseForm({
                     value={form.name}
                     onChange={(e) => {
                       const value = e.target.value;
+                      clearFieldError("name");
                       setForm((prev) => ({
                         ...prev,
                         name: value,
                         profile: {
                           ...prev.profile,
                           headline:
-                            prev.profile.headline === prev.name ? value : prev.profile.headline,
+                            prev.profile.headline === prev.name
+                              ? value
+                              : prev.profile.headline,
                         },
                       }));
                     }}
                     placeholder="Ej: Subway Colombia"
                     className="rounded-lg"
                   />
+                  {fieldErrors.name && (
+                    <p className="text-xs text-red-600">{fieldErrors.name}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-gray-700">Sector *</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {sectors.map((sector) => (
-                      <button
-                        key={sector.id}
-                        type="button"
-                        onClick={() => setForm({ ...form, sectorId: sector.id })}
-                        className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition-all ${
-                          form.sectorId === sector.id
-                            ? "border-blue-500 bg-blue-50 text-blue-700 ring-1 ring-blue-500"
-                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                        }`}
+                  <SelectPrimitive.Root
+                    value={form.sectorId}
+                    onValueChange={(value) => setRootField("sectorId", value)}
+                    disabled={loadingSectors}
+                  >
+                    <SelectPrimitive.Trigger
+                      className={cn(
+                        "flex h-11 w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 text-left text-sm outline-none transition-all data-[placeholder]:text-gray-400",
+                        fieldErrors.sectorId &&
+                          "border-red-300 ring-1 ring-red-200 focus:border-red-400"
+                      )}
+                      aria-label="Sector"
+                    >
+                      <SelectPrimitive.Value
+                        placeholder={
+                          loadingSectors
+                            ? "Cargando sectores..."
+                            : "Selecciona un sector"
+                        }
+                      />
+                      <SelectPrimitive.Icon asChild>
+                        <ChevronDown className="h-4 w-4 text-gray-500" />
+                      </SelectPrimitive.Icon>
+                    </SelectPrimitive.Trigger>
+
+                    <SelectPrimitive.Portal>
+                      <SelectPrimitive.Content
+                        position="popper"
+                        sideOffset={8}
+                        className="z-[100] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl"
                       >
-                        <span>{sector.emoji}</span>
-                        <span>{sector.name}</span>
-                      </button>
-                    ))}
-                  </div>
+                        <SelectPrimitive.Viewport className="p-1">
+                          {availableSectors.length === 0 ? (
+                            <div className="px-3 py-2 text-sm text-gray-500">
+                              No hay sectores disponibles.
+                            </div>
+                          ) : (
+                            availableSectors.map((sector) => (
+                              <SelectPrimitive.Item
+                                key={sector.id}
+                                value={String(sector.id)}
+                                className="relative flex cursor-pointer select-none items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-gray-700 outline-none hover:bg-gray-50 data-[highlighted]:bg-blue-50 data-[highlighted]:text-blue-700"
+                              >
+                                <span className="pr-5">{sector.emoji}</span>
+                                <SelectPrimitive.ItemText>
+                                  {sector.name}
+                                </SelectPrimitive.ItemText>
+                                <SelectPrimitive.ItemIndicator className="absolute right-3">
+                                  <Check className="h-4 w-4" />
+                                </SelectPrimitive.ItemIndicator>
+                              </SelectPrimitive.Item>
+                            ))
+                          )}
+                        </SelectPrimitive.Viewport>
+                      </SelectPrimitive.Content>
+                    </SelectPrimitive.Portal>
+                  </SelectPrimitive.Root>
+                  {fieldErrors.sectorId && (
+                    <p className="text-xs text-red-600">{fieldErrors.sectorId}</p>
+                  )}
+                  {optionsError && (
+                    <p className="text-xs text-amber-600">{optionsError}</p>
+                  )}
                 </div>
               </div>
 
@@ -447,11 +761,17 @@ export function FranchiseForm({
                 <label className="text-sm font-medium text-gray-700">Descripcion *</label>
                 <textarea
                   value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  onChange={(e) => {
+                    clearFieldError("description");
+                    setRootField("description", e.target.value);
+                  }}
                   placeholder="Describe la franquicia..."
                   rows={3}
                   className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                {fieldErrors.description && (
+                  <p className="text-xs text-red-600">{fieldErrors.description}</p>
+                )}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -464,6 +784,7 @@ export function FranchiseForm({
                     value={form.investmentMin}
                     onChange={(e) => {
                       const value = e.target.value;
+                      clearFieldError("investmentMin");
                       setForm((prev) => ({
                         ...prev,
                         investmentMin: value,
@@ -476,6 +797,9 @@ export function FranchiseForm({
                     placeholder="50000"
                     className="rounded-lg"
                   />
+                  {fieldErrors.investmentMin && (
+                    <p className="text-xs text-red-600">{fieldErrors.investmentMin}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-gray-700">
@@ -486,6 +810,7 @@ export function FranchiseForm({
                     value={form.investmentMax}
                     onChange={(e) => {
                       const value = e.target.value;
+                      clearFieldError("investmentMax");
                       setForm((prev) => ({
                         ...prev,
                         investmentMax: value,
@@ -498,6 +823,9 @@ export function FranchiseForm({
                     placeholder="100000"
                     className="rounded-lg"
                   />
+                  {fieldErrors.investmentMax && (
+                    <p className="text-xs text-red-600">{fieldErrors.investmentMax}</p>
+                  )}
                 </div>
               </div>
 
@@ -505,23 +833,127 @@ export function FranchiseForm({
                 <label className="text-sm font-medium text-gray-700">
                   Paises de Cobertura *
                 </label>
-                <div className="flex flex-wrap gap-2">
-                  {countries.map((country) => (
-                    <button
-                      key={country.id}
-                      type="button"
-                      onClick={() => toggleCountry(country.id)}
-                      className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-all ${
-                        form.countryIds.includes(country.id)
-                          ? "border-blue-500 bg-blue-50 text-blue-700 ring-1 ring-blue-500"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                      }`}
+                <PopoverPrimitive.Root
+                  open={countryPickerOpen}
+                  onOpenChange={setCountryPickerOpen}
+                >
+                  <PopoverPrimitive.Trigger asChild>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={handleCountryTriggerKeyDown}
+                      className={cn(
+                        "min-h-11 w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 outline-none transition-all focus-visible:ring-2 focus-visible:ring-blue-500",
+                        fieldErrors.coverageCountryIds &&
+                          "border-red-300 ring-1 ring-red-200"
+                      )}
                     >
-                      <span>{country.flag}</span>
-                      <span>{country.name}</span>
-                    </button>
-                  ))}
-                </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-h-6 flex-1 flex-wrap gap-2">
+                          {selectedCountries.length === 0 ? (
+                            <span className="text-sm text-gray-400">
+                              {loadingCountries
+                                ? "Cargando paises..."
+                                : "Selecciona uno o mas paises"}
+                            </span>
+                          ) : (
+                            selectedCountries.map((country) => (
+                              <span
+                                key={country.id}
+                                className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
+                              >
+                                <span>{country.flag}</span>
+                                <span>{country.name}</span>
+                                <button
+                                  type="button"
+                                  onMouseDown={(event) => event.preventDefault()}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    removeCoverageCountry(country.id);
+                                  }}
+                                  className="rounded-full p-0.5 text-blue-700/80 hover:bg-blue-100 hover:text-blue-800"
+                                  aria-label={`Eliminar ${country.name}`}
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </span>
+                            ))
+                          )}
+                        </div>
+                        <ChevronDown className="h-4 w-4 shrink-0 text-gray-500" />
+                      </div>
+                    </div>
+                  </PopoverPrimitive.Trigger>
+
+                  <PopoverPrimitive.Portal>
+                    <PopoverPrimitive.Content
+                      align="start"
+                      sideOffset={8}
+                      className="z-[100] w-[var(--radix-popover-trigger-width)] min-w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-xl"
+                    >
+                      <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2">
+                        <Search className="h-4 w-4 text-gray-400" />
+                        <input
+                          value={countrySearch}
+                          onChange={(e) => setCountrySearch(e.target.value)}
+                          placeholder="Buscar pais..."
+                          className="w-full border-0 bg-transparent text-sm outline-none placeholder:text-gray-400"
+                        />
+                      </div>
+
+                      <div className="mt-3 max-h-72 space-y-1 overflow-y-auto pr-1">
+                        {filteredCountries.length === 0 ? (
+                          <div className="rounded-lg px-3 py-2 text-sm text-gray-500">
+                            No encontramos paises con esa busqueda.
+                          </div>
+                        ) : (
+                          filteredCountries.map((country) => {
+                            const isSelected = form.coverageCountryIds.includes(
+                              country.id
+                            );
+
+                            return (
+                              <button
+                                key={country.id}
+                                type="button"
+                                onClick={() => toggleCoverageCountry(country.id)}
+                                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                              >
+                                <span
+                                  className={cn(
+                                    "flex h-5 w-5 shrink-0 items-center justify-center rounded border",
+                                    isSelected
+                                      ? "border-blue-600 bg-blue-600 text-white"
+                                      : "border-gray-300 bg-white text-transparent"
+                                  )}
+                                >
+                                  <Check className="h-3.5 w-3.5" />
+                                </span>
+                                <span className="text-base leading-none">
+                                  {country.flag}
+                                </span>
+                                <span className="min-w-0 flex-1 truncate">
+                                  {country.name}
+                                </span>
+                                <span className="text-xs uppercase text-gray-400">
+                                  {country.code}
+                                </span>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    </PopoverPrimitive.Content>
+                  </PopoverPrimitive.Portal>
+                </PopoverPrimitive.Root>
+                {fieldErrors.coverageCountryIds && (
+                  <p className="text-xs text-red-600">
+                    {fieldErrors.coverageCountryIds}
+                  </p>
+                )}
+                {optionsError && (
+                  <p className="text-xs text-amber-600">{optionsError}</p>
+                )}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -648,7 +1080,9 @@ export function FranchiseForm({
                         onClick={() =>
                           setProfileField(
                             "galleryUrls",
-                            form.profile.galleryUrls.filter((_, itemIndex) => itemIndex !== index)
+                            form.profile.galleryUrls.filter(
+                              (_, itemIndex) => itemIndex !== index
+                            )
                           )
                         }
                         className="rounded-lg"
@@ -689,10 +1123,13 @@ export function FranchiseForm({
                   <Input
                     type="email"
                     value={form.contactEmail}
-                    onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
+                    onChange={(e) => setRootField("contactEmail", e.target.value)}
                     placeholder="contacto@franquicia.com"
                     className="rounded-lg"
                   />
+                  {fieldErrors.contactEmail && (
+                    <p className="text-xs text-red-600">{fieldErrors.contactEmail}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -757,7 +1194,7 @@ export function FranchiseForm({
                   <input
                     type="checkbox"
                     checked={form.active}
-                    onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                    onChange={(e) => setRootField("active", e.target.checked)}
                     className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-700">Franquicia activa</span>
@@ -766,7 +1203,7 @@ export function FranchiseForm({
                   <input
                     type="checkbox"
                     checked={form.featured}
-                    onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+                    onChange={(e) => setRootField("featured", e.target.checked)}
                     className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-700">Card destacada en results</span>

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ChoiceCard } from "../ChoiceCard";
 import type { CountryOption } from "@/types";
+import { fetchJsonSafely } from "@/lib/safeApiJson";
 import { chatbotInputClass } from "../uiStyles";
 
 interface CountryStepProps {
@@ -34,9 +35,8 @@ export function CountryStep({ onSelect }: CountryStepProps) {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("/api/countries")
-      .then((r) => r.json())
-      .then(setCountries)
+    fetchJsonSafely<{ countries: CountryOption[] }>("/api/countries")
+      .then((data) => setCountries(data.countries))
       .catch(console.error);
   }, []);
 

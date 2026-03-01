@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await ensureFranchiseLandingConfig(prisma, {
+    await ensureFranchiseLandingConfig({
       id: franchise.id,
       name: franchise.name,
       description: franchise.description,

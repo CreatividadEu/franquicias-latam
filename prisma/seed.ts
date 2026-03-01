@@ -154,7 +154,7 @@ async function main() {
           data: franchisePayload,
         });
 
-    await ensureFranchiseLandingConfig(prisma, {
+    await ensureFranchiseLandingConfig({
       id: franchise.id,
       name: franchise.name,
       description: franchise.description,

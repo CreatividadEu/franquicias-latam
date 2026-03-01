@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { SectorOption } from "@/types";
+import { fetchJsonSafely } from "@/lib/safeApiJson";
 import { LatamDepthBackground } from "@/components/LatamDepthBackground";
 import { HomeHeroFranchise } from "@/components/home/HomeHeroFranchise";
 import { WorkCarousel } from "@/components/home/WorkCarousel";
@@ -92,9 +93,8 @@ export default function HomePage() {
   const [heroSelected, setHeroSelected] = useState<string[]>([]);
 
   useEffect(() => {
-    fetch("/api/sectors")
-      .then((r) => r.json())
-      .then(setHeroSectors)
+    fetchJsonSafely<{ sectors: SectorOption[] }>("/api/sectors")
+      .then((data) => setHeroSectors(data.sectors))
       .catch(console.error);
   }, []);
 

@@ -98,10 +98,16 @@ export function FranchisesTable({
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const handleCreate = async (data: FranchiseFormData) => {
+    const payload = {
+      ...data,
+      coverageCountryIds: data.coverageCountryIds,
+      countryIds: data.coverageCountryIds,
+    };
+
     const res = await fetch("/api/franchises", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
@@ -115,10 +121,16 @@ export function FranchisesTable({
   const handleEdit = async (data: FranchiseFormData) => {
     if (!editingFranchise) return;
 
+    const payload = {
+      ...data,
+      coverageCountryIds: data.coverageCountryIds,
+      countryIds: data.coverageCountryIds,
+    };
+
     const res = await fetch(`/api/franchises/${editingFranchise.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
@@ -169,7 +181,7 @@ export function FranchisesTable({
         contactEmail: editingFranchise.contactEmail || "",
         featured: editingFranchise.featured,
         active: editingFranchise.active,
-        countryIds: editingFranchise.coverageCountries.map(
+        coverageCountryIds: editingFranchise.coverageCountries.map(
           (c) => c.country.id
         ),
         profile: {

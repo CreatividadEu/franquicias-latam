@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import type { CountryOption } from "@/types";
+import { fetchJsonSafely } from "@/lib/safeApiJson";
 import {
   chatbotHelperTextClass,
   chatbotInputClass,
@@ -37,10 +38,9 @@ export function ContactStep({
 
   useEffect(() => {
     if (!countryId) return;
-    fetch("/api/countries")
-      .then((r) => r.json())
-      .then((countries: CountryOption[]) => {
-        const country = countries.find((c) => c.id === countryId);
+    fetchJsonSafely<{ countries: CountryOption[] }>("/api/countries")
+      .then((data) => {
+        const country = data.countries.find((c) => c.id === countryId);
         if (country) setPhoneCode(country.phoneCode);
       })
       .catch(console.error);
