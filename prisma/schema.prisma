@@ -28,6 +28,12 @@ enum ExperienceLevel {
   OTRO
 }
 
+enum FranchisePlanTier {
+  BASIC
+  PLUS
+  PRO
+}
+
 // ── Lookup Tables ──────────────────────────────────
 
 model Sector {
@@ -84,10 +90,77 @@ model Franchise {
   active            Boolean             @default(true)
   coverageCountries FranchiseCoverage[]
   matches           LeadFranchiseMatch[]
+  profile           FranchiseProfile?
+  featureFlags      FranchiseFeatureFlags?
+  botConfig         FranchiseBotConfig?
+  botFaqs           FranchiseBotFaq[]
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
   @@map("franchises")
+}
+
+model FranchiseProfile {
+  id              String    @id @default(uuid())
+  franchiseId      String    @unique
+  franchise        Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  headline         String    @default("")
+  subheadline      String    @default("")
+  heroImageUrl     String?
+  heroVideoUrl     String?
+  galleryUrls      String[]  @default([])
+  brochureUrl      String?
+  investmentMin    Float?
+  investmentMax    Float?
+  countryCoverage  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("franchise_profiles")
+}
+
+model FranchiseFeatureFlags {
+  franchiseId      String            @id
+  franchise        Franchise         @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  showVideo        Boolean           @default(false)
+  showGallery      Boolean           @default(true)
+  showTestimonials Boolean           @default(false)
+  showKpis         Boolean           @default(true)
+  showBot          Boolean           @default(false)
+  showDownloads    Boolean           @default(false)
+  showContactForm  Boolean           @default(true)
+  planTier         FranchisePlanTier @default(BASIC)
+  updatedAt        DateTime          @updatedAt
+
+  @@map("franchise_feature_flags")
+}
+
+model FranchiseBotConfig {
+  franchiseId         String    @id
+  franchise           Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  enabled             Boolean   @default(false)
+  systemInstructions  String    @default("")
+  fallbackMessage     String    @default("")
+  tone                String?
+  updatedAt           DateTime  @updatedAt
+
+  @@map("franchise_bot_configs")
+}
+
+model FranchiseBotFaq {
+  id          String    @id @default(uuid())
+  franchiseId String
+  franchise   Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  question    String
+  answer      String
+  priority    Int       @default(0)
+  enabled     Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([franchiseId])
+  @@index([franchiseId, priority])
+  @@map("franchise_bot_faqs")
 }
 
 model FranchiseCoverage {

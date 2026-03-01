@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { COUNTRIES } from "../src/lib/constants/countries";
+import { ensureFranchiseLandingConfig } from "../src/lib/franchiseLanding";
 
 const prisma = new PrismaClient();
 
@@ -152,6 +153,16 @@ async function main() {
       : await prisma.franchise.create({
           data: franchisePayload,
         });
+
+    await ensureFranchiseLandingConfig(prisma, {
+      id: franchise.id,
+      name: franchise.name,
+      description: franchise.description,
+      logo: franchise.logo,
+      video: franchise.video,
+      investmentMin: franchise.investmentMin,
+      investmentMax: franchise.investmentMax,
+    });
 
     const targetCountryIds = fd.countries
       .map((code) => countryMap[code])
