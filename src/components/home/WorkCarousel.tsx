@@ -22,24 +22,28 @@ const successfulFranchises: SuccessfulFranchise[] = [
     id: "mercado-libre",
     name: "Mercado Libre",
     stat: "28,9 Billones USD / año",
+    imageUrl: "/fotos_home/franquicias_mercado_libre.jpg",
     description: "La empresa más grande de LATAM.",
   },
   {
     id: "sodexo",
     name: "Sodexo",
     stat: "24 Billones EUR / año",
+    imageUrl: "/fotos_home/franquicias_sodexo.jpg",
     description: "Líder global de food services.",
   },
   {
     id: "totto",
     name: "Totto",
     stat: "450 Tiendas Globales",
-    description: "Líder global de food services.",
+    imageUrl: "/fotos_home/franquicias_totto.jpg",
+    description: "Marca líder global de mochilas.",
   },
   {
     id: "crem-helado",
     name: "Crem Helado",
     stat: "200 Mill. USD / año.",
+    imageUrl: "/fotos_home/franquicias_crem_helado.jpg",
     description: "Líder de helados regional.",
   },
   {
@@ -100,15 +104,17 @@ function WorkCard({ item }: { item: SuccessfulFranchise }) {
             onError={() => setImageFailed(true)}
           />
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-5 flex items-center justify-center px-4">
-          <span className="rounded-full border border-[rgba(255,255,255,0.2)] bg-[rgba(13,13,13,0.2)] px-4 py-2 text-sm text-white backdrop-blur-md">
+        <div className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 md:bottom-6">
+          <span className="inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/20 bg-slate-900/45 px-5 py-2.5 text-sm font-semibold tracking-tight text-white shadow-lg backdrop-blur-md md:px-6 md:py-3 md:text-base">
             {item.stat}
           </span>
         </div>
       </div>
 
-      <h3 className="mt-5 text-xl font-semibold text-slate-900">{item.name}</h3>
-      <p className="mt-2 max-w-[24ch] text-sm leading-snug text-slate-600">
+      <h3 className="mt-4 text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
+        {item.name}
+      </h3>
+      <p className="mt-2 max-w-[28rem] text-sm leading-relaxed text-slate-600 md:text-base">
         {item.description}
       </p>
     </article>
@@ -262,8 +268,8 @@ export function WorkCarousel() {
           <h2 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl lg:text-[3.2rem]">
             Casos de Éxito
           </h2>
-          <p className="mt-5 text-base text-slate-600 sm:text-lg">
-            A glimpse into our most impactful projects and success stories.
+          <p className="mt-5 text-base font-medium text-slate-600 sm:text-lg">
+            Algunos de nuestros Casos de Éxito más relevantes.
           </p>
         </div>
       </div>
