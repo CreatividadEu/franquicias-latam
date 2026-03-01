@@ -3,57 +3,50 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// Add real client images under `public/images/work/` and replace each `imageUrl` below.
-type WorkItem = {
-  title: string;
+type SuccessfulFranchise = {
+  id: string;
+  name: string;
+  stat: string;
   description: string;
-  imageUrl: string;
-  metric1: string;
-  metric2: string;
+  imageUrl?: string;
 };
 
-const WORK_ITEMS: WorkItem[] = [
+const successfulFranchises: SuccessfulFranchise[] = [
   {
-    title: "Café Central",
-    description: "Escalamiento comercial con expansión regional y mayor ticket promedio.",
-    imageUrl: "/images/work/1.jpg",
-    metric1: "85% Revenue Growth",
-    metric2: "70% Organic Traffic Growth",
+    id: "cafe-quindio",
+    name: "Café Quindío",
+    stat: "50 + Puntos Internacional",
+    description: "Marca líder de café colombiano.",
   },
   {
-    title: "Urban Retail Co.",
-    description: "Optimización de adquisición y estructura para abrir nuevas sedes.",
-    imageUrl: "/images/work/2.jpg",
-    metric1: "62% Lead-to-Sale Lift",
-    metric2: "48% CAC Reduction",
+    id: "mercado-libre",
+    name: "Mercado Libre",
+    stat: "28,9 Billones USD / año",
+    description: "La empresa más grande de LATAM.",
   },
   {
-    title: "Vital Health Group",
-    description: "Posicionamiento de marca y crecimiento sostenido en unidades activas.",
-    imageUrl: "/images/work/3.jpg",
-    metric1: "91% Retention Increase",
-    metric2: "54% Pipeline Growth",
+    id: "sodexo",
+    name: "Sodexo",
+    stat: "24 Billones EUR / año",
+    description: "Líder global de food services.",
   },
   {
-    title: "Norte Servicios",
-    description: "Sistema replicable con mejor control operativo y financiero.",
-    imageUrl: "/images/work/4.jpg",
-    metric1: "73% EBITDA Expansion",
-    metric2: "39% Time-to-Launch Cut",
+    id: "totto",
+    name: "Totto",
+    stat: "450 Tiendas Globales",
+    description: "Líder global de food services.",
   },
   {
-    title: "Andes Food Concepts",
-    description: "Campañas de performance para acelerar demanda en mercados clave.",
-    imageUrl: "/images/work/5.jpg",
-    metric1: "4.1x ROAS Improvement",
-    metric2: "66% Qualified Traffic Lift",
+    id: "crem-helado",
+    name: "Crem Helado",
+    stat: "200 Mill. USD / año.",
+    description: "Líder de helados regional.",
   },
   {
-    title: "Blue Horizon Clinics",
-    description: "Arquitectura de crecimiento para consolidar una red multiciudad.",
-    imageUrl: "/images/work/6.jpg",
-    metric1: "58% Conversion Uplift",
-    metric2: "44% Faster Expansion",
+    id: "andres-carne-de-res",
+    name: "Andrés Carne de Res",
+    stat: "17 PDV",
+    description: "Marca icónica de Colombia.",
   },
 ];
 
@@ -91,34 +84,33 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion;
 }
 
-function WorkCard({ item }: { item: WorkItem }) {
+function WorkCard({ item }: { item: SuccessfulFranchise }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
     <article className="w-[280px] shrink-0 sm:w-[320px] md:w-[344px] lg:w-[360px]">
       <div className="relative h-[429px] overflow-hidden rounded-[24px] bg-gradient-to-br from-slate-300 via-slate-200 to-slate-100">
-        {!imageFailed && (
+        {item.imageUrl && !imageFailed && (
           <Image
             src={item.imageUrl}
-            alt={item.title}
+            alt={item.name}
             fill
             sizes="(min-width: 1024px) 360px, (min-width: 768px) 344px, (min-width: 640px) 320px, 280px"
             className="object-cover"
             onError={() => setImageFailed(true)}
           />
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-5 flex flex-col items-center gap-2 px-4">
+        <div className="pointer-events-none absolute inset-x-0 bottom-5 flex items-center justify-center px-4">
           <span className="rounded-full border border-[rgba(255,255,255,0.2)] bg-[rgba(13,13,13,0.2)] px-4 py-2 text-sm text-white backdrop-blur-md">
-            {item.metric1}
-          </span>
-          <span className="rounded-full border border-[rgba(255,255,255,0.2)] bg-[rgba(13,13,13,0.2)] px-4 py-2 text-sm text-white backdrop-blur-md">
-            {item.metric2}
+            {item.stat}
           </span>
         </div>
       </div>
 
-      <h3 className="mt-5 text-xl font-semibold text-slate-900">{item.title}</h3>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
+      <h3 className="mt-5 text-xl font-semibold text-slate-900">{item.name}</h3>
+      <p className="mt-2 max-w-[24ch] text-sm leading-snug text-slate-600">
+        {item.description}
+      </p>
     </article>
   );
 }
@@ -268,7 +260,7 @@ export function WorkCarousel() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl lg:text-[3.2rem]">
-            Success You Can See
+            Casos de Éxito
           </h2>
           <p className="mt-5 text-base text-slate-600 sm:text-lg">
             A glimpse into our most impactful projects and success stories.
@@ -304,8 +296,8 @@ export function WorkCarousel() {
                 ref={loopIndex === 0 ? firstLoopRef : null}
                 className="flex shrink-0 gap-6"
               >
-                {WORK_ITEMS.map((item, cardIndex) => (
-                  <WorkCard key={`work-card-${loopIndex}-${cardIndex}`} item={item} />
+                {successfulFranchises.map((item, cardIndex) => (
+                  <WorkCard key={`work-card-${loopIndex}-${item.id}-${cardIndex}`} item={item} />
                 ))}
               </div>
             ))}
