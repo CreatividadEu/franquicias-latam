@@ -335,6 +335,7 @@ export function ExpressDiagnosisWidget({
   const confirmationTimerRef = useRef<number | null>(null);
   const startTimerRef = useRef<number | null>(null);
   const celebrationTimerRef = useRef<number | null>(null);
+  const questionTitleRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     return () => {
@@ -374,6 +375,23 @@ export function ExpressDiagnosisWidget({
   const visualStep = resultPayload ? TOTAL_STEPS : Math.min(currentStep + 1, TOTAL_STEPS);
   const progressPercentage = (visualStep / TOTAL_STEPS) * 100;
   const focusAreas = resultPayload ? getFocusAreas(resultPayload.answers) : [];
+
+  useEffect(() => {
+    if (!hasStarted || resultPayload || !activeQuestionId || isTransitioning) {
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      questionTitleRef.current?.focus();
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      questionTitleRef.current?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [activeQuestionId, hasStarted, isTransitioning, resultPayload]);
 
   const completeDiagnosis = (completeAnswers: CompleteDiagnosisAnswers) => {
     const payload = computePayload(completeAnswers);
@@ -595,7 +613,11 @@ export function ExpressDiagnosisWidget({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                   Pregunta actual
                 </p>
-                <p className="mt-1.5 text-base font-semibold text-slate-900 sm:text-lg">
+                <p
+                  ref={questionTitleRef}
+                  tabIndex={-1}
+                  className="mt-1.5 text-base font-semibold text-slate-900 outline-none sm:text-lg"
+                >
                   {QUESTION_PROMPTS[activeQuestionId]}
                 </p>
 
@@ -643,138 +665,152 @@ export function ExpressDiagnosisWidget({
       )}
 
       {resultPayload && (
-        <div className="relative mt-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
-          {showCelebration && (
-            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-16 overflow-hidden">
-              {Array.from({ length: 9 }).map((_, index) => (
+        <div className="mt-1 min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="relative rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+            {showCelebration && (
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 h-16 overflow-hidden"
+              >
+                {Array.from({ length: 9 }).map((_, index) => (
+                  <span
+                    key={`celebration-${index}`}
+                    className={`celebration-dot absolute h-1.5 w-1.5 rounded-full ${
+                      index % 3 === 0
+                        ? "bg-[#2860E7]/75"
+                        : index % 3 === 1
+                          ? "bg-emerald-400/80"
+                          : "bg-orange-400/80"
+                    }`}
+                    style={{
+                      left: `${10 + index * 9}%`,
+                      animationDelay: `${index * 0.05}s`,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+            <div className="flex items-start justify-between gap-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+                RESULTADO INSTANT&Aacute;NEO
+              </p>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="text-xs font-semibold text-slate-500 transition hover:text-slate-900"
+              >
+                Reiniciar
+              </button>
+            </div>
+
+            <div className="mt-3 flex items-end justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2860E7]">
+                  Tu score
+                </p>
+                <p className="text-4xl font-extrabold leading-none tracking-tight text-[#1f52cc] sm:text-[2.8rem]">
+                  {resultPayload.score}/100
+                </p>
+              </div>
+              <span className="rounded-full border border-[#2860E7]/20 bg-[#2860E7]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#1f52cc]">
+                Diagn&oacute;stico listo
+              </span>
+            </div>
+
+            <h4 className="mt-3 text-[25px] font-extrabold leading-tight tracking-tight text-slate-900 sm:text-[28px]">
+              {resultPayload.isFranchisable
+                ? "Listo para escalar, pero con ajustes."
+                : "Necesitas 2 ajustes clave para escalar."}
+            </h4>
+            <p className="mt-1.5 text-base text-slate-700">
+              Te decimos exactamente d&oacute;nde enfocar el esfuerzo para avanzar m&aacute;s
+              r&aacute;pido.
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-2.5">
+              {focusAreas.map((focus) => (
                 <span
-                  key={`celebration-${index}`}
-                  className={`celebration-dot absolute h-1.5 w-1.5 rounded-full ${
-                    index % 3 === 0
-                      ? "bg-[#2860E7]/75"
-                      : index % 3 === 1
-                        ? "bg-emerald-400/80"
-                        : "bg-orange-400/80"
-                  }`}
-                  style={{
-                    left: `${10 + index * 9}%`,
-                    animationDelay: `${index * 0.05}s`,
-                  }}
-                />
+                  key={focus}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800"
+                >
+                  {focus}
+                </span>
               ))}
             </div>
-          )}
-          <div className="flex items-start justify-between gap-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
-              RESULTADO INSTANT&Aacute;NEO
-            </p>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="text-xs font-semibold text-slate-500 transition hover:text-slate-900"
-            >
-              Reiniciar
-            </button>
-          </div>
 
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#2860E7]/20 bg-[#2860E7]/10 px-3 py-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2860E7]">
-              Score
-            </span>
-            <span className="text-lg font-bold leading-none text-[#1f52cc]">
-              {resultPayload.score}/100
-            </span>
-          </div>
-
-          <h4 className="mt-3 text-[26px] font-extrabold tracking-tight text-slate-900 sm:text-[28px]">
-            {resultPayload.isFranchisable
-              ? "Listo para escalar, pero con ajustes."
-              : "Necesitas 2 ajustes clave para escalar."}
-          </h4>
-          <p className="mt-1.5 text-base text-slate-700">
-            Te decimos exactamente d&oacute;nde enfocar el esfuerzo para avanzar m&aacute;s
-            r&aacute;pido.
-          </p>
-
-          <ul className="mt-4 space-y-2 text-base font-semibold text-slate-800">
-            {focusAreas.map((focus) => (
-              <li key={focus} className="flex items-start gap-2">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#2860E7]" />
-                <span>{focus}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white/80 p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-              SIGUIENTE PASO RECOMENDADO
-            </p>
-            <p className="mt-1 text-lg font-bold text-slate-900">
-              {compactProgramName(resultPayload.recommendedProgram.name)}
-            </p>
-            <p className="mt-1 text-sm text-slate-600">Plan + m&eacute;tricas + pr&oacute;ximos 14 d&iacute;as</p>
-          </div>
-
-          <div className="mt-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-              Qu&eacute; sigue
-            </p>
-            <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-semibold text-slate-700">
-              <span className="rounded-lg border border-slate-200 bg-white/80 px-2.5 py-2 text-center">
-                Diagn&oacute;stico
-              </span>
-              <span className="rounded-lg border border-slate-200 bg-white/80 px-2.5 py-2 text-center">
-                Plan acci&oacute;n
-              </span>
-              <span className="rounded-lg border border-slate-200 bg-white/80 px-2.5 py-2 text-center">
-                Implementaci&oacute;n
-              </span>
-            </div>
-          </div>
-
-          <a
-            href={CALENDLY_URL}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => setShowWhatsAppCapture(true)}
-            className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#2860E7] px-5 py-[0.95rem] text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-[1px] hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
-          >
-            Agendar siguiente paso
-          </a>
-          <p className="mt-2 text-center text-sm text-slate-600">Cupos limitados por cohorte.</p>
-
-          {showWhatsAppCapture && (
-            <div className="mt-4 animate-in fade-in duration-200 rounded-xl border border-slate-200 bg-white p-3">
-              <p className="text-sm font-semibold text-slate-900">
-                &iquest;Te enviamos el roadmap por WhatsApp?
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white/90 p-3.5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                SIGUIENTE PASO RECOMENDADO
               </p>
-              <input
-                type="tel"
-                value={whatsapp}
-                onChange={(event) => setWhatsapp(event.currentTarget.value)}
-                placeholder="+57..."
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-[#2860E7] focus:outline-none focus:ring-4 focus:ring-[rgba(40,96,231,0.14)]"
-              />
-              <label className="mt-3 flex items-center gap-2 text-xs text-slate-700">
+              <p className="mt-1 text-lg font-bold leading-snug text-slate-900">
+                {compactProgramName(resultPayload.recommendedProgram.name)}
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-600">
+                Plan + m&eacute;tricas + pr&oacute;ximos 14 d&iacute;as
+              </p>
+            </div>
+
+            <div className="mt-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                Qu&eacute; sigue
+              </p>
+              <div className="mt-2 grid grid-cols-3 gap-2 text-xs font-semibold text-slate-700">
+                <span className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-center">
+                  Diagn&oacute;stico
+                </span>
+                <span className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-center">
+                  Plan acci&oacute;n
+                </span>
+                <span className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-center">
+                  Implementaci&oacute;n
+                </span>
+              </div>
+            </div>
+
+            <a
+              href={CALENDLY_URL}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setShowWhatsAppCapture(true)}
+              className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#2860E7] px-5 py-[0.95rem] text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-[1px] hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
+            >
+              Agendar siguiente paso
+            </a>
+            <p className="mt-2 text-center text-sm text-slate-600">Cupos limitados por cohorte.</p>
+
+            {showWhatsAppCapture && (
+              <div className="mt-4 animate-in fade-in duration-200 rounded-xl border border-slate-200 bg-white p-3">
+                <p className="text-sm font-semibold text-slate-900">
+                  &iquest;Te enviamos el roadmap por WhatsApp?
+                </p>
                 <input
-                  type="checkbox"
-                  checked={wantsEmail}
-                  onChange={(event) => setWantsEmail(event.currentTarget.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-[#2860E7] focus:ring-[#2860E7]"
-                />
-                Tambi&eacute;n quiero recibirlo por email (opcional)
-              </label>
-              {wantsEmail && (
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.currentTarget.value)}
-                  placeholder="tu@email.com"
+                  type="tel"
+                  value={whatsapp}
+                  onChange={(event) => setWhatsapp(event.currentTarget.value)}
+                  placeholder="+57..."
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-[#2860E7] focus:outline-none focus:ring-4 focus:ring-[rgba(40,96,231,0.14)]"
                 />
-              )}
-            </div>
-          )}
+                <label className="mt-3 flex items-center gap-2 text-xs text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={wantsEmail}
+                    onChange={(event) => setWantsEmail(event.currentTarget.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-[#2860E7] focus:ring-[#2860E7]"
+                  />
+                  Tambi&eacute;n quiero recibirlo por email (opcional)
+                </label>
+                {wantsEmail && (
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.currentTarget.value)}
+                    placeholder="tu@email.com"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition focus:border-[#2860E7] focus:outline-none focus:ring-4 focus:ring-[rgba(40,96,231,0.14)]"
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
