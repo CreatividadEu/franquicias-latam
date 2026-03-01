@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminUser } from "@/lib/auth";
+import { ensureFranchiseStorageBucket } from "@/lib/supabaseAdmin";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,16 @@ const ALLOWED_MIME_TYPES: Record<string, string> = {
   "image/webp": "webp",
   "image/avif": "avif",
 };
+
+async function saveLocally(fileName: string, buffer: Buffer) {
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "franchises");
+  const filePath = path.join(uploadDir, fileName);
+
+  await mkdir(uploadDir, { recursive: true });
+  await writeFile(filePath, buffer);
+
+  return `/uploads/franchises/${fileName}`;
+}
 
 export async function POST(request: NextRequest) {
   const admin = await getAdminUser();
@@ -47,25 +58,33 @@ export async function POST(request: NextRequest) {
 
     const ext = ALLOWED_MIME_TYPES[rawFile.type];
     const fileName = `${Date.now()}-${randomUUID()}.${ext}`;
-    const uploadDir = path.join(
-      process.cwd(),
-      "public",
-      "uploads",
-      "franchises"
-    );
-    const filePath = path.join(uploadDir, fileName);
-
-    await mkdir(uploadDir, { recursive: true });
-
     const arrayBuffer = await rawFile.arrayBuffer();
-    await writeFile(filePath, Buffer.from(arrayBuffer));
+    const fileBuffer = Buffer.from(arrayBuffer);
+    const storage = await ensureFranchiseStorageBucket();
 
-    return NextResponse.json(
-      {
-        url: `/uploads/franchises/${fileName}`,
-      },
-      { status: 201 }
-    );
+    if (storage) {
+      const storagePath = `uploads/${fileName}`;
+      const { error: uploadError } = await storage.client.storage
+        .from(storage.bucket)
+        .upload(storagePath, fileBuffer, {
+          contentType: rawFile.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = storage.client.storage
+        .from(storage.bucket)
+        .getPublicUrl(storagePath);
+
+      return NextResponse.json({ url: data.publicUrl }, { status: 201 });
+    }
+
+    const localUrl = await saveLocally(fileName, fileBuffer);
+
+    return NextResponse.json({ url: localUrl }, { status: 201 });
   } catch (error) {
     console.error("Error uploading franchise image:", error);
     return NextResponse.json(
@@ -74,4 +93,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
