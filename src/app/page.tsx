@@ -79,14 +79,13 @@ export default function HomePage() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [hasRevealed, setHasRevealed] = useState(false);
   const [runFirstNudge, setRunFirstNudge] = useState(false);
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
     typeof window !== "undefined"
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
       : false
   );
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const tottoVideoRef = useRef<HTMLIFrameElement | null>(null);
-  const [tottoIsPlaying, setTottoIsPlaying] = useState(false);
 
   // Hero quiz embed
   const [heroSectors, setHeroSectors] = useState<SectorOption[]>([]);
@@ -170,101 +169,26 @@ export default function HomePage() {
     router.push(`/quiz?${params.toString()}`);
   };
 
-  const postTottoPlayerCommand = useCallback(
-    (func: string, args: unknown[] = []) => {
-      tottoVideoRef.current?.contentWindow?.postMessage(
-        JSON.stringify({
-          event: "command",
-          func,
-          args,
-        }),
-        "*"
-      );
-    },
-    []
-  );
-
-  const registerTottoPlayerEvents = useCallback(() => {
-    postTottoPlayerCommand("addEventListener", ["onStateChange"]);
-  }, [postTottoPlayerCommand]);
-
-  const handleTottoIframeLoad = useCallback(() => {
-    registerTottoPlayerEvents();
-    window.setTimeout(registerTottoPlayerEvents, 250);
-  }, [registerTottoPlayerEvents]);
-
-  const handleTottoPlayClick = useCallback(() => {
-    setTottoIsPlaying(true);
-    registerTottoPlayerEvents();
-    postTottoPlayerCommand("playVideo");
-  }, [postTottoPlayerCommand, registerTottoPlayerEvents]);
-
   useEffect(() => {
-    const handleTottoPlayerMessage = (event: MessageEvent) => {
-      if (
-        typeof event.origin !== "string" ||
-        (!event.origin.includes("youtube.com") &&
-          !event.origin.includes("youtube-nocookie.com"))
-      ) {
-        return;
-      }
+    if (!isVideoOpen) {
+      return;
+    }
 
-      let payload = event.data;
-
-      if (typeof payload === "string") {
-        try {
-          payload = JSON.parse(payload);
-        } catch {
-          return;
-        }
-      }
-
-      if (!payload || typeof payload !== "object") {
-        return;
-      }
-
-      const message = payload as {
-        event?: string;
-        info?: unknown;
-      };
-
-      let nextState: number | null = null;
-
-      if (
-        message.event === "onStateChange" &&
-        typeof message.info === "number"
-      ) {
-        nextState = message.info;
-      }
-
-      if (
-        nextState === null &&
-        message.event === "infoDelivery" &&
-        message.info &&
-        typeof message.info === "object" &&
-        "playerState" in message.info
-      ) {
-        const info = message.info as {
-          playerState?: unknown;
-        };
-
-        if (typeof info.playerState === "number") {
-          nextState = info.playerState;
-        }
-      }
-
-      if (nextState === 1) {
-        setTottoIsPlaying(true);
-      }
-
-      if (nextState === 0 || nextState === 2 || nextState === 5) {
-        setTottoIsPlaying(false);
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsVideoOpen(false);
       }
     };
 
-    window.addEventListener("message", handleTottoPlayerMessage);
-    return () => window.removeEventListener("message", handleTottoPlayerMessage);
-  }, []);
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isVideoOpen]);
 
   const toggleMobileMenu = useCallback(() => {
     setMobileMenuOpen((prev) => {
@@ -648,7 +572,7 @@ export default function HomePage() {
           <div className="relative mx-auto mt-10 w-full max-w-4xl md:mt-12">
             <div
               className={`pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md transition-opacity duration-200 md:left-6 md:text-sm ${
-                tottoIsPlaying ? "opacity-0" : "opacity-100"
+                isVideoOpen ? "opacity-0" : "opacity-100"
               }`}
             >
               Founder TOTTO
@@ -656,7 +580,7 @@ export default function HomePage() {
 
             <div
               className={`pointer-events-none absolute right-4 top-10 z-10 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md transition-opacity duration-200 md:right-6 md:top-12 md:text-sm ${
-                tottoIsPlaying ? "opacity-0" : "opacity-100"
+                isVideoOpen ? "opacity-0" : "opacity-100"
               }`}
             >
               45 países · +US$200M/año
@@ -664,31 +588,52 @@ export default function HomePage() {
 
             <div className="group relative overflow-hidden rounded-[28px] border border-slate-200/70 bg-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:rounded-[34px]">
               <div className="relative aspect-[16/10] bg-slate-950 md:aspect-[16/9]">
-                <iframe
-                  ref={tottoVideoRef}
-                  className="h-full w-full"
-                  src="https://www.youtube.com/embed/r0Qc7FsEQRU?rel=0&modestbranding=1&autoplay=0&enablejsapi=1&playsinline=1"
-                  title="Testimonio de Natan Bursztyn"
-                  onLoad={handleTottoIframeLoad}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Abrir video del caso de éxito Totto x Franquicias LATAM"
+                  onClick={() => setIsVideoOpen(true)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setIsVideoOpen(true);
+                    }
+                  }}
+                  className="absolute inset-0 cursor-pointer"
+                >
+                  <Image
+                    src="/fotos_home/cover_totto_franquicias.png"
+                    alt="Caso de éxito Totto x Franquicias LATAM"
+                    fill
+                    className="object-cover"
+                    priority={false}
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-slate-950/15" />
+                  <div className="pointer-events-none absolute inset-0 grid place-items-center">
+                    <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-black/35 ring-1 ring-white/25 shadow-[0_18px_50px_rgba(15,23,42,0.35)] backdrop-blur-sm md:h-20 md:w-20">
+                      <span
+                        className="ml-1 block h-0 w-0 border-y-[8px] border-y-transparent border-l-[14px] border-l-white md:border-y-[10px] md:border-l-[16px]"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </div>
+                </div>
                 <button
                   type="button"
                   aria-label="Reproducir video"
-                  onClick={handleTottoPlayClick}
+                  onClick={() => setIsVideoOpen(true)}
                   className={`absolute bottom-8 left-1/2 z-30 inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-full bg-[#2860E7] px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_20px_60px_rgba(15,23,42,0.45)] ring-1 ring-white/15 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-[0_26px_75px_rgba(15,23,42,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:bottom-10 md:px-8 md:py-4 md:text-base ${
-                    tottoIsPlaying
+                    isVideoOpen
                       ? "pointer-events-none opacity-0"
                       : "opacity-100"
-                  }`}
+                  } scale-[1.15]`}
+                >
+                  <span
+                    className="grid h-9 w-9 place-items-center rounded-full bg-white/12 ring-1 ring-white/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] md:h-10 md:w-10"
+                    aria-hidden="true"
                   >
-                    <span
-                      className="grid h-9 w-9 place-items-center rounded-full bg-white/12 ring-1 ring-white/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] md:h-10 md:w-10"
-                      aria-hidden="true"
-                    >
-                      <span className="text-base text-white/95 md:text-lg">→</span>
-                    </span>
+                    <span className="text-base text-white/95 md:text-lg">→</span>
+                  </span>
                   <span className="whitespace-nowrap">Quiero escalar mi negocio</span>
                 </button>
               </div>
@@ -713,6 +658,36 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {isVideoOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 px-4 py-8"
+          onClick={() => setIsVideoOpen(false)}
+        >
+          <div className="relative mx-auto flex h-full items-center justify-center">
+            <div
+              className="relative aspect-video w-[min(92vw,1100px)] max-w-5xl overflow-hidden rounded-2xl bg-black shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                aria-label="Cerrar video"
+                onClick={() => setIsVideoOpen(false)}
+                className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-sm font-semibold text-white ring-1 ring-white/20 transition-colors duration-200 hover:bg-black/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              >
+                X
+              </button>
+              <iframe
+                className="h-full w-full"
+                src="https://www.youtube-nocookie.com/embed/r0Qc7FsEQRU?autoplay=1&rel=0&modestbranding=1&playsinline=1"
+                title="Caso de éxito Totto x Franquicias LATAM"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <WorkCarousel />
 
