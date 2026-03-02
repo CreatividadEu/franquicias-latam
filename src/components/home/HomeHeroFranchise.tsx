@@ -301,30 +301,33 @@ function HowItWorks() {
               </p>
 
               <div className="mt-1.5 flex-0">
-                <div className="relative h-[456px] overflow-hidden sm:h-[468px] lg:h-[486px]">
+                <div className="relative overflow-visible sm:h-[468px] sm:overflow-hidden lg:h-[486px]">
                   <div
                     aria-hidden={showQuiz}
                     inert={showQuiz}
-                    className={`absolute inset-0 flex flex-col transition-all duration-300 ease-out motion-reduce:duration-150 motion-reduce:translate-y-0 ${
+                    className={`flex-col transition-all duration-300 ease-out motion-reduce:duration-150 motion-reduce:translate-y-0 sm:absolute sm:inset-0 ${
                       showQuiz
-                        ? "pointer-events-none translate-y-2 opacity-0"
-                        : "pointer-events-auto translate-y-0 opacity-100"
+                        ? "pointer-events-none hidden translate-y-2 opacity-0 sm:flex"
+                        : "pointer-events-auto flex translate-y-0 opacity-100"
                     }`}
                   >
-                    <div ref={statsGridRef} className="flex flex-1 min-h-0 flex-col justify-center">
+                    <div
+                      ref={statsGridRef}
+                      className="flex min-h-0 flex-col justify-center overflow-visible sm:flex-1"
+                    >
                       <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 sm:grid-cols-2 sm:auto-rows-fr">
-                        <article className="stats-card h-full min-w-0 rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
+                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                             &ge;20% EBITDA
                           </p>
-                          <div className="mt-2 flex items-center justify-between gap-3">
+                          <div className="mt-2 flex items-center justify-between gap-3 overflow-visible">
                             <p className="break-words text-3xl font-extrabold leading-none tabular-nums text-slate-900 sm:text-4xl md:text-5xl">
                               <span ref={ebitdaValueRef}>87%</span>
                             </p>
                             <svg
                               viewBox="0 0 36 36"
                               aria-hidden="true"
-                              className="metric-ring h-11 w-11 shrink-0 text-emerald-500"
+                              className="metric-ring block h-11 w-11 shrink-0 text-emerald-500"
                             >
                               <circle
                                 cx="18"
@@ -352,46 +355,50 @@ function HowItWorks() {
                           <p className="mt-1 text-xs font-medium text-slate-600">de empresas</p>
                         </article>
 
-                        <article className="stats-card h-full min-w-0 rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
+                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                             MARGEN BRUTO
                           </p>
                           <p className="mt-2 break-words text-3xl font-extrabold leading-none tabular-nums text-slate-900 sm:text-4xl md:text-5xl">
                             <span ref={marginValueRef}>+9.4%</span>
                           </p>
-                          <svg
-                            viewBox="0 0 120 26"
-                            preserveAspectRatio="none"
-                            aria-hidden="true"
-                            className="metric-sparkline mt-2 h-6 w-full text-[#2860E7]"
-                          >
-                            <polyline
-                              className="metric-sparkline-path"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              points="4,20 26,18 46,14 68,15 88,9 116,6"
-                            />
-                          </svg>
+                          <div className="relative mt-2 w-full overflow-visible">
+                            <svg
+                              viewBox="0 0 120 26"
+                              preserveAspectRatio="none"
+                              aria-hidden="true"
+                              className="metric-sparkline block h-6 w-full text-[#2860E7]"
+                            >
+                              <polyline
+                                className="metric-sparkline-path"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                points="4,20 26,18 46,14 68,15 88,9 116,6"
+                              />
+                            </svg>
+                          </div>
                           <p className="mt-1 text-xs font-medium text-slate-600">mejora promedio</p>
                         </article>
 
-                        <article className="stats-card h-full min-w-0 rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
+                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                             MODELO FRANQUICIABLE
                           </p>
                           <p className="mt-2 break-words text-3xl font-extrabold leading-tight tabular-nums text-slate-900 sm:text-4xl">
                             <span ref={daysValueRef}>90 días</span>
                           </p>
-                          <div className="metric-progress-track mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
-                            <div className="metric-progress-fill h-2.5 w-[72%] rounded-full bg-[linear-gradient(90deg,#2860E7_0%,#3B82F6_100%)]" />
+                          <div className="relative mt-2 w-full overflow-visible">
+                            <div className="metric-progress-track h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+                              <div className="metric-progress-fill h-2.5 w-[72%] rounded-full bg-[linear-gradient(90deg,#2860E7_0%,#3B82F6_100%)]" />
+                            </div>
                           </div>
                           <p className="mt-1 text-xs font-medium text-slate-600">tiempo promedio</p>
                         </article>
 
-                        <article className="stats-card h-full min-w-0 rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
+                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                             PROYECTOS DESARROLLADOS
                           </p>
@@ -421,13 +428,13 @@ function HowItWorks() {
                   <div
                     aria-hidden={!showQuiz}
                     inert={!showQuiz}
-                    className={`absolute inset-0 flex flex-col transition-all duration-300 ease-out motion-reduce:duration-150 motion-reduce:translate-y-0 ${
+                    className={`flex-col transition-all duration-300 ease-out motion-reduce:duration-150 motion-reduce:translate-y-0 sm:absolute sm:inset-0 ${
                       showQuiz
-                        ? "pointer-events-auto translate-y-0 opacity-100"
-                        : "pointer-events-none translate-y-2 opacity-0"
+                        ? "pointer-events-auto flex translate-y-0 opacity-100"
+                        : "pointer-events-none hidden translate-y-2 opacity-0 sm:flex"
                     }`}
                   >
-                    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+                    <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:h-full sm:p-5">
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                           Diagn&oacute;stico Express
