@@ -645,7 +645,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="relative mx-auto mt-10 w-full max-w-5xl md:mt-12">
+          <div className="relative mx-auto mt-10 w-full max-w-4xl md:mt-12">
             <div
               className={`pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md transition-opacity duration-200 md:left-6 md:text-sm ${
                 tottoIsPlaying ? "opacity-0" : "opacity-100"
@@ -667,50 +667,30 @@ export default function HomePage() {
                 <iframe
                   ref={tottoVideoRef}
                   className="h-full w-full"
-                  src="https://www.youtube.com/embed/r0Qc7FsEQRU?rel=0&autoplay=0&enablejsapi=1&playsinline=1"
+                  src="https://www.youtube.com/embed/r0Qc7FsEQRU?rel=0&modestbranding=1&autoplay=0&enablejsapi=1&playsinline=1"
                   title="Testimonio de Natan Bursztyn"
                   onLoad={handleTottoIframeLoad}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
-                <div
-                  className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-all duration-200 ${
-                    tottoIsPlaying
-                      ? "scale-95 opacity-0"
-                      : "scale-100 opacity-100"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    aria-label="Reproducir testimonio de Natan Bursztyn"
-                    onClick={handleTottoPlayClick}
-                    className="pointer-events-auto relative z-10 flex h-14 w-14 items-center justify-center rounded-full bg-[#2860E7] shadow-[0_14px_32px_rgba(40,96,231,0.34)] transition-all duration-300 group-hover:scale-[1.03] group-hover:shadow-[0_18px_38px_rgba(40,96,231,0.4)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:h-16 md:w-16"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="ml-0.5 h-5 w-5 text-white md:h-6 md:w-6"
-                    >
-                      <path d="M8 6.8v10.4c0 .7.8 1.1 1.4.8l8.5-5.2a1 1 0 0 0 0-1.7L9.4 6c-.6-.4-1.4.1-1.4.8Z" />
-                    </svg>
-                  </button>
-                </div>
-                <a
-                  href="#diagnostico"
+                <button
+                  type="button"
+                  aria-label="Reproducir video"
+                  onClick={handleTottoPlayClick}
                   className={`absolute bottom-8 left-1/2 z-30 inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-full bg-[#2860E7] px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_20px_60px_rgba(15,23,42,0.45)] ring-1 ring-white/15 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-[0_26px_75px_rgba(15,23,42,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:bottom-10 md:px-8 md:py-4 md:text-base ${
                     tottoIsPlaying
                       ? "pointer-events-none opacity-0"
                       : "opacity-100"
                   }`}
-                >
-                  <span
-                    className="grid h-9 w-9 place-items-center rounded-full bg-white/12 ring-1 ring-white/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] md:h-10 md:w-10"
-                    aria-hidden="true"
                   >
-                    <span className="text-base text-white/95 md:text-lg">→</span>
-                  </span>
+                    <span
+                      className="grid h-9 w-9 place-items-center rounded-full bg-white/12 ring-1 ring-white/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] md:h-10 md:w-10"
+                      aria-hidden="true"
+                    >
+                      <span className="text-base text-white/95 md:text-lg">→</span>
+                    </span>
                   <span className="whitespace-nowrap">Quiero escalar mi negocio</span>
-                </a>
+                </button>
               </div>
             </div>
           </div>
