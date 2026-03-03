@@ -285,7 +285,10 @@ function HowItWorks() {
             </div>
           </div>
 
-          <aside className="min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_38px_80px_-48px_rgba(15,23,42,0.55)] sm:p-5 lg:px-6 lg:py-5">
+          <aside
+            id="resultados-reales"
+            className="min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_38px_80px_-48px_rgba(15,23,42,0.55)] sm:p-5 lg:px-6 lg:py-5"
+          >
             <div className="flex min-w-0 flex-col">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2860E7]">
                 RESULTADOS REALES
@@ -293,10 +296,10 @@ function HowItWorks() {
               <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                 Aplica a Nuestro Programa
               </h2>
-              <p className="mt-1 text-sm leading-relaxed text-slate-600 sm:text-base">
-                Indicadores promedio observados en negocios participantes.
+              <p className="mt-1 text-base leading-relaxed tracking-[0.015em] text-slate-600 sm:text-lg">
+                Indicadores promedio de negocios participantes.
               </p>
-              <p className="mt-1 text-xs font-medium text-slate-500 lg:whitespace-nowrap">
+              <p className="mt-1 text-sm font-semibold text-slate-500 sm:text-base lg:whitespace-nowrap">
                 Basado en +750 proyectos desarrollados.
               </p>
 
@@ -352,7 +355,9 @@ function HowItWorks() {
                               />
                             </svg>
                           </div>
-                          <p className="mt-1 text-xs font-medium text-slate-600">de empresas</p>
+                          <p className="mt-1 text-[14.4px] font-medium text-slate-600 md:text-xs">
+                            de empresas
+                          </p>
                         </article>
 
                         <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
@@ -380,7 +385,9 @@ function HowItWorks() {
                               />
                             </svg>
                           </div>
-                          <p className="mt-1 text-xs font-medium text-slate-600">mejora promedio</p>
+                          <p className="mt-1 text-[14.4px] font-medium text-slate-600 md:text-xs">
+                            mejora promedio
+                          </p>
                         </article>
 
                         <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
@@ -395,7 +402,9 @@ function HowItWorks() {
                               <div className="metric-progress-fill h-2.5 w-[72%] rounded-full bg-[linear-gradient(90deg,#2860E7_0%,#3B82F6_100%)]" />
                             </div>
                           </div>
-                          <p className="mt-1 text-xs font-medium text-slate-600">tiempo promedio</p>
+                          <p className="mt-1 text-[14.4px] font-medium text-slate-600 md:text-xs">
+                            tiempo promedio
+                          </p>
                         </article>
 
                         <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-slate-200/90 bg-white/95 p-4 transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-slate-300 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
@@ -405,7 +414,7 @@ function HowItWorks() {
                           <p className="mt-2 break-words text-3xl font-extrabold leading-none tabular-nums text-slate-900 sm:text-4xl md:text-5xl">
                             <span ref={projectsValueRef}>750+</span>
                           </p>
-                          <p className="mt-1 text-xs font-medium text-slate-600">
+                          <p className="mt-1 text-[14.4px] font-medium text-slate-600 md:text-xs">
                             implementados con nuestro m&eacute;todo
                           </p>
                         </article>
@@ -649,31 +658,42 @@ function HowItWorks() {
   );
 }
 
-function MethodologyStrip() {
+export function MethodologyStrip() {
   return (
     <section className="border-y border-slate-200 bg-white py-10 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <h2 className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 sm:text-sm">
-          METODOLOG&Iacute;A VALIDADA INTERNACIONALMENTE
+        <h2 className="text-center text-sm font-bold uppercase tracking-[0.2em] text-slate-500 sm:text-base">
+          HAN ESCRITO SOBRE NOSOTROS
         </h2>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-          <span className="flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-2">
-            <Image
-              src="/logos_clientes/logo_bid.svg"
-              alt="BID"
-              width={104}
-              height={28}
-              className="h-5 w-auto grayscale opacity-70"
-            />
-          </span>
-          {["Naciones Unidas", "Naciones Unidas"].map((logo, index) => (
-            <span
-              key={`${logo}-${index}`}
-              className="flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600 sm:text-sm"
-            >
-              {logo}
-            </span>
-          ))}
+          <Image
+            src="/fotos_home/logo_semana.png"
+            alt="Semana"
+            width={160}
+            height={40}
+            className="h-11 w-auto grayscale opacity-70"
+          />
+          <Image
+            src="/fotos_home/logo_la_republica.png"
+            alt="La República"
+            width={160}
+            height={40}
+            className="h-11 w-auto grayscale opacity-70"
+          />
+          <Image
+            src="/fotos_home/finanzas_personales_logo.png"
+            alt="Finanzas Personales"
+            width={160}
+            height={40}
+            className="h-11 w-auto grayscale opacity-70"
+          />
+          <Image
+            src="/fotos_home/logo_crunchbase.png"
+            alt="Crunchbase"
+            width={160}
+            height={40}
+            className="h-11 w-auto grayscale opacity-70"
+          />
         </div>
       </div>
     </section>
@@ -681,10 +701,5 @@ function MethodologyStrip() {
 }
 
 export function HomeHeroFranchise() {
-  return (
-    <>
-      <HowItWorks />
-      <MethodologyStrip />
-    </>
-  );
+  return <HowItWorks />;
 }

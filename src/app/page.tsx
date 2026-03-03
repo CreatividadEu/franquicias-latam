@@ -13,7 +13,11 @@ import Image from "next/image";
 import type { SectorOption } from "@/types";
 import { fetchJsonSafely } from "@/lib/safeApiJson";
 import { LatamDepthBackground } from "@/components/LatamDepthBackground";
-import { HomeHeroFranchise } from "@/components/home/HomeHeroFranchise";
+import {
+  HomeHeroFranchise,
+  MethodologyStrip,
+} from "@/components/home/HomeHeroFranchise";
+import { StoikaShowcaseSection } from "@/components/home/StoikaShowcaseSection";
 import { WorkCarousel } from "@/components/home/WorkCarousel";
 import { Button } from "@/components/ui/button";
 
@@ -259,7 +263,13 @@ export default function HomePage() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-[#171717]">
+    <div
+      className="min-h-screen text-[#171717]"
+      style={{
+        background:
+          "radial-gradient(1200px 600px at 50% -200px, rgba(59,130,246,0.15), transparent 60%), radial-gradient(800px 400px at 80% 20%, rgba(37,99,235,0.12), transparent 70%), linear-gradient(180deg, #f8fafc 0%, #eef2ff 40%, #e2e8f0 100%)",
+      }}
+    >
       {/* ─── Navigation ─── */}
       <nav className="sticky top-0 z-50 border-b border-gray-100/90 bg-white/90 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 sm:py-2">
@@ -424,7 +434,7 @@ export default function HomePage() {
               </Link>
               <a
                 href="#proceso"
-                className="bg-white border-2 border-gray-200 text-black px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg hover:border-gray-800 transition-all font-semibold text-base sm:text-lg"
+                className="bg-orange-500 text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg transition-all font-semibold text-base sm:text-lg hover:bg-orange-600"
               >
                 Franquiciar mi Negocio
               </a>
@@ -659,6 +669,118 @@ export default function HomePage() {
         </div>
       </section>
 
+      <MethodologyStrip />
+
+      <StoikaShowcaseSection />
+
+      <WorkCarousel />
+
+      {/* ─── Platform Features (Stoika OS section) ─── */}
+      <section id="plataforma" className="py-16 sm:py-20 lg:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <span className="section-label mb-3 sm:mb-4 block">
+              Plataforma
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
+              Tu match perfecto. Siempre.
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-2">
+              Nuestra plataforma analiza tu perfil de inversor y encuentra las
+              franquicias que mejor se ajustan: sector, inversi&oacute;n,
+              pa&iacute;s y experiencia.
+            </p>
+          </div>
+
+          {/* Toggle Tabs */}
+          <div className="toggle-tabs flex gap-2 sm:gap-4 mb-8 sm:mb-12 overflow-x-auto pb-2 px-2 sm:justify-center">
+            {Object.keys(viewTitles).map((view, i) => {
+              const TAB_COLORS = [
+                { bg: "#371B7A", text: "#FFFFFF" },
+                { bg: "#3B8446", text: "#FFFFFF" },
+                { bg: "#F7D047", text: "#171717" },
+                { bg: "#F2A6CB", text: "#171717" },
+              ];
+              const isActive = activeView === view;
+              return (
+                <button
+                  key={view}
+                  className={`toggle-btn px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base whitespace-nowrap flex-shrink-0 ${
+                    isActive ? "active" : ""
+                  }`}
+                  style={
+                    isActive
+                      ? {
+                          backgroundColor: TAB_COLORS[i].bg,
+                          color: TAB_COLORS[i].text,
+                        }
+                      : undefined
+                  }
+                  onClick={() => setActiveView(view)}
+                >
+                  {viewTitles[view]}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mockup Display */}
+          <div className="max-w-5xl mx-auto scroll-fade-in">
+            <div className="hero-image bg-gradient-to-br from-blue-50 to-purple-50 aspect-[4/3] sm:aspect-video relative overflow-hidden">
+              {activeView === "quiz" ||
+              activeView === "matching" ||
+              activeView === "resultados" ||
+              activeView === "contacto" ? (
+                <Image
+                  src={
+                    activeView === "quiz"
+                      ? "/fotos_home/franquicias_screen.jpg"
+                      : activeView === "matching"
+                        ? "/fotos_home/iphone_resultados.jpeg"
+                        : activeView === "resultados"
+                          ? "/fotos_home/screen_results_franquicias.jpeg"
+                          : "/fotos_home/screen_atencion.jpeg"
+                  }
+                  alt={
+                    activeView === "quiz"
+                      ? "Quiz Inteligente"
+                      : activeView === "matching"
+                        ? "Matching de Compatibilidad"
+                        : activeView === "resultados"
+                          ? "Resultados Personalizados"
+                          : "Contacto Directo"
+                  }
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, 80vw"
+                  priority
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl sm:text-5xl mb-2 sm:mb-3">
+                      {activeView === "contacto" && "📞"}
+                    </div>
+                    <p className="text-gray-700 font-medium text-base sm:text-lg">
+                      {viewTitles[activeView]}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="text-center mt-8 sm:mt-12">
+            <Link
+              href="/quiz"
+              className="inline-block bg-[#2860E7] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg hover:bg-[#1F52CC] transition-all font-semibold text-base sm:text-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
+            >
+              Comenzar Quiz
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {isVideoOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/60 px-4 py-8"
@@ -688,8 +810,6 @@ export default function HomePage() {
           </div>
         </div>
       )}
-
-      <WorkCarousel />
 
       <section
         id="decision"
@@ -834,167 +954,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Platform Features (Stoika OS section) ─── */}
-      <section id="plataforma" className="py-16 sm:py-20 lg:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8 sm:mb-12">
-            <span className="section-label mb-3 sm:mb-4 block">
-              Plataforma
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
-              Tu match perfecto. Siempre.
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-2">
-              Nuestra plataforma analiza tu perfil de inversor y encuentra las
-              franquicias que mejor se ajustan: sector, inversi&oacute;n,
-              pa&iacute;s y experiencia.
-            </p>
-          </div>
-
-          {/* Toggle Tabs */}
-          <div className="toggle-tabs flex gap-2 sm:gap-4 mb-8 sm:mb-12 overflow-x-auto pb-2 px-2 sm:justify-center">
-            {Object.keys(viewTitles).map((view, i) => {
-              const TAB_COLORS = [
-                { bg: "#371B7A", text: "#FFFFFF" },
-                { bg: "#3B8446", text: "#FFFFFF" },
-                { bg: "#F7D047", text: "#171717" },
-                { bg: "#F2A6CB", text: "#171717" },
-              ];
-              const isActive = activeView === view;
-              return (
-                <button
-                  key={view}
-                  className={`toggle-btn px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base whitespace-nowrap flex-shrink-0 ${
-                    isActive ? "active" : ""
-                  }`}
-                  style={
-                    isActive
-                      ? {
-                          backgroundColor: TAB_COLORS[i].bg,
-                          color: TAB_COLORS[i].text,
-                        }
-                      : undefined
-                  }
-                  onClick={() => setActiveView(view)}
-                >
-                  {viewTitles[view]}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Mockup Display */}
-          <div className="max-w-5xl mx-auto scroll-fade-in">
-            <div className="hero-image bg-gradient-to-br from-blue-50 to-purple-50 aspect-[4/3] sm:aspect-video relative overflow-hidden">
-              {activeView === "quiz" ||
-              activeView === "matching" ||
-              activeView === "resultados" ||
-              activeView === "contacto" ? (
-                <Image
-                  src={
-                    activeView === "quiz"
-                      ? "/fotos_home/franquicias_screen.jpg"
-                      : activeView === "matching"
-                        ? "/fotos_home/iphone_resultados.jpeg"
-                        : activeView === "resultados"
-                          ? "/fotos_home/screen_results_franquicias.jpeg"
-                        : "/fotos_home/screen_atencion.jpeg"
-                  }
-                  alt={
-                    activeView === "quiz"
-                      ? "Quiz Inteligente"
-                      : activeView === "matching"
-                        ? "Matching de Compatibilidad"
-                        : activeView === "resultados"
-                          ? "Resultados Personalizados"
-                          : "Contacto Directo"
-                  }
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, 80vw"
-                  priority
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-4xl sm:text-5xl mb-2 sm:mb-3">
-                      {activeView === "contacto" && "📞"}
-                    </div>
-                    <p className="text-gray-700 font-medium text-base sm:text-lg">
-                      {viewTitles[activeView]}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="text-center mt-8 sm:mt-12">
-            <Link
-              href="/quiz"
-              className="inline-block bg-[#2860E7] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg hover:bg-[#1F52CC] transition-all font-semibold text-base sm:text-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
-            >
-              Comenzar Quiz
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Feature Block 2: Matching ─── */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
-            <div className="order-1 scroll-fade-in">
-              <div className="hero-image bg-gradient-to-br from-orange-50 to-red-50 aspect-square flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">
-                    🎯
-                  </div>
-                  <p className="text-gray-700 font-medium">
-                    Matching Inteligente
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="order-2">
-              <span className="section-label mb-3 sm:mb-4 block">
-                Matching
-              </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                Deja de buscar.
-                <br className="hidden sm:block" /> Deja que te encontremos.
-              </h2>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-4 sm:mb-6">
-                La mayor&iacute;a de inversionistas pierden tiempo evaluando
-                franquicias que no se ajustan a su perfil, presupuesto o
-                mercado.
-              </p>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8">
-                Nuestro algoritmo analiza tu perfil y te muestra solo las
-                mejores opciones&hellip; autom&aacute;ticamente.
-              </p>
-
-              <div className="flex flex-wrap gap-2 sm:gap-3">
-                {[
-                  "Compatibilidad",
-                  "Score 0-100",
-                  "Ranking",
-                  "Filtros inteligentes",
-                ].map((chip) => (
-                  <span
-                    key={chip}
-                    className="feature-chip px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium"
-                  >
-                    {chip}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ─── Feature Block 3: Resultados ─── */}
       <section className="py-16 sm:py-20 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -1067,33 +1026,33 @@ export default function HomePage() {
             {[
               {
                 icon: "📊",
-                title: "Match Score",
-                desc: "Puntuaci\u00f3n de compatibilidad para cada franquicia basada en tu perfil.",
+                title: "Programa Validado",
+                desc: "Programa respaldado por BID y ONU para escalar con metodolog\u00eda probada.",
               },
               {
                 icon: "💎",
-                title: "+50 Franquicias",
-                desc: "Cat\u00e1logo verificado de franquicias en Latinoam\u00e9rica.",
+                title: "750+ Clientes L\u00edderes",
+                desc: "Empresas que optimizaron margen, estructura y crecimiento sostenible.",
               },
               {
                 icon: "💰",
-                title: "6 Pa\u00edses",
-                desc: "Presencia en Colombia, M\u00e9xico, Argentina, Chile, Per\u00fa y Ecuador.",
+                title: "Optimizamos tu Negocio",
+                desc: "Mejoramos rentabilidad, orden financiero y control operativo real.",
               },
               {
-                icon: "🎛\ufe0f",
-                title: "Quiz Inteligente",
-                desc: "5 preguntas clave para encontrar tu franquicia ideal.",
+                icon: "🏆",
+                title: "Somos Premiados",
+                desc: "Financiados y reconocidos por MinTIC y BID por impacto empresarial.",
               },
               {
-                icon: "\u2699\ufe0f",
-                title: "Verificaci\u00f3n SMS",
-                desc: "Proceso seguro con verificaci\u00f3n telef\u00f3nica en cada paso.",
+                icon: "🏢",
+                title: "Oficinas en Espa\u00f1a y LATAM",
+                desc: "Presencia directa en Europa y Latinoam\u00e9rica para expansi\u00f3n estrat\u00e9gica.",
               },
               {
                 icon: "🚀",
-                title: "Contacto Directo",
-                desc: "Conexi\u00f3n inmediata con las franquicias que mejor se ajustan.",
+                title: "Sistema Integral",
+                desc: "Estrategia, finanzas, operaci\u00f3n y marketing en un solo modelo.",
               },
             ].map((b) => (
               <div
