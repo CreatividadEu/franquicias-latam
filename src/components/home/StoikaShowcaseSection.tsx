@@ -110,7 +110,9 @@ export function StoikaShowcaseSection() {
           </p>
           <div className="mt-8">
             <Link
-              href="#contacto"
+              href="https://franquicias.ai"
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-[#2563EB] to-[#3B82F6] px-7 py-3.5 text-base font-bold text-white shadow-[0_20px_40px_-15px_rgba(37,99,235,0.45)] backdrop-blur-sm transition-all duration-300 ease-out hover:-translate-y-[2px] hover:from-[#1D4ED8] hover:to-[#2563EB] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(37,99,235,0.24)] sm:px-8 sm:text-lg"
             >
               Aplica al Programa

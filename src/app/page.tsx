@@ -348,7 +348,7 @@ export default function HomePage() {
 
             <Link
               href="/quiz"
-              className="hidden md:inline-flex md:items-center md:justify-center rounded-full bg-white px-7 py-3.5 text-[16px] font-semibold text-gray-900 shadow-[0_6px_18px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.18)]"
+              className="hidden md:inline-flex md:items-center md:justify-center rounded-full bg-white px-7 py-3.5 text-[19px] font-bold text-gray-900 shadow-[0_6px_18px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.18)]"
             >
               Comenzar
             </Link>
