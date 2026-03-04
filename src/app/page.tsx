@@ -17,9 +17,9 @@ import {
   HomeHeroFranchise,
   MethodologyStrip,
 } from "@/components/home/HomeHeroFranchise";
+import { CalendlyCTASection } from "@/components/home/CalendlyCTASection";
 import { StoikaShowcaseSection } from "@/components/home/StoikaShowcaseSection";
 import { WorkCarousel } from "@/components/home/WorkCarousel";
-import { Button } from "@/components/ui/button";
 
 const countries = [
   { flag: "\u{1F1E8}\u{1F1F4}", name: "Colombia" },
@@ -90,6 +90,11 @@ export default function HomePage() {
       : false
   );
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const [tottoStatsVisible, setTottoStatsVisible] = useState(() =>
+    typeof window !== "undefined" && typeof IntersectionObserver === "undefined"
+  );
+  const tottoStatsRef = useRef<HTMLDivElement | null>(null);
+  const tottoStatsReady = prefersReducedMotion || tottoStatsVisible;
 
   // Hero quiz embed
   const [heroSectors, setHeroSectors] = useState<SectorOption[]>([]);
@@ -156,6 +161,25 @@ export default function HomePage() {
     return () => window.clearTimeout(timer);
   }, [hasRevealed, heroSectors.length, prefersReducedMotion, runFirstNudge]);
 
+  useEffect(() => {
+    if (prefersReducedMotion || tottoStatsVisible || !tottoStatsRef.current) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setTottoStatsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(tottoStatsRef.current);
+    return () => observer.disconnect();
+  }, [prefersReducedMotion, tottoStatsVisible]);
+
   const toggleHeroSector = (id: string) => {
     setHeroSelected((prev) =>
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
@@ -210,11 +234,6 @@ export default function HomePage() {
     });
   };
 
-  const showForm = () => {
-    setFormModalOpen(true);
-    document.body.style.overflow = "hidden";
-  };
-
   const hideForm = () => {
     setFormModalOpen(false);
     setFormSubmitted(false);
@@ -263,15 +282,9 @@ export default function HomePage() {
   }, [mobileMenuOpen]);
 
   return (
-    <div
-      className="min-h-screen text-[#171717]"
-      style={{
-        background:
-          "radial-gradient(1200px 600px at 50% -200px, rgba(59,130,246,0.15), transparent 60%), radial-gradient(800px 400px at 80% 20%, rgba(37,99,235,0.12), transparent 70%), linear-gradient(180deg, #f8fafc 0%, #eef2ff 40%, #e2e8f0 100%)",
-      }}
-    >
+    <div className="min-h-screen text-[#171717]">
       {/* ─── Navigation ─── */}
-      <nav className="sticky top-0 z-50 border-b border-gray-100/90 bg-white/90 backdrop-blur-lg">
+      <nav className="sticky top-0 z-50 border-b border-black/5 bg-white/55 backdrop-blur-[10px]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 sm:py-2">
           <div className="flex items-center justify-between">
             <Image
@@ -285,17 +298,14 @@ export default function HomePage() {
 
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-8">
-              <a href="#proceso" className="nav-link">
-                Proceso
+              <a href="#diagnostico" className="nav-link text-[19px] font-bold">
+                Invierte
               </a>
-              <a href="#plataforma" className="nav-link">
-                Plataforma
+              <a href="#proceso" className="nav-link text-[19px] font-bold">
+                Programa
               </a>
-              <a href="#casos" className="nav-link">
-                Casos
-              </a>
-              <a href="#pricing" className="nav-link">
-                Precios
+              <a href="#video-hero" className="nav-link text-[19px] font-bold">
+                Casos de &Eacute;xito
               </a>
             </div>
 
@@ -338,7 +348,7 @@ export default function HomePage() {
 
             <Link
               href="/quiz"
-              className="hidden md:block bg-[#2860E7] text-white px-5 lg:px-6 py-2 sm:py-2.5 rounded-lg hover:bg-[#1F52CC] transition-all font-medium text-sm sm:text-base focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
+              className="hidden md:inline-flex md:items-center md:justify-center rounded-full bg-white px-7 py-3.5 text-[16px] font-semibold text-gray-900 shadow-[0_6px_18px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.18)]"
             >
               Comenzar
             </Link>
@@ -347,44 +357,37 @@ export default function HomePage() {
 
         {/* Mobile Menu */}
         <div
-          className={`mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-xl z-50 md:hidden ${
+          className={`mobile-menu fixed inset-y-0 right-0 w-64 border-l border-black/5 bg-white/86 shadow-xl backdrop-blur-xl z-50 md:hidden ${
             mobileMenuOpen ? "open" : ""
           }`}
         >
           <div className="p-6 pt-20">
             <div className="flex flex-col gap-6">
               <a
+                href="#diagnostico"
+                onClick={toggleMobileMenu}
+                className="text-[22px] font-bold"
+              >
+                Invierte
+              </a>
+              <a
                 href="#proceso"
                 onClick={toggleMobileMenu}
-                className="text-lg font-medium"
+                className="text-[22px] font-bold"
               >
-                Proceso
+                Programa
               </a>
               <a
-                href="#plataforma"
+                href="#video-hero"
                 onClick={toggleMobileMenu}
-                className="text-lg font-medium"
+                className="text-[22px] font-bold"
               >
-                Plataforma
-              </a>
-              <a
-                href="#casos"
-                onClick={toggleMobileMenu}
-                className="text-lg font-medium"
-              >
-                Casos
-              </a>
-              <a
-                href="#pricing"
-                onClick={toggleMobileMenu}
-                className="text-lg font-medium"
-              >
-                Precios
+                Casos de &Eacute;xito
               </a>
               <Link
                 href="/quiz"
                 onClick={toggleMobileMenu}
-                className="bg-[#2860E7] text-white px-6 py-3 rounded-lg text-center font-semibold mt-4 hover:bg-[#1F52CC] transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
+                className="mt-4 inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 text-[16px] font-semibold text-gray-900 shadow-[0_6px_18px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.18)]"
               >
                 Comenzar
               </Link>
@@ -408,7 +411,7 @@ export default function HomePage() {
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-block mb-4 sm:mb-6">
               <span className="section-label bg-gray-100 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full">
-                Quiz Inteligente (2 min)
+                Crece con Nosotros
               </span>
             </div>
 
@@ -428,13 +431,13 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 px-2">
               <Link
                 href="/quiz"
-                className="bg-[#2860E7] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg hover:bg-[#1F52CC] transition-all font-semibold text-base sm:text-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
+                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-7 sm:px-8 py-4 text-[17px] font-bold tracking-tight text-white shadow-[0_18px_40px_-18px_rgba(59,130,246,0.75)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] sm:text-[18px]"
               >
                 Invertir en Franquicias
               </Link>
               <a
                 href="#proceso"
-                className="bg-orange-500 text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg transition-all font-semibold text-base sm:text-lg hover:bg-orange-600"
+                className="inline-flex items-center justify-center rounded-2xl border border-orange-500 bg-orange-500 px-7 sm:px-8 py-4 text-[17px] font-bold tracking-tight text-white shadow-[0_12px_30px_-22px_rgba(249,115,22,0.42)] transition-all duration-200 hover:-translate-y-[1px] hover:border-orange-600 hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(249,115,22,0.2)] sm:text-[18px]"
               >
                 Franquiciar mi Negocio
               </a>
@@ -552,20 +555,8 @@ export default function HomePage() {
 
       <section
         id="video-hero"
-        className="relative isolate overflow-hidden scroll-mt-28 bg-gradient-to-b from-white via-slate-50 to-slate-100/70 pt-20 md:pt-24 pb-10 md:pb-12"
+        className="relative isolate overflow-hidden scroll-mt-28 bg-transparent pt-20 md:pt-24 pb-10 md:pb-12"
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            backgroundImage:
-              "radial-gradient(960px 440px at 50% -2%, rgba(40,96,231,0.12), transparent 60%), radial-gradient(760px 360px at 50% 100%, rgba(148,163,184,0.16), transparent 70%)",
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 opacity-[0.025] bg-[radial-gradient(circle_at_1px_1px,rgba(15,23,42,0.35)_1px,transparent_0)] bg-[size:22px_22px]"
-        />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <p className="text-[14px] font-semibold uppercase tracking-[0.18em] text-slate-600 md:text-[17px]">
@@ -632,7 +623,7 @@ export default function HomePage() {
                   type="button"
                   aria-label="Reproducir video"
                   onClick={() => setIsVideoOpen(true)}
-                  className={`absolute bottom-8 left-1/2 z-30 inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-full bg-[#2860E7] px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_20px_60px_rgba(15,23,42,0.45)] ring-1 ring-white/15 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1F4FCC] hover:shadow-[0_26px_75px_rgba(15,23,42,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.28)] md:bottom-10 md:px-8 md:py-4 md:text-base ${
+                  className={`absolute bottom-8 left-1/2 z-30 inline-flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-7 py-4 text-[15px] font-semibold tracking-tight text-white shadow-[0_18px_40px_-18px_rgba(59,130,246,0.75)] ring-1 ring-white/20 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] md:bottom-10 md:px-8 md:py-4 md:text-base ${
                     isVideoOpen
                       ? "pointer-events-none opacity-0"
                       : "opacity-100"
@@ -650,40 +641,217 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-10 mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-white/70 bg-white/60 shadow-[0_10px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm md:mt-12">
-            <div className="grid grid-cols-1 divide-y divide-slate-200/70 text-center sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-              <div className="py-6 md:py-7">
-                <p className="text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">+450</p>
-                <p className="mt-2 text-xs text-slate-600 md:text-sm">Tiendas</p>
+          <div
+            ref={tottoStatsRef}
+            className="mt-10 mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-white/80 bg-gradient-to-br from-white/78 via-white/64 to-[#e8f1ff]/64 shadow-[0_18px_54px_rgba(15,23,42,0.08)] ring-1 ring-white/40 backdrop-blur-xl md:mt-12"
+          >
+            <div className="grid grid-cols-1 divide-y divide-white/55 text-center sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+              <div
+                className={`totto-stat-item py-6 md:py-7 ${
+                  tottoStatsReady ? "totto-stat-item--visible" : ""
+                }`}
+              >
+                <p
+                  className={`totto-stat-value text-4xl font-bold tracking-tight text-[#1877F2] md:text-5xl ${
+                    tottoStatsReady ? "totto-stat-value--visible" : ""
+                  }`}
+                >
+                  +450
+                </p>
+                <p className="mt-2 text-[15px] font-semibold text-slate-700 md:text-[17px]">
+                  Tiendas
+                </p>
               </div>
-              <div className="py-6 md:py-7">
-                <p className="text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">45</p>
-                <p className="mt-2 text-xs text-slate-600 md:text-sm">Países</p>
+              <div
+                className={`totto-stat-item py-6 md:py-7 ${
+                  tottoStatsReady ? "totto-stat-item--visible" : ""
+                }`}
+                style={{ animationDelay: "90ms" }}
+              >
+                <p
+                  className={`totto-stat-value text-4xl font-bold tracking-tight text-[#1877F2] md:text-5xl ${
+                    tottoStatsReady ? "totto-stat-value--visible" : ""
+                  }`}
+                  style={{ animationDelay: "90ms" }}
+                >
+                  45
+                </p>
+                <p className="mt-2 text-[15px] font-semibold text-slate-700 md:text-[17px]">
+                  Países
+                </p>
               </div>
-              <div className="py-6 md:py-7">
-                <p className="text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">+US$200M</p>
-                <p className="mt-2 text-xs text-slate-600 md:text-sm">Ventas anuales</p>
+              <div
+                className={`totto-stat-item py-6 md:py-7 ${
+                  tottoStatsReady ? "totto-stat-item--visible" : ""
+                }`}
+                style={{ animationDelay: "180ms" }}
+              >
+                <p
+                  className={`totto-stat-value text-4xl font-bold tracking-tight text-[#1877F2] md:text-5xl ${
+                    tottoStatsReady ? "totto-stat-value--visible" : ""
+                  }`}
+                  style={{ animationDelay: "180ms" }}
+                >
+                  +US$200M
+                </p>
+                <p className="mt-2 text-[15px] font-semibold text-slate-700 md:text-[17px]">
+                  Ventas anuales
+                </p>
               </div>
             </div>
           </div>
+          <style jsx>{`
+            .totto-stat-item {
+              opacity: 0;
+              transform: translate3d(0, 14px, 0);
+            }
+
+            .totto-stat-item--visible {
+              animation: totto-stat-in 620ms cubic-bezier(0.22, 1, 0.36, 1)
+                both;
+            }
+
+            .totto-stat-value--visible {
+              animation: totto-stat-pulse 760ms cubic-bezier(0.22, 1, 0.36, 1)
+                both;
+            }
+
+            @keyframes totto-stat-in {
+              0% {
+                opacity: 0;
+                transform: translate3d(0, 14px, 0);
+              }
+              100% {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+              }
+            }
+
+            @keyframes totto-stat-pulse {
+              0% {
+                opacity: 0;
+                transform: scale(0.92);
+                filter: drop-shadow(0 0 0 rgba(24, 119, 242, 0));
+              }
+              55% {
+                opacity: 1;
+                transform: scale(1.08);
+                filter: drop-shadow(0 10px 22px rgba(24, 119, 242, 0.14));
+              }
+              100% {
+                opacity: 1;
+                transform: scale(1);
+                filter: drop-shadow(0 8px 18px rgba(24, 119, 242, 0.08));
+              }
+            }
+          `}</style>
         </div>
       </section>
+
+      <WorkCarousel />
 
       <MethodologyStrip />
 
       <StoikaShowcaseSection />
 
-      <WorkCarousel />
+      <CalendlyCTASection />
+
+      {/* ─── Case Studies ─── */}
+      <section id="casos" className="py-16 sm:py-20 lg:py-24 bg-transparent">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+              Franquicias Nuevas
+              <span className="mt-1 block text-[0.82em] font-semibold">
+                Marzo 2026
+              </span>
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            {[
+              {
+                icon: "🍦",
+                gradient: "from-sky-100 to-cyan-200",
+                label: "Helados / Postres",
+                title: "Crem Helado",
+                desc: "Marca l\u00edder en helados con formatos adaptables e inversi\u00f3n desde $50K.",
+                imageSrc: "/fotos_home/franquicias_crem_helado.jpg",
+                imageAlt: "Crem Helado",
+                href: "/franquicia/crem-helado",
+              },
+              {
+                icon: "👓",
+                gradient: "from-indigo-100 to-sky-200",
+                label: "\u00d3ptica / Accesorios",
+                title: "Lunettes Galer\u00eda \u00d3ptica",
+                desc: "Cadena \u00f3ptica especializada con ticket s\u00f3lido e inversi\u00f3n desde $100K.",
+                imageSrc: "/fotos_home/lunettes_head.jpg",
+                imageAlt: "Lunettes Galer\u00eda \u00d3ptica",
+                href: "/franquicia/lunettes-galeria-optica",
+              },
+              {
+                icon: "🥪",
+                gradient: "from-emerald-100 to-lime-200",
+                label: "QSR / Restaurantes",
+                title: "Subway",
+                desc: "Cadena global de s\u00e1ndwiches con operaci\u00f3n estandarizada e inversi\u00f3n desde $200K.",
+                imageSrc: "/fotos_home/subway-cover.jpg",
+                imageAlt: "Subway",
+                href: "/franquicia/subway",
+                extraClass: "sm:col-span-2 lg:col-span-1",
+              },
+            ].map((c) => (
+              <Link
+                key={c.label}
+                href={c.href}
+                aria-label={`Ver franquicia ${c.title}`}
+                className={`rounded-xl border border-black/5 bg-white/60 shadow-[0_18px_38px_-28px_rgba(15,23,42,0.22)] backdrop-blur-xl sm:rounded-2xl overflow-hidden hover:shadow-xl transition-all scroll-fade-in ${
+                  c.extraClass || ""
+                }`}
+              >
+                <div
+                  className={`bg-gradient-to-br ${c.gradient} relative h-36 sm:h-48 flex items-center justify-center`}
+                >
+                  {c.imageSrc ? (
+                    <>
+                      <Image
+                        src={c.imageSrc}
+                        alt={c.imageAlt ?? c.title}
+                        fill
+                        className="object-cover"
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      />
+                      <div className="absolute inset-0 bg-slate-900/10" />
+                    </>
+                  ) : (
+                    <div className="text-4xl sm:text-5xl">{c.icon}</div>
+                  )}
+                </div>
+                <div className="p-6 sm:p-8">
+                  <span className="section-label">{c.label}</span>
+                  <h3 className="text-xl sm:text-2xl font-bold mt-2 sm:mt-3 mb-2 sm:mb-3">
+                    {c.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm sm:text-base">
+                    {c.desc}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ─── Platform Features (Stoika OS section) ─── */}
-      <section id="plataforma" className="py-16 sm:py-20 lg:py-24 bg-white">
+      <section id="plataforma" className="py-16 sm:py-20 lg:py-24 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8 sm:mb-12">
             <span className="section-label mb-3 sm:mb-4 block">
               Plataforma
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
-              Tu match perfecto. Siempre.
+              Tu Match Perfecto.
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-2">
               Nuestra plataforma analiza tu perfil de inversor y encuentra las
@@ -773,7 +941,7 @@ export default function HomePage() {
           <div className="text-center mt-8 sm:mt-12">
             <Link
               href="/quiz"
-              className="inline-block bg-[#2860E7] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg hover:bg-[#1F52CC] transition-all font-semibold text-base sm:text-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
+              className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-7 sm:px-8 py-4 text-[15px] font-semibold tracking-tight text-white shadow-[0_18px_40px_-18px_rgba(59,130,246,0.75)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] sm:text-base"
             >
               Comenzar Quiz
             </Link>
@@ -781,244 +949,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {isVideoOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 px-4 py-8"
-          onClick={() => setIsVideoOpen(false)}
-        >
-          <div className="relative mx-auto flex h-full items-center justify-center">
-            <div
-              className="relative aspect-video w-[min(92vw,1100px)] max-w-5xl overflow-hidden rounded-2xl bg-black shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <button
-                type="button"
-                aria-label="Cerrar video"
-                onClick={() => setIsVideoOpen(false)}
-                className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-sm font-semibold text-white ring-1 ring-white/20 transition-colors duration-200 hover:bg-black/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-              >
-                X
-              </button>
-              <iframe
-                className="h-full w-full"
-                src="https://www.youtube-nocookie.com/embed/r0Qc7FsEQRU?autoplay=1&rel=0&modestbranding=1&playsinline=1"
-                title="Caso de éxito Totto x Franquicias LATAM"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      <section
-        id="decision"
-        className="relative border-t border-b border-slate-200/70 bg-slate-50/60 py-14 sm:py-[4.5rem] lg:py-20"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <p className="text-[11px] tracking-[0.2em] text-slate-500 font-semibold uppercase">
-              DOS CAMINOS
-            </p>
-            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold leading-[1.05] text-slate-900">
-              Dos caminos para crecer. Solo uno escala.
-            </h2>
-            <p className="mt-4 max-w-2xl text-base sm:text-lg text-slate-600">
-              La mayoría de negocios crece reaccionando. Solo algunos crecen diseñando su expansión.
-            </p>
-          </div>
-
-          <p className="mt-6 text-center text-sm font-medium text-slate-600 md:hidden">
-            La diferencia no es crecer. Es cómo creces.
-          </p>
-
-          <div className="relative">
-            <p className="pointer-events-none absolute left-1/2 top-6 z-10 hidden -translate-x-1/2 rounded-full border border-slate-200/80 bg-white/90 px-4 py-1 text-xs font-medium text-slate-600 shadow-sm md:block">
-              La diferencia no es crecer. Es cómo creces.
-            </p>
-
-            <div className="mt-10 grid gap-5 md:grid-cols-2 md:gap-6 items-stretch">
-              <article className="group relative h-full flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/70 p-6 sm:p-7 shadow-[0_10px_30px_-20px_rgba(15,23,42,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-24px_rgba(15,23,42,0.35)] motion-reduce:transition-none motion-reduce:hover:transform-none">
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-4 left-0 w-px bg-rose-400/50"
-                />
-                <h3 className="pr-8 text-xl font-semibold text-slate-900">
-                  Crecimiento Reactivo (sin sistema)
-                </h3>
-                <ul className="mt-5 space-y-3 text-slate-700">
-                  {[
-                    "Cada nueva sede depende de tu capital",
-                    "Crecimiento lento y financieramente pesado",
-                    "Procesos no estandarizados",
-                    "Margen inestable",
-                    "Dependencia de personas clave",
-                    "Escalar implica más riesgo, no menos",
-                  ].map((item) => (
-                    <li key={item} className="flex gap-3">
-                      <span className="mt-1 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-rose-200 bg-rose-50/50 text-rose-500 opacity-80 transition-opacity duration-300 group-hover:opacity-100 motion-reduce:transition-none">
-                        <svg
-                          aria-hidden="true"
-                          viewBox="0 0 18 18"
-                          className="h-3.5 w-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.8"
-                        >
-                          <path d="M5.25 9h7.5" strokeLinecap="round" />
-                        </svg>
-                      </span>
-                      <span className="text-sm sm:text-[15px] leading-6">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-
-              <article className="group relative h-full flex flex-col overflow-hidden rounded-2xl border border-emerald-200/80 bg-white/85 p-6 sm:p-7 shadow-[0_14px_36px_-22px_rgba(16,185,129,0.34)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_42px_-24px_rgba(14,116,144,0.36)] motion-reduce:transition-none motion-reduce:hover:transform-none">
-                <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent" />
-                <span className="absolute right-5 top-5 inline-flex items-center rounded-full border border-emerald-200/80 bg-white/85 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                  RECOMENDADO
-                </span>
-                <div className="relative">
-                  <h3 className="pr-28 text-xl font-semibold text-slate-900">
-                    Crecimiento Estructurado (modelo de franquicia)
-                  </h3>
-                  <ul className="mt-5 space-y-3 text-slate-700">
-                    {[
-                      "Expansión con capital de terceros",
-                      "Modelo probado y replicable",
-                      "Manuales + procesos estandarizados",
-                      "Control financiero y visibilidad total",
-                      "EBITDA optimizado desde diseño",
-                      "Escalabilidad sin diluir control",
-                    ].map((item) => (
-                      <li key={item} className="flex gap-3">
-                        <span className="mt-1 inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50/60 text-emerald-600 opacity-85 transition-opacity duration-300 group-hover:opacity-100 motion-reduce:transition-none">
-                          <svg
-                            aria-hidden="true"
-                            viewBox="0 0 18 18"
-                            className="h-3.5 w-3.5"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                          >
-                            <path d="M4.75 9.5 7.45 12 13.25 6.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </span>
-                        <span className="text-sm sm:text-[15px] leading-6">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </article>
-            </div>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-xl border border-slate-200/70 bg-white/60 px-5 py-4">
-              <p className="text-xl font-semibold text-slate-900">+750</p>
-              <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
-                Proyectos desarrollados
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200/70 bg-white/60 px-5 py-4">
-              <p className="text-xl font-semibold text-slate-900">+35 años</p>
-              <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
-                Estructurando marcas
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200/70 bg-white/60 px-5 py-4">
-              <p className="text-xl font-semibold text-slate-900">BID + ONU</p>
-              <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
-                Programas y ejecución
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
-            <Button
-              asChild
-              className="h-auto rounded-xl bg-[#2860E7] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_-20px_rgba(40,96,231,0.7)] transition-all duration-300 hover:bg-[#1F52CC] hover:shadow-[0_18px_34px_-20px_rgba(40,96,231,0.82)] focus-visible:ring-[rgba(40,96,231,0.35)] motion-reduce:transition-none"
-            >
-              <Link href="/quiz">Quiero estructurar mi crecimiento</Link>
-            </Button>
-
-            <Button
-              asChild
-              variant="outline"
-              className="h-auto rounded-xl border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-slate-800 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.55)] transition-all duration-300 hover:border-slate-400 hover:bg-white focus-visible:ring-[rgba(40,96,231,0.3)] motion-reduce:transition-none"
-            >
-              <a href="#proceso">Evaluar mi negocio</a>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Feature Block 3: Resultados ─── */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
-            <div className="order-2 lg:order-1">
-              <span className="section-label mb-3 sm:mb-4 block">
-                Resultados
-              </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                Opciones concretas.
-                <br className="hidden sm:block" /> Contacto directo.
-              </h2>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8">
-                No te dejamos &ldquo;con ideas&rdquo;.
-                <br className="hidden sm:block" />
-                Te dejamos con franquicias concretas, puntuaci&oacute;n de
-                compatibilidad y contacto directo con cada marca.
-              </p>
-
-              <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
-                {[
-                  "Top matches",
-                  "Contacto directo",
-                  "Info completa",
-                  "Comparaci\u00f3n",
-                ].map((chip) => (
-                  <span
-                    key={chip}
-                    className="feature-chip px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium"
-                  >
-                    {chip}
-                  </span>
-                ))}
-              </div>
-
-              <Link
-                href="/quiz"
-                className="inline-block bg-black text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-lg hover:bg-gray-800 transition-all font-semibold text-base sm:text-lg"
-              >
-                Comenzar
-              </Link>
-            </div>
-
-            <div className="order-1 lg:order-2 scroll-fade-in">
-              <div className="hero-image bg-gradient-to-br from-purple-50 to-pink-50 aspect-square flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-5xl sm:text-6xl mb-3 sm:mb-4">
-                    📊
-                  </div>
-                  <p className="text-gray-700 font-medium">
-                    Resultados &amp; Match Score
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ─── Benefits ─── */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-white">
+      <section className="py-16 sm:py-20 lg:py-24 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              What you get in 2 minutes
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-[-0.01em] mb-4">
+              Sobre Nosotros
             </h2>
           </div>
 
@@ -1072,153 +1008,38 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Case Studies ─── */}
-      <section id="casos" className="py-16 sm:py-20 lg:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              Built for investors.
-            </h2>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            {[
-              {
-                icon: "👔",
-                gradient: "from-blue-100 to-blue-200",
-                label: "Retail / Moda",
-                title: "Inversi\u00f3n desde $50K",
-                desc: "Franquicias de moda y retail con alta rotaci\u00f3n y modelos probados en LATAM.",
-              },
-              {
-                icon: "🍽\ufe0f",
-                gradient: "from-orange-100 to-orange-200",
-                label: "Gastronom\u00eda",
-                title: "Inversi\u00f3n desde $100K",
-                desc: "Franquicias de alimentos y bebidas con reconocimiento de marca y soporte operativo.",
-              },
-              {
-                icon: "💆",
-                gradient: "from-green-100 to-green-200",
-                label: "Salud / Bienestar",
-                title: "Inversi\u00f3n desde $200K",
-                desc: "Franquicias de salud y est\u00e9tica en uno de los sectores de mayor crecimiento.",
-                extraClass: "sm:col-span-2 lg:col-span-1",
-              },
-            ].map((c) => (
-              <div
-                key={c.label}
-                className={`bg-white rounded-xl sm:rounded-2xl overflow-hidden hover:shadow-xl transition-all scroll-fade-in ${
-                  c.extraClass || ""
-                }`}
+      {isVideoOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 px-4 py-8"
+          onClick={() => setIsVideoOpen(false)}
+        >
+          <div className="relative mx-auto flex h-full items-center justify-center">
+            <div
+              className="relative aspect-video w-[min(92vw,1100px)] max-w-5xl overflow-hidden rounded-2xl bg-black shadow-[0_30px_90px_rgba(0,0,0,0.45)]"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                aria-label="Cerrar video"
+                onClick={() => setIsVideoOpen(false)}
+                className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-sm font-semibold text-white ring-1 ring-white/20 transition-colors duration-200 hover:bg-black/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
-                <div
-                  className={`bg-gradient-to-br ${c.gradient} h-36 sm:h-48 flex items-center justify-center`}
-                >
-                  <div className="text-4xl sm:text-5xl">{c.icon}</div>
-                </div>
-                <div className="p-6 sm:p-8">
-                  <span className="section-label">{c.label}</span>
-                  <h3 className="text-xl sm:text-2xl font-bold mt-2 sm:mt-3 mb-2 sm:mb-3">
-                    {c.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm sm:text-base">
-                    {c.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
+                X
+              </button>
+              <iframe
+                className="h-full w-full"
+                src="https://www.youtube-nocookie.com/embed/r0Qc7FsEQRU?autoplay=1&rel=0&modestbranding=1&playsinline=1"
+                title="Caso de éxito Totto x Franquicias LATAM"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* ─── Pricing ─── */}
-      <section id="pricing" className="py-16 sm:py-20 lg:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              Elige c&oacute;mo quieres empezar.
-            </h2>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
-            {/* Quiz Gratis */}
-            <div className="price-card glass-card p-6 sm:p-8 rounded-xl sm:rounded-2xl">
-              <h3 className="text-xl sm:text-2xl font-bold mb-2">
-                Quiz Gratis
-              </h3>
-              <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-                Matching + recomendaciones + score
-              </p>
-              <div className="mb-4 sm:mb-6">
-                <span className="text-xs sm:text-sm text-gray-500">
-                  2 minutos
-                </span>
-              </div>
-              <Link
-                href="/quiz"
-                className="block w-full text-center bg-gray-100 text-black px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-gray-200 transition-all font-semibold text-sm sm:text-base"
-              >
-                Comenzar quiz
-              </Link>
-            </div>
-
-            {/* Asesor&iacute;a Premium (Recommended) */}
-            <div className="price-card bg-black text-white p-6 sm:p-8 rounded-xl sm:rounded-2xl relative sm:col-span-2 lg:col-span-1">
-              <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-white text-black px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold">
-                  Recomendado
-                </span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-2 mt-2 sm:mt-0">
-                Asesor&iacute;a Premium
-              </h3>
-              <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base">
-                Quiz + acompa&ntilde;amiento + an&aacute;lisis personalizado
-              </p>
-              <div className="mb-4 sm:mb-6">
-                <span className="text-xs sm:text-sm text-gray-400">
-                  Soporte dedicado durante tu b&uacute;squeda
-                </span>
-              </div>
-              <button
-                onClick={showForm}
-                className="block w-full text-center bg-white text-black px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-gray-100 transition-all font-semibold text-sm sm:text-base"
-              >
-                Solicitar asesor&iacute;a
-              </button>
-            </div>
-
-            {/* Enterprise */}
-            <div className="price-card glass-card p-6 sm:p-8 rounded-xl sm:rounded-2xl">
-              <h3 className="text-xl sm:text-2xl font-bold mb-2">
-                Enterprise
-              </h3>
-              <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
-                Para grupos de inversi&oacute;n + acceso completo
-              </p>
-              <div className="mb-4 sm:mb-6">
-                <span className="text-xs sm:text-sm text-gray-500">
-                  Multi-franquicia + soporte dedicado
-                </span>
-              </div>
-              <button
-                onClick={showForm}
-                className="block w-full text-center bg-gray-100 text-black px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-gray-200 transition-all font-semibold text-sm sm:text-base"
-              >
-                Agendar llamada
-              </button>
-            </div>
-          </div>
-
-          <p className="text-center text-xs sm:text-sm text-gray-500 mt-6 sm:mt-8">
-            El quiz es 100% gratuito y sin compromiso
-          </p>
-        </div>
-      </section>
+      )}
 
       {/* ─── FAQ ─── */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-gray-50">
+      <section className="py-16 sm:py-20 lg:py-24 bg-transparent">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
@@ -1252,8 +1073,12 @@ export default function HomePage() {
       </section>
 
       {/* ─── Final CTA ─── */}
-      <section id="contacto" className="py-16 sm:py-20 lg:py-24 bg-black text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+      <section id="contacto" className="relative overflow-hidden py-16 sm:py-20 lg:py-24 text-white">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-4 inset-y-5 rounded-[28px] border border-white/10 bg-slate-950/76 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.6)] backdrop-blur-xl sm:inset-x-6 sm:inset-y-6 lg:inset-x-8"
+        />
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
             &iquest;Listo para encontrar
             <br className="hidden sm:block" /> tu franquicia ideal?
@@ -1265,7 +1090,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/quiz"
-            className="inline-block bg-white text-black px-8 sm:px-10 py-4 sm:py-5 rounded-lg hover:bg-gray-100 transition-all font-bold text-base sm:text-lg w-full sm:w-auto"
+            className="inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-8 sm:px-10 py-4 sm:py-5 text-[15px] font-semibold tracking-tight text-white shadow-[0_18px_40px_-18px_rgba(59,130,246,0.75)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] sm:w-auto sm:text-base"
           >
             Comenzar Quiz Gratis
           </Link>
@@ -1440,7 +1265,7 @@ export default function HomePage() {
       )}
 
       {/* ─── Footer ─── */}
-      <footer className="bg-white border-t border-gray-100 py-8 sm:py-12">
+      <footer className="bg-transparent border-t border-black/5 py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
             <div className="col-span-2 sm:col-span-1">

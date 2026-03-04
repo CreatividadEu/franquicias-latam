@@ -772,7 +772,7 @@ export function ExpressDiagnosisWidget({
               target="_blank"
               rel="noreferrer"
               onClick={() => setShowWhatsAppCapture(true)}
-              className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#2860E7] px-5 py-[0.95rem] text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-[1px] hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.35)]"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-7 py-4 text-[15px] font-semibold tracking-tight text-white shadow-[0_18px_40px_-18px_rgba(59,130,246,0.75)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] sm:text-base"
             >
               Agendar siguiente paso
             </a>

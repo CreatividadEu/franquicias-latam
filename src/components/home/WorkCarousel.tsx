@@ -379,7 +379,7 @@ export function WorkCarousel() {
     <section
       id="work"
       aria-label="Work and clients"
-      className="bg-white pt-8 md:pt-10 pb-16 sm:pb-20 lg:pb-24"
+      className="bg-transparent pt-8 md:pt-10 pb-16 sm:pb-20 lg:pb-24"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
