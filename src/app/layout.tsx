@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import WhatsAppWidget from "@/components/WhatsAppWidget";
 
 const satoshi = localFont({
   src: [
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${satoshi.variable} font-sans antialiased`}>
         {children}
+        <WhatsAppWidget />
       </body>
     </html>
   );
