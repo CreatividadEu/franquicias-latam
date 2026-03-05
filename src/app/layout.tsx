@@ -3,7 +3,13 @@ import localFont from "next/font/local";
 import "./globals.css";
 
 const satoshi = localFont({
-  src: "../../public/fonts/Satoshi-Variable.ttf",
+  src: [
+    { path: "../../public/fonts/Satoshi-Light.ttf", weight: "300", style: "normal" },
+    { path: "../../public/fonts/Satoshi-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../../public/fonts/Satoshi-Medium.ttf", weight: "500", style: "normal" },
+    { path: "../../public/fonts/Satoshi-Bold.ttf", weight: "700", style: "normal" },
+    { path: "../../public/fonts/Satoshi-Black.ttf", weight: "900", style: "normal" },
+  ],
   variable: "--font-inter",
   display: "swap",
 });

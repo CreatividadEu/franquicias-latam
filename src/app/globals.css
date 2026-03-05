@@ -153,6 +153,10 @@ html {
     background: transparent;
     isolation: isolate;
     letter-spacing: -0.04em;
+    font-synthesis: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 }
 
