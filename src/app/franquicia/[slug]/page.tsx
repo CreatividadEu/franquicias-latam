@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { matchesFranchiseSlug } from "@/lib/franchiseSlug";
 import { ensureFranchiseLandingConfig } from "@/lib/franchiseLanding";
@@ -223,8 +224,19 @@ export default async function FranchiseLandingPage({
   );
 
   return (
-    <main className="min-h-screen overflow-x-clip px-4 py-8 text-[#171717] sm:px-6 sm:py-10 lg:py-12">
-      <div className="mx-auto w-full max-w-6xl space-y-10 sm:space-y-12">
+    <main className="min-h-screen overflow-x-clip px-4 py-8 text-[#171717] sm:px-6 sm:py-10 lg:py-14">
+      {/* Back navigation */}
+      <div className="mx-auto mb-8 w-full max-w-6xl">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition-colors hover:text-slate-700"
+        >
+          <ChevronLeft className="size-4" />
+          Volver al inicio
+        </Link>
+      </div>
+
+      <div className="mx-auto w-full max-w-6xl space-y-16 sm:space-y-20">
         <HeroFranchise
           title={headline}
           description={subheadline}
@@ -248,6 +260,7 @@ export default async function FranchiseLandingPage({
           showVideo={Boolean(featureFlags?.showVideo)}
           name={franchise.name}
           galleryUrls={featureFlags?.showGallery ? galleryUrls : []}
+          logoUrl={franchise.logo}
         />
 
         <ValueProposition items={valueItems} />

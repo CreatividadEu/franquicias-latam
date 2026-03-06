@@ -16,49 +16,22 @@ import {
   Store,
   TrendingUp,
   Wallet,
+  Globe2,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type StatItem = {
-  label: string;
-  value: string;
-};
+// ── Types ────────────────────────────────────────────────────────────
 
-type FeatureItem = {
-  icon: ReactNode;
-  title: string;
-  description: string;
-};
-
-type StepItem = {
-  step: string;
-  title: string;
-  description: string;
-};
-
-type SupportItem = {
-  icon: ReactNode;
-  title: string;
-  description: string;
-};
-
-type InvestmentItem = {
-  label: string;
-  value: string;
-};
-
-type QuoteItem = {
-  title: string;
-  body: string;
-};
-
-type CoverageItem = {
-  flag: string;
-  code: string;
-};
-
+type StatItem = { label: string; value: string };
+type FeatureItem = { icon: ReactNode; title: string; description: string };
+type StepItem = { step: string; title: string; description: string };
+type SupportItem = { icon: ReactNode; title: string; description: string };
+type InvestmentItem = { label: string; value: string };
+type QuoteItem = { title: string; body: string };
+type CoverageItem = { flag: string; code: string };
 type ValuePointItem = {
   icon: ReactNode;
   title: string;
@@ -67,6 +40,8 @@ type ValuePointItem = {
   surfaceClassName: string;
   borderClassName: string;
 };
+
+// ── Internal primitives ──────────────────────────────────────────────
 
 function SurfaceCard({
   children,
@@ -98,12 +73,17 @@ function SectionHeader({
 }) {
   return (
     <div className="space-y-3">
-      {badge ? <p className="section-label">{badge}</p> : null}
-      <h2 className="max-w-3xl text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.85rem] lg:leading-[1.02]">
+      {badge ? (
+        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <span className="inline-block h-px w-4 bg-slate-300" />
+          {badge}
+        </p>
+      ) : null}
+      <h2 className="max-w-3xl text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.75rem] lg:leading-[1.04]">
         {title}
       </h2>
       {description ? (
-        <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+        <p className="max-w-2xl text-sm leading-relaxed text-slate-500 sm:text-base">
           {description}
         </p>
       ) : null}
@@ -117,15 +97,17 @@ function SectionContainer({
   description,
   children,
   className,
+  id,
 }: {
   badge?: string;
   title: string;
   description?: string;
   children: ReactNode;
   className?: string;
+  id?: string;
 }) {
   return (
-    <section className={cn("space-y-6", className)}>
+    <section id={id} className={cn("space-y-8", className)}>
       <SectionHeader badge={badge} title={title} description={description} />
       {children}
     </section>
@@ -144,13 +126,12 @@ function MediaAsset({
   sizes: string;
 }) {
   if (src.startsWith("/")) {
-    return <Image src={src} alt={alt} fill sizes={sizes} className={className} />;
+    return (
+      <Image src={src} alt={alt} fill sizes={sizes} className={className} />
+    );
   }
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} className={className} />
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={alt} className={className} />;
 }
 
 function buildEmbedUrl(url: string) {
@@ -158,45 +139,47 @@ function buildEmbedUrl(url: string) {
     const videoId = new URL(url).searchParams.get("v");
     return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : url;
   }
-
   if (url.includes("youtu.be/")) {
     const videoId = url.split("youtu.be/")[1]?.split("?")[0];
     return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : url;
   }
-
   if (url.includes("vimeo.com/")) {
     const match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
     return match?.[1] ? `https://player.vimeo.com/video/${match[1]}` : url;
   }
-
   return url;
 }
 
-function StatCard({ item }: { item: StatItem }) {
+// ── Stat pill (hero) ─────────────────────────────────────────────────
+
+function StatPill({ item }: { item: StatItem }) {
   return (
-    <div className="glass-card rounded-2xl border border-slate-200/70 bg-white/72 px-4 py-4 shadow-[0_14px_32px_-24px_rgba(15,23,42,0.22)]">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+    <div className="flex items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 shadow-[0_8px_20px_-12px_rgba(15,23,42,0.14)]">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
         {item.label}
-      </p>
-      <p className="mt-2 text-sm font-semibold tracking-tight text-slate-900 sm:text-base">
+      </span>
+      <span className="h-3 w-px bg-slate-200" />
+      <span className="text-sm font-semibold tracking-tight text-slate-900">
         {item.value}
-      </p>
+      </span>
     </div>
   );
 }
 
+// ── Feature card ─────────────────────────────────────────────────────
+
 function FeatureCard({ item }: { item: FeatureItem }) {
   return (
-    <SurfaceCard className="rounded-2xl transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_-34px_rgba(15,23,42,0.24)]">
-      <CardContent className="space-y-4 p-6">
-        <div className="inline-flex rounded-2xl border border-blue-100/90 bg-gradient-to-br from-blue-50 to-cyan-50 p-3 text-blue-700 shadow-[0_12px_28px_-22px_rgba(59,130,246,0.5)]">
+    <SurfaceCard className="rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-32px_rgba(15,23,42,0.22)]">
+      <CardContent className="space-y-5 p-6">
+        <div className="inline-flex size-11 items-center justify-center rounded-2xl border border-blue-100/90 bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-700 shadow-[0_10px_24px_-18px_rgba(59,130,246,0.45)]">
           {item.icon}
         </div>
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+        <div className="space-y-1.5">
+          <h3 className="text-base font-semibold tracking-tight text-slate-900">
             {item.title}
           </h3>
-          <p className="text-sm leading-relaxed text-slate-600">
+          <p className="text-sm leading-relaxed text-slate-500">
             {item.description}
           </p>
         </div>
@@ -205,89 +188,103 @@ function FeatureCard({ item }: { item: FeatureItem }) {
   );
 }
 
+// ── Step card ────────────────────────────────────────────────────────
+
 function StepCard({ item }: { item: StepItem }) {
   return (
-    <SurfaceCard className="rounded-2xl transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_-34px_rgba(15,23,42,0.24)]">
+    <SurfaceCard className="rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-32px_rgba(15,23,42,0.22)]">
       <CardContent className="relative overflow-hidden p-6">
-        <div className="pointer-events-none absolute right-4 top-2 text-6xl font-semibold leading-none text-blue-100">
+        <span className="pointer-events-none absolute right-5 top-3 text-7xl font-bold leading-none tracking-tighter text-slate-100 select-none">
           {item.step}
-        </div>
+        </span>
         <div className="relative space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">
+            Paso {item.step}
+          </p>
           <h3 className="text-lg font-semibold tracking-tight text-slate-900">
             {item.title}
           </h3>
-          <p className="text-sm text-slate-600">{item.description}</p>
+          <p className="text-sm leading-relaxed text-slate-500">
+            {item.description}
+          </p>
         </div>
       </CardContent>
     </SurfaceCard>
   );
 }
+
+// ── Support card ─────────────────────────────────────────────────────
 
 function SupportCard({ item }: { item: SupportItem }) {
   return (
-    <SurfaceCard className="rounded-2xl transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_-34px_rgba(15,23,42,0.24)]">
-      <CardContent className="space-y-3 p-5">
-        <div className="inline-flex rounded-2xl border border-slate-200/80 bg-white/80 p-3 text-slate-700 shadow-[0_12px_28px_-24px_rgba(15,23,42,0.18)]">
+    <SurfaceCard className="rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-32px_rgba(15,23,42,0.22)]">
+      <CardContent className="flex items-start gap-4 p-5">
+        <div className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 text-slate-600 shadow-[0_8px_20px_-14px_rgba(15,23,42,0.2)]">
           {item.icon}
         </div>
         <div className="space-y-1">
-          <h3 className="text-base font-semibold tracking-tight text-slate-900">
+          <h3 className="text-sm font-semibold tracking-tight text-slate-900">
             {item.title}
           </h3>
-          <p className="text-sm text-slate-600">{item.description}</p>
+          <p className="text-sm leading-relaxed text-slate-500">
+            {item.description}
+          </p>
         </div>
       </CardContent>
     </SurfaceCard>
   );
 }
 
+// ── Quote / FAQ card ─────────────────────────────────────────────────
+
 function QuoteCard({ item }: { item: QuoteItem }) {
   return (
-    <div className="glass-card rounded-2xl border border-slate-200/70 bg-white/78 p-5 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_-34px_rgba(15,23,42,0.24)]">
-      <div className="space-y-3">
-        <div className="inline-flex rounded-full border border-blue-100/80 bg-gradient-to-r from-blue-50 to-cyan-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-700">
-          <Quote className="mr-2 size-3.5" />
-          Señal
-        </div>
-        <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+    <div className="space-y-4 rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_12px_32px_-20px_rgba(15,23,42,0.14)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_50px_-28px_rgba(15,23,42,0.2)]">
+      <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600 border border-blue-100/80">
+        <Quote className="size-4" />
+      </div>
+      <div className="space-y-2">
+        <h3 className="text-base font-semibold tracking-tight text-slate-900">
           {item.title}
         </h3>
-        <p className="text-sm leading-relaxed text-slate-600">{item.body}</p>
+        <p className="text-sm leading-relaxed text-slate-500">{item.body}</p>
       </div>
     </div>
   );
 }
+
+// ── Value point card (Video section) ────────────────────────────────
 
 function ValuePointCard({ item }: { item: ValuePointItem }) {
   return (
     <div
       className={cn(
-        "group rounded-2xl border px-4 py-4 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md",
+        "group flex items-start gap-3 rounded-2xl border px-4 py-3.5 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md",
         item.surfaceClassName,
         item.borderClassName,
       )}
     >
-      <div className="flex items-start gap-3">
-        <span
-          className={cn(
-            "inline-flex size-10 shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_14px_28px_-20px_rgba(15,23,42,0.35)]",
-            item.iconClassName,
-          )}
-        >
-          {item.icon}
-        </span>
-        <div className="space-y-1">
-          <p className="text-sm font-semibold tracking-tight text-slate-900 sm:text-base">
-            {item.title}
-          </p>
-          <p className="text-xs leading-relaxed text-slate-600 sm:text-sm">
-            {item.description}
-          </p>
-        </div>
+      <span
+        className={cn(
+          "mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-white shadow-[0_10px_24px_-16px_rgba(15,23,42,0.3)]",
+          item.iconClassName,
+        )}
+      >
+        {item.icon}
+      </span>
+      <div className="space-y-0.5">
+        <p className="text-sm font-semibold tracking-tight text-slate-900">
+          {item.title}
+        </p>
+        <p className="text-xs leading-relaxed text-slate-500 sm:text-sm">
+          {item.description}
+        </p>
       </div>
     </div>
   );
 }
+
+// ── Hero visual (right side) ─────────────────────────────────────────
 
 function HeroVisual({
   imageUrl,
@@ -307,19 +304,19 @@ function HeroVisual({
 
   return (
     <SurfaceCard className="overflow-hidden rounded-3xl">
-      <CardContent className="space-y-4 p-4 sm:p-5">
-        <div className="relative min-h-[320px] overflow-hidden rounded-3xl border border-slate-200/70 bg-slate-100 shadow-[0_20px_60px_rgba(0,0,0,0.08)]">
+      <CardContent className="space-y-3 p-4 sm:p-5">
+        <div className="relative min-h-[340px] overflow-hidden rounded-2xl border border-slate-200/60 bg-slate-100 shadow-[0_16px_48px_-24px_rgba(15,23,42,0.18)]">
           {shouldUseVideo && videoUrl ? (
             videoUrl.endsWith(".mp4") ? (
               <video
                 controls
                 playsInline
-                className="h-full min-h-[320px] w-full object-cover"
+                className="h-full min-h-[340px] w-full object-cover"
                 src={videoUrl}
               />
             ) : (
               <iframe
-                className="h-full min-h-[320px] w-full"
+                className="h-full min-h-[340px] w-full"
                 src={buildEmbedUrl(videoUrl)}
                 title={`Visual de ${name}`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -330,28 +327,28 @@ function HeroVisual({
             <MediaAsset
               src={imageUrl}
               alt={name}
-              sizes="(min-width: 1024px) 42vw, 100vw"
-              className="h-full min-h-[320px] w-full object-cover"
+              sizes="(min-width: 1024px) 44vw, 100vw"
+              className="h-full min-h-[340px] w-full object-cover"
             />
           ) : (
-            <div className="flex h-full min-h-[320px] items-center justify-center bg-gradient-to-br from-emerald-100 via-white to-slate-100 text-slate-700">
-              <div className="text-center">
+            <div className="flex h-full min-h-[340px] items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-100">
+              <div className="text-center text-slate-400">
                 <Play className="mx-auto size-10" />
-                <p className="mt-3 text-sm font-medium">Visual principal pendiente</p>
+                <p className="mt-3 text-sm font-medium">Imagen principal pendiente</p>
               </div>
             </div>
           )}
         </div>
 
-        {previewImages.length > 0 ? (
+        {previewImages.length > 0 && (
           <div className="grid gap-3 sm:grid-cols-2">
-            {previewImages.map((imageUrl, index) => (
+            {previewImages.map((url, index) => (
               <div
-                key={`${imageUrl}-${index}`}
-                className="relative h-20 overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-100 shadow-[0_14px_36px_-28px_rgba(0,0,0,0.16)]"
+                key={`${url}-${index}`}
+                className="relative h-24 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-100 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.14)]"
               >
                 <MediaAsset
-                  src={imageUrl}
+                  src={url}
                   alt={`${name} vista ${index + 1}`}
                   sizes="(min-width: 640px) 18vw, 40vw"
                   className="h-full w-full object-cover"
@@ -359,11 +356,13 @@ function HeroVisual({
               </div>
             ))}
           </div>
-        ) : null}
+        )}
       </CardContent>
     </SurfaceCard>
   );
 }
+
+// ── Video player ─────────────────────────────────────────────────────
 
 function VideoPlayer({
   title,
@@ -379,10 +378,15 @@ function VideoPlayer({
   const canEmbed = showVideo && Boolean(videoUrl);
 
   return (
-    <div className="group relative aspect-video overflow-hidden rounded-[28px] border border-slate-200/70 bg-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)] md:rounded-[34px]">
+    <div className="group relative aspect-video overflow-hidden rounded-[24px] border border-slate-200/70 bg-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)]">
       {canEmbed && videoUrl ? (
         videoUrl.endsWith(".mp4") ? (
-          <video controls playsInline className="h-full w-full object-cover" src={videoUrl} />
+          <video
+            controls
+            playsInline
+            className="h-full w-full object-cover"
+            src={videoUrl}
+          />
         ) : (
           <iframe
             className="h-full w-full"
@@ -397,25 +401,29 @@ function VideoPlayer({
           <MediaAsset
             src={imageUrl}
             alt={title}
-            sizes="(min-width: 1024px) 42vw, 100vw"
+            sizes="(min-width: 1024px) 44vw, 100vw"
             className="h-full w-full object-cover"
           />
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.08),rgba(2,6,23,0.38))]" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.06),rgba(2,6,23,0.4))]" />
         </>
       ) : (
-        <div className="flex h-full items-center justify-center bg-gradient-to-br from-emerald-100 via-white to-slate-100">
-          <Play className="size-10 text-slate-500" />
+        <div className="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-100">
+          <Play className="size-10 text-slate-400" />
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <span className="inline-flex size-16 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white shadow-lg backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">
-          <Play className="ml-1 size-6 fill-current" />
-        </span>
-      </div>
+      {(canEmbed || !videoUrl) && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <span className="inline-flex size-14 items-center justify-center rounded-full border border-white/20 bg-black/30 text-white shadow-lg backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">
+            <Play className="ml-1 size-5 fill-current" />
+          </span>
+        </div>
+      )}
     </div>
   );
 }
+
+// ── Chatbot panel ────────────────────────────────────────────────────
 
 function ChatbotPanel({
   assistant,
@@ -432,18 +440,19 @@ function ChatbotPanel({
 
   return (
     <SurfaceCard className="h-full rounded-3xl">
-      <CardContent className="flex min-h-[420px] flex-col justify-between p-6">
-        <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600">
-            <Circle className="size-2 fill-current text-slate-400" />
+      <CardContent className="flex min-h-[380px] flex-col justify-between p-6">
+        <div className="space-y-5">
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500">
+            <Circle className="size-2 fill-current text-slate-300" />
             Asistente disponible
           </div>
           <div className="space-y-2">
             <h3 className="text-xl font-semibold tracking-tight text-slate-900">
-              Activa el acompañamiento consultivo.
+              Consultivo guiado para esta franquicia.
             </h3>
-            <p className="text-sm leading-relaxed text-slate-600">
-              Esta marca responde preguntas de forma guiada cuando el proceso consultivo está habilitado.
+            <p className="text-sm leading-relaxed text-slate-500">
+              Cuando el proceso consultivo está habilitado, el asistente responde
+              preguntas sobre inversión, territorios y modelo.
             </p>
           </div>
         </div>
@@ -453,7 +462,7 @@ function ChatbotPanel({
             <a href={`mailto:${contactEmail}`}>Hablar con el equipo</a>
           </Button>
         ) : (
-          <div className="rounded-2xl border border-slate-200/70 bg-slate-50 p-4 text-sm text-slate-600">
+          <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 text-sm text-slate-500">
             Solicita el dossier para continuar con soporte consultivo.
           </div>
         )}
@@ -461,6 +470,8 @@ function ChatbotPanel({
     </SurfaceCard>
   );
 }
+
+// ── Exports ──────────────────────────────────────────────────────────
 
 export function HeroFranchise({
   title,
@@ -475,6 +486,7 @@ export function HeroFranchise({
   showVideo,
   name,
   galleryUrls,
+  logoUrl,
 }: {
   title: string;
   description: string;
@@ -488,28 +500,45 @@ export function HeroFranchise({
   showVideo: boolean;
   name: string;
   galleryUrls: string[];
+  logoUrl?: string | null;
 }) {
   return (
-    <section className="grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-      <div className="space-y-6">
+    <section className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
+      {/* Left — text */}
+      <div className="space-y-8">
+        {/* Brand mark + sector badge */}
+        <div className="flex items-center gap-3">
+          {logoUrl && (
+            <div className="relative size-14 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_24px_-14px_rgba(15,23,42,0.2)]">
+              <MediaAsset
+                src={logoUrl}
+                alt={name}
+                sizes="56px"
+                className="h-full w-full object-contain p-1.5"
+              />
+            </div>
+          )}
+          <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+            <span className="inline-block h-px w-4 bg-slate-300" />
+            Franquicia verificada · LATAM
+          </p>
+        </div>
+
+        {/* Headline */}
         <div className="space-y-4">
-          <p className="section-label">Franquicia validada</p>
-          <h1 className="max-w-3xl text-4xl font-semibold leading-[0.96] tracking-tight text-slate-950 sm:text-5xl lg:text-[4.4rem]">
+          <h1 className="text-5xl font-semibold leading-[0.94] tracking-tight text-slate-950 sm:text-6xl lg:text-[5rem]">
             {title}
           </h1>
-          <p className="max-w-[42ch] text-base leading-relaxed text-slate-600 sm:text-lg">
+          <p className="max-w-[44ch] text-lg leading-relaxed text-slate-500">
             {description}
           </p>
         </div>
 
+        {/* CTAs */}
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button
-            asChild
-            size="lg"
-            className="h-auto"
-          >
+          <Button asChild size="lg" className="h-auto">
             <Link href={primaryHref}>
-              Aplicar ahora
+              Solicitar información
               <ArrowRight className="size-5" />
             </Link>
           </Button>
@@ -531,13 +560,15 @@ export function HeroFranchise({
           )}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        {/* Stat pills */}
+        <div className="flex flex-wrap gap-2.5">
           {stats.slice(0, 3).map((item) => (
-            <StatCard key={item.label} item={item} />
+            <StatPill key={item.label} item={item} />
           ))}
         </div>
       </div>
 
+      {/* Right — visual */}
       <HeroVisual
         imageUrl={imageUrl}
         videoUrl={videoUrl}
@@ -549,16 +580,12 @@ export function HeroFranchise({
   );
 }
 
-export function ValueProposition({
-  items,
-}: {
-  items: FeatureItem[];
-}) {
+export function ValueProposition({ items }: { items: FeatureItem[] }) {
   return (
     <SectionContainer
       badge="Ventajas"
       title="Por qué elegir este modelo."
-      description="Una lectura corta del valor operativo y la claridad con la que se transfiere el sistema."
+      description="Una lectura rápida del valor operativo y la claridad con la que se transfiere el sistema."
     >
       <div className="grid gap-4 md:grid-cols-3">
         {items.slice(0, 3).map((item) => (
@@ -613,23 +640,13 @@ export function VideoSection({
 
   return (
     <SectionContainer
-      badge="Video / Tour"
-      title="Descubre cómo funciona esta franquicia."
+      badge="Video · Tour"
+      title="Descubre cómo funciona."
       description="Una lectura visual rápida para entender el modelo, la experiencia y la lógica de expansión."
     >
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div className="space-y-5">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-white/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-700 shadow-[0_12px_24px_-20px_rgba(59,130,246,0.4)]">
-              <Circle className="size-2 fill-current" />
-              Lectura guiada
-            </div>
-            <p className="max-w-md text-sm leading-relaxed text-slate-600 sm:text-base">
-              Revisa los puntos que más influyen en fit, ejecución y claridad operativa antes de avanzar.
-            </p>
-          </div>
-
-          <div className="space-y-3">
+      <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <div className="space-y-6">
+          <div className="space-y-4">
             {valuePoints.map((item) => (
               <ValuePointCard key={item.title} item={item} />
             ))}
@@ -649,10 +666,6 @@ export function VideoSection({
               </Link>
             </Button>
           </div>
-
-          <p className="text-sm font-medium text-slate-500">
-            Revisión 1:1 en 15 minutos.
-          </p>
         </div>
 
         <VideoPlayer
@@ -666,33 +679,38 @@ export function VideoSection({
   );
 }
 
-export function CoverageMarkets({
-  items,
-}: {
-  items: CoverageItem[];
-}) {
+export function CoverageMarkets({ items }: { items: CoverageItem[] }) {
   return (
     <SectionContainer
       badge="Mercados"
-      title="Cobertura / Mercados."
-      description={items.length > 0 ? `+${items.length} países activos` : "Cobertura en actualización"}
+      title="Cobertura activa."
+      description={
+        items.length > 0
+          ? `Presencia validada en ${items.length} mercado${items.length !== 1 ? "s" : ""} de la región.`
+          : "Cobertura en actualización."
+      }
     >
       <SurfaceCard className="rounded-3xl">
-        <CardContent className="flex flex-wrap gap-3 p-5 sm:p-6">
+        <CardContent className="p-6">
           {items.length > 0 ? (
-            items.map((item) => (
-              <div
-                key={`${item.code}-${item.flag}`}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white px-4 py-2.5"
-              >
-                <span className="text-lg leading-none">{item.flag}</span>
-                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
-                  {item.code}
-                </span>
-              </div>
-            ))
+            <div className="flex flex-wrap gap-3">
+              {items.map((item) => (
+                <div
+                  key={`${item.code}-${item.flag}`}
+                  className="inline-flex items-center gap-2.5 rounded-full border border-slate-200/80 bg-white px-4 py-2.5 shadow-[0_4px_12px_-8px_rgba(15,23,42,0.12)] transition-shadow hover:shadow-[0_8px_20px_-10px_rgba(15,23,42,0.16)]"
+                >
+                  <span className="text-xl leading-none">{item.flag}</span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
+                    {item.code}
+                  </span>
+                </div>
+              ))}
+            </div>
           ) : (
-            <p className="text-sm text-slate-500">Mercados activos pendientes de carga.</p>
+            <div className="flex items-center gap-3 text-slate-400">
+              <Globe2 className="size-5" />
+              <p className="text-sm">Mercados activos pendientes de carga.</p>
+            </div>
           )}
         </CardContent>
       </SurfaceCard>
@@ -700,11 +718,7 @@ export function CoverageMarkets({
   );
 }
 
-export function HowItWorks3Steps({
-  items,
-}: {
-  items: StepItem[];
-}) {
+export function HowItWorks3Steps({ items }: { items: StepItem[] }) {
   return (
     <SectionContainer
       badge="Proceso"
@@ -723,8 +737,8 @@ export function HowItWorks3Steps({
 const supportItems: SupportItem[] = [
   {
     icon: <BookOpenCheck className="size-5" />,
-    title: "Manuales",
-    description: "Procesos listos para operar con consistencia.",
+    title: "Manuales operativos",
+    description: "Procesos listos para operar con consistencia desde el día uno.",
   },
   {
     icon: <GraduationCap className="size-5" />,
@@ -733,34 +747,35 @@ const supportItems: SupportItem[] = [
   },
   {
     icon: <Megaphone className="size-5" />,
-    title: "Marketing",
-    description: "Lineamientos para lanzamiento y activación local.",
+    title: "Marketing local",
+    description: "Lineamientos para lanzamiento y activación en tu mercado.",
   },
   {
     icon: <Store className="size-5" />,
-    title: "Apertura",
-    description: "Checklist de despliegue para abrir con orden.",
+    title: "Apertura guiada",
+    description: "Checklist de despliegue para abrir con orden y criterio.",
   },
   {
     icon: <Handshake className="size-5" />,
-    title: "Proveedores",
-    description: "Base homologada para abastecimiento más simple.",
+    title: "Red de proveedores",
+    description: "Base homologada para abastecimiento más simple y rentable.",
   },
   {
     icon: <Headphones className="size-5" />,
-    title: "Soporte",
-    description: "Acompañamiento continuo para decisiones clave.",
+    title: "Soporte continuo",
+    description: "Acompañamiento real para decisiones clave en operación.",
   },
 ];
 
 export function SupportSystem() {
   return (
     <SectionContainer
+      id="support"
       badge="Sistema"
       title="Sistema de soporte."
       description="Seis capas de acompañamiento para operar con menos fricción y más consistencia."
     >
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {supportItems.map((item) => (
           <SupportCard key={item.title} item={item} />
         ))}
@@ -769,35 +784,67 @@ export function SupportSystem() {
   );
 }
 
-export function Investment({
-  items,
-}: {
-  items: InvestmentItem[];
-}) {
+export function Investment({ items }: { items: InvestmentItem[] }) {
+  const primary = items[0];
+  const secondaryItems = items.slice(1, 3);
+
   return (
-    <SectionContainer
-      badge="Finanzas"
-      title="Inversión."
-      description="Una sola banda para leer ticket base, rango y huella de expansión."
-    >
-      <SurfaceCard className="rounded-3xl">
-        <CardContent className="grid gap-5 p-5 sm:grid-cols-3 sm:p-6">
-          {items.slice(0, 3).map((item) => (
-            <div
-              key={item.label}
-              className="space-y-2 rounded-2xl border border-slate-200/70 bg-white/50 p-4"
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                {item.label}
-              </p>
-              <p className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
-                {item.value}
-              </p>
+    <section className="space-y-8">
+      <SectionHeader
+        badge="Inversión"
+        title="Ticket de entrada."
+        description="Una sola banda para leer el capital requerido, el rango total y la huella de expansión."
+      />
+
+      {/* Dark investment card */}
+      <div className="overflow-hidden rounded-3xl bg-slate-950 shadow-[0_32px_80px_-40px_rgba(15,23,42,0.5)]">
+        <div className="p-8 sm:p-10">
+          <div className="space-y-8">
+            {/* Primary metric — big */}
+            {primary && (
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  {primary.label}
+                </p>
+                <p className="text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
+                  {primary.value}
+                </p>
+              </div>
+            )}
+
+            {/* Divider */}
+            <div className="h-px bg-slate-800" />
+
+            {/* Secondary metrics + CTA */}
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex flex-wrap gap-6">
+                {secondaryItems.map((item) => (
+                  <div key={item.label} className="space-y-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      {item.label}
+                    </p>
+                    <p className="text-xl font-semibold tracking-tight text-slate-200 sm:text-2xl">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                asChild
+                size="lg"
+                className="h-auto shrink-0 bg-white text-slate-950 hover:bg-slate-100"
+              >
+                <Link href="/quiz">
+                  Solicitar dossier
+                  <ArrowRight className="size-5" />
+                </Link>
+              </Button>
             </div>
-          ))}
-        </CardContent>
-      </SurfaceCard>
-    </SectionContainer>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -816,11 +863,7 @@ const fallbackQuotes: QuoteItem[] = [
   },
 ];
 
-export function TrustSignals({
-  items,
-}: {
-  items: QuoteItem[];
-}) {
+export function TrustSignals({ items }: { items: QuoteItem[] }) {
   const quotes = items.length > 0 ? items : fallbackQuotes;
 
   return (
@@ -848,30 +891,30 @@ export function ChatbotSection({
   contactEmail?: string | null;
 }) {
   const bullets = [
-    "Preguntas sobre inversión",
-    "Requisitos para aplicar",
-    "Territorios disponibles",
-    "Cómo funciona el modelo",
+    { label: "Inversión y capital requerido", icon: <Wallet className="size-4" /> },
+    { label: "Requisitos para aplicar", icon: <CheckCircle2 className="size-4" /> },
+    { label: "Territorios disponibles", icon: <Globe2 className="size-4" /> },
+    { label: "Cómo funciona el modelo", icon: <TrendingUp className="size-4" /> },
   ];
 
   return (
     <SectionContainer
       badge="Asistente"
-      title="Habla con el asistente de esta franquicia."
+      title="Habla con el asistente."
       description="Una interfaz consultiva para resolver encaje, territorio y operación antes de tomar la siguiente decisión."
     >
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-        <div className="space-y-5">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-[0_12px_24px_-22px_rgba(15,23,42,0.25)]">
-            <Circle className="size-2 fill-current text-emerald-500" />
+        <div className="space-y-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/80 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+            <Circle className="size-2 fill-current" />
             Asistente activo
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {bullets.map((item, index) => (
               <div
-                key={item}
+                key={item.label}
                 className={cn(
-                  "flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm text-slate-700 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md sm:text-base",
+                  "flex items-center gap-3 rounded-xl border px-4 py-3 text-sm text-slate-700 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md",
                   index % 2 === 0
                     ? "border-blue-200/70 bg-blue-500/5"
                     : "border-emerald-200/70 bg-emerald-500/5",
@@ -879,15 +922,15 @@ export function ChatbotSection({
               >
                 <span
                   className={cn(
-                    "inline-flex size-8 items-center justify-center rounded-full text-white shadow-[0_12px_24px_-18px_rgba(15,23,42,0.28)]",
+                    "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-white shadow-[0_8px_18px_-12px_rgba(15,23,42,0.28)]",
                     index % 2 === 0
                       ? "bg-gradient-to-br from-blue-600 to-cyan-500"
                       : "bg-gradient-to-br from-emerald-500 to-teal-500",
                   )}
                 >
-                  <Circle className="size-2 fill-current" />
+                  {item.icon}
                 </span>
-                <span>{item}</span>
+                <span>{item.label}</span>
               </div>
             ))}
           </div>
@@ -907,61 +950,45 @@ export function CTASection({
   headline,
   description,
   applyHref,
-  spotsFilled = 10,
-  spotsTotal = 12,
 }: {
   headline: string;
   description: string;
   applyHref: string;
+  // Legacy props kept for compat
   spotsFilled?: number;
   spotsTotal?: number;
 }) {
-  const safeTotal = Math.max(spotsTotal, 1);
-  const filled = Math.min(spotsFilled, safeTotal);
-  const available = Math.max(safeTotal - filled, 0);
-  const progress = (filled / safeTotal) * 100;
-
   return (
     <section id="apply" className="flex justify-center">
-      <SurfaceCard className="w-full max-w-4xl rounded-3xl bg-[linear-gradient(180deg,rgba(255,255,255,0.86)_0%,rgba(248,250,252,0.92)_100%)] shadow-[0_24px_64px_-38px_rgba(15,23,42,0.22)]">
-        <CardContent className="space-y-6 p-6 text-center sm:p-8">
-          <div className="space-y-3">
-            <p className="section-label text-center">Aplicación</p>
-            <h2 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-              {headline}
-            </h2>
-            <p className="mx-auto max-w-[44ch] text-sm leading-relaxed text-slate-600 sm:text-base">
-              {description}
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-slate-700">
-              Esta semana revisamos {safeTotal} perfiles
-            </p>
-            <p className="text-sm text-slate-500">
-              {filled} ya reservados · {available} disponibles
-            </p>
-            <div className="mx-auto h-2.5 w-full max-w-xl overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-amber-300"
-                style={{ width: `${progress}%` }}
-              />
+      <div className="w-full max-w-4xl overflow-hidden rounded-3xl bg-slate-950 shadow-[0_32px_80px_-40px_rgba(15,23,42,0.5)]">
+        <div className="p-8 text-center sm:p-12">
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                <span className="inline-block h-px w-4 bg-slate-600" />
+                Aplicación
+              </p>
+              <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
+                {headline}
+              </h2>
+              <p className="mx-auto max-w-[44ch] text-base leading-relaxed text-slate-400">
+                {description}
+              </p>
             </div>
-          </div>
 
-          <Button
-            asChild
-            size="lg"
-            className="h-auto"
-          >
-            <Link href={applyHref}>
-              Aplicar para recibir el dossier
-              <ArrowRight className="size-5" />
-            </Link>
-          </Button>
-        </CardContent>
-      </SurfaceCard>
+            <Button
+              asChild
+              size="lg"
+              className="h-auto bg-white text-slate-950 hover:bg-slate-100"
+            >
+              <Link href={applyHref}>
+                Aplicar para recibir el dossier
+                <ArrowRight className="size-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
