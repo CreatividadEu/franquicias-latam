@@ -230,6 +230,17 @@ export async function PATCH(
       if (profile.countryCoverage !== undefined) {
         profileUpdate.countryCoverage = profile.countryCoverage || null;
       }
+      // Landing phase 1 fields
+      if (profile.heroTitle !== undefined) profileUpdate.heroTitle = profile.heroTitle || null;
+      if (profile.heroSubtitle !== undefined) profileUpdate.heroSubtitle = profile.heroSubtitle || null;
+      if (profile.heroCtaLabel !== undefined) profileUpdate.heroCtaLabel = profile.heroCtaLabel || null;
+      if (profile.heroStats !== undefined) profileUpdate.heroStats = profile.heroStats ?? null;
+      if (profile.showReviewsBadge !== undefined) profileUpdate.showReviewsBadge = Boolean(profile.showReviewsBadge);
+      if (profile.reviewRating !== undefined) profileUpdate.reviewRating = profile.reviewRating === "" || profile.reviewRating === null ? null : parseFloat(profile.reviewRating);
+      if (profile.reviewBadgeLabel !== undefined) profileUpdate.reviewBadgeLabel = profile.reviewBadgeLabel || null;
+      if (profile.reviewAvatarUrls !== undefined) profileUpdate.reviewAvatarUrls = Array.isArray(profile.reviewAvatarUrls) ? profile.reviewAvatarUrls : null;
+      if (profile.showFranchiseLogo !== undefined) profileUpdate.showFranchiseLogo = Boolean(profile.showFranchiseLogo);
+      if (profile.franchiseLogoUrl !== undefined) profileUpdate.franchiseLogoUrl = profile.franchiseLogoUrl || null;
 
       await prisma.franchiseProfile.update({
         where: { franchiseId: id },

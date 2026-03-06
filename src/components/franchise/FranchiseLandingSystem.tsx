@@ -473,20 +473,99 @@ function ChatbotPanel({
 
 // ── Exports ──────────────────────────────────────────────────────────
 
+// ── Reviews badge ────────────────────────────────────────────────────
+
+function ReviewsBadge({
+  rating,
+  label,
+  avatarUrls,
+}: {
+  rating: number;
+  label?: string | null;
+  avatarUrls: string[];
+}) {
+  const placeholderColors = ["bg-blue-400", "bg-emerald-400", "bg-amber-400"];
+  const displayAvatars = avatarUrls.filter(Boolean).slice(0, 4);
+  const safeRating = Math.min(5, Math.max(0, rating));
+
+  return (
+    <div className="absolute bottom-8 right-6 hidden md:block">
+      <div className="flex items-center gap-3 rounded-2xl border border-white/20 bg-white px-4 py-3 shadow-[0_20px_50px_-20px_rgba(15,23,42,0.3)]">
+        {/* Overlapping avatars */}
+        <div className="flex -space-x-2">
+          {displayAvatars.length > 0
+            ? displayAvatars.map((url, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={i}
+                  src={url}
+                  alt=""
+                  className="size-8 rounded-full border-2 border-white object-cover"
+                />
+              ))
+            : placeholderColors.map((color, i) => (
+                <div
+                  key={i}
+                  className={`size-8 rounded-full border-2 border-white ${color}`}
+                />
+              ))}
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold text-slate-900">
+            {label || "Franquiciados activos"}
+          </p>
+          <div className="flex items-center gap-1.5">
+            <div className="flex">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <svg
+                  key={i}
+                  className={`size-3 ${i <= Math.round(safeRating) ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`}
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              ))}
+            </div>
+            <span className="text-xs font-bold text-slate-700">
+              {safeRating.toFixed(1)} / 5
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── HeroFranchise (full-bleed) ────────────────────────────────────────
+
+export type HeroStatItem = { value: string; label: string };
+
 export function HeroFranchise({
   title,
   description,
   stats,
   primaryHref,
-  secondaryHref,
-  secondaryLabel,
-  secondaryExternal = false,
   imageUrl,
-  videoUrl,
-  showVideo,
   name,
-  galleryUrls,
   logoUrl,
+  // New hero fields
+  heroTitle,
+  heroSubtitle,
+  heroCtaLabel,
+  heroStats,
+  // Reviews badge
+  showReviewsBadge = false,
+  reviewRating = 5,
+  reviewBadgeLabel,
+  reviewAvatarUrls = [],
+  // Legacy props kept for compat
+  secondaryHref: _secondaryHref,
+  secondaryLabel: _secondaryLabel,
+  secondaryExternal: _secondaryExternal,
+  videoUrl: _videoUrl,
+  showVideo: _showVideo,
+  galleryUrls: _galleryUrls,
 }: {
   title: string;
   description: string;
@@ -501,81 +580,115 @@ export function HeroFranchise({
   name: string;
   galleryUrls: string[];
   logoUrl?: string | null;
+  // New
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  heroCtaLabel?: string | null;
+  heroStats?: HeroStatItem[] | null;
+  showReviewsBadge?: boolean;
+  reviewRating?: number | null;
+  reviewBadgeLabel?: string | null;
+  reviewAvatarUrls?: string[] | null;
 }) {
+  const displayTitle = heroTitle || title;
+  const displaySubtitle = heroSubtitle || description;
+  const displayCtaLabel = heroCtaLabel || "Solicitar información";
+  const displayStats =
+    heroStats && heroStats.length > 0 ? heroStats : stats.slice(0, 3);
+
   return (
-    <section className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
-      {/* Left — text */}
-      <div className="space-y-8">
-        {/* Brand mark + sector badge */}
-        <div className="flex items-center gap-3">
-          {logoUrl && (
-            <div className="relative size-14 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_24px_-14px_rgba(15,23,42,0.2)]">
-              <MediaAsset
-                src={logoUrl}
-                alt={name}
-                sizes="56px"
-                className="h-full w-full object-contain p-1.5"
-              />
+    <section className="relative flex min-h-[82vh] items-end overflow-hidden">
+      {/* Background image */}
+      {imageUrl ? (
+        <div className="absolute inset-0">
+          <MediaAsset
+            src={imageUrl}
+            alt={name}
+            sizes="100vw"
+            className="h-full w-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700" />
+      )}
+
+      {/* Gradient overlay — left dark, right transparent */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+
+      {/* Content — bottom-left */}
+      <div className="relative w-full px-8 pb-16 sm:px-10 sm:pb-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-2xl space-y-6">
+            {/* Logo mark */}
+            {logoUrl && (
+              <div className="size-16 overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm">
+                <MediaAsset
+                  src={logoUrl}
+                  alt={name}
+                  sizes="64px"
+                  className="h-full w-full object-contain p-2"
+                />
+              </div>
+            )}
+
+            {/* Badge */}
+            <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
+              <span className="inline-block h-px w-4 bg-white/40" />
+              Franquicia verificada · LATAM
+            </p>
+
+            {/* Headline */}
+            <div className="space-y-3">
+              <h1 className="text-5xl font-bold uppercase leading-[0.92] tracking-tight text-white sm:text-6xl lg:text-7xl">
+                {displayTitle}
+              </h1>
+              <p className="max-w-xl text-lg leading-relaxed text-white/75">
+                {displaySubtitle}
+              </p>
             </div>
-          )}
-          <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-            <span className="inline-block h-px w-4 bg-slate-300" />
-            Franquicia verificada · LATAM
-          </p>
-        </div>
 
-        {/* Headline */}
-        <div className="space-y-4">
-          <h1 className="text-5xl font-semibold leading-[0.94] tracking-tight text-slate-950 sm:text-6xl lg:text-[5rem]">
-            {title}
-          </h1>
-          <p className="max-w-[44ch] text-lg leading-relaxed text-slate-500">
-            {description}
-          </p>
-        </div>
+            {/* CTA */}
+            <div>
+              <Button
+                asChild
+                size="lg"
+                className="h-auto rounded-full bg-white text-slate-950 hover:bg-slate-100"
+              >
+                <Link href={primaryHref}>
+                  {displayCtaLabel}
+                  <ArrowRight className="size-5" />
+                </Link>
+              </Button>
+            </div>
 
-        {/* CTAs */}
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild size="lg" className="h-auto">
-            <Link href={primaryHref}>
-              Solicitar información
-              <ArrowRight className="size-5" />
-            </Link>
-          </Button>
-
-          {secondaryExternal ? (
-            <Button asChild size="lg" variant="outline" className="h-auto">
-              <a href={secondaryHref} target="_blank" rel="noreferrer">
-                {secondaryLabel}
-                <ChevronRight className="size-5" />
-              </a>
-            </Button>
-          ) : (
-            <Button asChild size="lg" variant="outline" className="h-auto">
-              <Link href={secondaryHref}>
-                {secondaryLabel}
-                <ChevronRight className="size-5" />
-              </Link>
-            </Button>
-          )}
-        </div>
-
-        {/* Stat pills */}
-        <div className="flex flex-wrap gap-2.5">
-          {stats.slice(0, 3).map((item) => (
-            <StatPill key={item.label} item={item} />
-          ))}
+            {/* Stats row */}
+            {displayStats.length > 0 && (
+              <div className="flex flex-wrap gap-3 pt-2">
+                {displayStats.map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-sm"
+                  >
+                    <p className="text-xl font-bold text-white">{item.value}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55">
+                      {item.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Right — visual */}
-      <HeroVisual
-        imageUrl={imageUrl}
-        videoUrl={videoUrl}
-        showVideo={showVideo}
-        name={name}
-        galleryUrls={galleryUrls}
-      />
+      {/* Reviews badge — bottom-right */}
+      {showReviewsBadge && (
+        <ReviewsBadge
+          rating={reviewRating ?? 5}
+          label={reviewBadgeLabel}
+          avatarUrls={reviewAvatarUrls ?? []}
+        />
+      )}
     </section>
   );
 }

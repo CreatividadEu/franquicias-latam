@@ -5,6 +5,7 @@ import { matchesFranchiseSlug } from "@/lib/franchiseSlug";
 import { ensureFranchiseLandingConfig } from "@/lib/franchiseLanding";
 import { formatCurrency } from "@/lib/utils";
 import { FranchiseAssist } from "@/components/franchise/FranchiseAssist";
+import { FranchiseLandingNavbar } from "@/components/franchise/FranchiseLandingNavbar";
 import {
   CTASection,
   ChatbotSection,
@@ -224,44 +225,69 @@ export default async function FranchiseLandingPage({
   );
 
   return (
-    <main className="min-h-screen overflow-x-clip px-4 py-8 text-[#171717] sm:px-6 sm:py-10 lg:py-14">
-      {/* Back navigation */}
-      <div className="mx-auto mb-8 w-full max-w-6xl">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition-colors hover:text-slate-700"
-        >
-          <ChevronLeft className="size-4" />
-          Volver al inicio
-        </Link>
-      </div>
+    <main className="min-h-screen overflow-x-clip text-[#171717]">
+      {/* Fixed navbar floats over hero */}
+      <FranchiseLandingNavbar
+        showFranchiseLogo={Boolean(profile?.showFranchiseLogo)}
+        franchiseLogoUrl={profile?.franchiseLogoUrl}
+        franchiseName={franchise.name}
+      />
 
-      <div className="mx-auto w-full max-w-6xl space-y-16 sm:space-y-20">
-        <HeroFranchise
-          title={headline}
-          description={subheadline}
-          stats={stats}
-          primaryHref="/quiz"
-          secondaryHref={
-            featureFlags?.showDownloads && profile?.brochureUrl
-              ? profile.brochureUrl
-              : "#support"
-          }
-          secondaryLabel={
-            featureFlags?.showDownloads && profile?.brochureUrl
-              ? "Ver dossier"
-              : "Ver sistema"
-          }
-          secondaryExternal={Boolean(
-            featureFlags?.showDownloads && profile?.brochureUrl,
-          )}
-          imageUrl={heroImageUrl}
-          videoUrl={heroVideoUrl}
-          showVideo={Boolean(featureFlags?.showVideo)}
-          name={franchise.name}
-          galleryUrls={featureFlags?.showGallery ? galleryUrls : []}
-          logoUrl={franchise.logo}
-        />
+      {/* Full-bleed hero — no container, no padding */}
+      <HeroFranchise
+        title={headline}
+        description={subheadline}
+        stats={stats}
+        primaryHref="/quiz"
+        secondaryHref={
+          featureFlags?.showDownloads && profile?.brochureUrl
+            ? profile.brochureUrl
+            : "#support"
+        }
+        secondaryLabel={
+          featureFlags?.showDownloads && profile?.brochureUrl
+            ? "Ver dossier"
+            : "Ver sistema"
+        }
+        secondaryExternal={Boolean(
+          featureFlags?.showDownloads && profile?.brochureUrl,
+        )}
+        imageUrl={heroImageUrl}
+        videoUrl={heroVideoUrl}
+        showVideo={Boolean(featureFlags?.showVideo)}
+        name={franchise.name}
+        galleryUrls={featureFlags?.showGallery ? galleryUrls : []}
+        logoUrl={franchise.logo}
+        heroTitle={profile?.heroTitle}
+        heroSubtitle={profile?.heroSubtitle}
+        heroCtaLabel={profile?.heroCtaLabel}
+        heroStats={
+          Array.isArray(profile?.heroStats)
+            ? (profile.heroStats as { value: string; label: string }[])
+            : null
+        }
+        showReviewsBadge={Boolean(profile?.showReviewsBadge)}
+        reviewRating={profile?.reviewRating}
+        reviewBadgeLabel={profile?.reviewBadgeLabel}
+        reviewAvatarUrls={
+          Array.isArray(profile?.reviewAvatarUrls)
+            ? (profile.reviewAvatarUrls as string[])
+            : []
+        }
+      />
+
+      {/* Rest of sections in padded container */}
+      <div className="mx-auto w-full max-w-6xl space-y-16 px-4 py-14 sm:px-6 sm:space-y-20">
+        {/* Back navigation */}
+        <div className="-mb-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition-colors hover:text-slate-700"
+          >
+            <ChevronLeft className="size-4" />
+            Volver al inicio
+          </Link>
+        </div>
 
         <ValueProposition items={valueItems} />
 

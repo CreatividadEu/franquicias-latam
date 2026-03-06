@@ -113,6 +113,23 @@ model FranchiseProfile {
   investmentMin    Float?
   investmentMax    Float?
   countryCoverage  String?
+
+  // Hero section
+  heroTitle        String?
+  heroSubtitle     String?
+  heroCtaLabel     String?
+  heroStats        Json?
+
+  // Reviews badge
+  showReviewsBadge  Boolean   @default(false)
+  reviewRating      Float?
+  reviewBadgeLabel  String?
+  reviewAvatarUrls  Json?
+
+  // Navbar
+  showFranchiseLogo Boolean   @default(false)
+  franchiseLogoUrl  String?
+
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 

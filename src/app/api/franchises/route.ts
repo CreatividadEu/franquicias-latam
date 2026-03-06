@@ -215,6 +215,16 @@ export async function POST(request: NextRequest) {
                 ? normalizedProfile.investmentMax
                 : null,
             countryCoverage: normalizedProfile.countryCoverage || null,
+            heroTitle: profile?.heroTitle || null,
+            heroSubtitle: profile?.heroSubtitle || null,
+            heroCtaLabel: profile?.heroCtaLabel || null,
+            heroStats: profile?.heroStats ?? null,
+            showReviewsBadge: Boolean(profile?.showReviewsBadge),
+            reviewRating: profile?.reviewRating ? parseFloat(profile.reviewRating) : null,
+            reviewBadgeLabel: profile?.reviewBadgeLabel || null,
+            reviewAvatarUrls: Array.isArray(profile?.reviewAvatarUrls) ? profile.reviewAvatarUrls : null,
+            showFranchiseLogo: Boolean(profile?.showFranchiseLogo),
+            franchiseLogoUrl: profile?.franchiseLogoUrl || null,
           },
         },
         featureFlags: {

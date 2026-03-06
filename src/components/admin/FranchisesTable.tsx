@@ -38,6 +38,16 @@ interface FranchiseRow {
     investmentMin: number | null;
     investmentMax: number | null;
     countryCoverage: string | null;
+    heroTitle: string | null;
+    heroSubtitle: string | null;
+    heroCtaLabel: string | null;
+    heroStats: { value: string; label: string }[] | null;
+    showReviewsBadge: boolean;
+    reviewRating: number | null;
+    reviewBadgeLabel: string | null;
+    reviewAvatarUrls: string[] | null;
+    showFranchiseLogo: boolean;
+    franchiseLogoUrl: string | null;
   } | null;
   featureFlags: {
     showVideo: boolean;
@@ -205,6 +215,23 @@ export function FranchisesTable({
               ? String(editingFranchise.profile.investmentMax)
               : String(editingFranchise.investmentMax),
           countryCoverage: editingFranchise.profile?.countryCoverage || "",
+          heroTitle: editingFranchise.profile?.heroTitle || "",
+          heroSubtitle: editingFranchise.profile?.heroSubtitle || "",
+          heroCtaLabel: editingFranchise.profile?.heroCtaLabel || "",
+          heroStats: Array.isArray(editingFranchise.profile?.heroStats)
+            ? (editingFranchise.profile.heroStats as { value: string; label: string }[])
+            : [],
+          showReviewsBadge: editingFranchise.profile?.showReviewsBadge ?? false,
+          reviewRating:
+            editingFranchise.profile?.reviewRating != null
+              ? String(editingFranchise.profile.reviewRating)
+              : "",
+          reviewBadgeLabel: editingFranchise.profile?.reviewBadgeLabel || "",
+          reviewAvatarUrls: Array.isArray(editingFranchise.profile?.reviewAvatarUrls)
+            ? (editingFranchise.profile.reviewAvatarUrls as string[])
+            : [],
+          showFranchiseLogo: editingFranchise.profile?.showFranchiseLogo ?? false,
+          franchiseLogoUrl: editingFranchise.profile?.franchiseLogoUrl || "",
         },
         featureFlags: {
           showVideo: editingFranchise.featureFlags?.showVideo || false,

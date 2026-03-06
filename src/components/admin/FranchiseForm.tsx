@@ -45,6 +45,11 @@ interface BotFaqFormData {
   enabled: boolean;
 }
 
+interface HeroStatFormItem {
+  value: string;
+  label: string;
+}
+
 interface FranchiseProfileFormData {
   headline: string;
   subheadline: string;
@@ -55,6 +60,17 @@ interface FranchiseProfileFormData {
   investmentMin: string;
   investmentMax: string;
   countryCoverage: string;
+  // Landing phase 1
+  heroTitle: string;
+  heroSubtitle: string;
+  heroCtaLabel: string;
+  heroStats: HeroStatFormItem[];
+  showReviewsBadge: boolean;
+  reviewRating: string;
+  reviewBadgeLabel: string;
+  reviewAvatarUrls: string[];
+  showFranchiseLogo: boolean;
+  franchiseLogoUrl: string;
 }
 
 interface FranchiseFeatureFlagsFormData {
@@ -132,6 +148,16 @@ const franchiseFormSchema = z.object({
     investmentMin: z.string(),
     investmentMax: z.string(),
     countryCoverage: z.string(),
+    heroTitle: z.string(),
+    heroSubtitle: z.string(),
+    heroCtaLabel: z.string(),
+    heroStats: z.array(z.object({ value: z.string(), label: z.string() })),
+    showReviewsBadge: z.boolean(),
+    reviewRating: z.string(),
+    reviewBadgeLabel: z.string(),
+    reviewAvatarUrls: z.array(z.string()),
+    showFranchiseLogo: z.boolean(),
+    franchiseLogoUrl: z.string(),
   }),
   featureFlags: z.object({
     showVideo: z.boolean(),
@@ -190,6 +216,16 @@ function createEmptyForm(): FranchiseFormData {
       investmentMin: "",
       investmentMax: "",
       countryCoverage: "",
+      heroTitle: "",
+      heroSubtitle: "",
+      heroCtaLabel: "",
+      heroStats: [],
+      showReviewsBadge: false,
+      reviewRating: "",
+      reviewBadgeLabel: "",
+      reviewAvatarUrls: [],
+      showFranchiseLogo: false,
+      franchiseLogoUrl: "",
     },
     featureFlags: {
       showVideo: false,
@@ -223,7 +259,9 @@ function cloneFormData(data?: FranchiseFormData | null): FranchiseFormData {
     coverageCountryIds: [...data.coverageCountryIds],
     profile: {
       ...data.profile,
-      galleryUrls: [...data.profile.galleryUrls],
+      galleryUrls: [...(data.profile.galleryUrls || [])],
+      heroStats: (data.profile.heroStats || []).map((s) => ({ ...s })),
+      reviewAvatarUrls: [...(data.profile.reviewAvatarUrls || [])],
     },
     featureFlags: {
       ...data.featureFlags,
@@ -247,7 +285,7 @@ export function FranchiseForm({
     cloneFormData(initialData)
   );
   const [saving, setSaving] = useState(false);
-  const [uploadingAsset, setUploadingAsset] = useState<"hero" | "gallery" | null>(
+  const [uploadingAsset, setUploadingAsset] = useState<"hero" | "gallery" | "navbarLogo" | "reviewAvatar" | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
@@ -516,6 +554,41 @@ export function FranchiseForm({
       }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al subir la galeria");
+    } finally {
+      setUploadingAsset(null);
+      e.target.value = "";
+    }
+  };
+
+  const handleNavbarLogoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploadingAsset("navbarLogo");
+    try {
+      const url = await uploadSingleImage(file);
+      setProfileField("franchiseLogoUrl", url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al subir el logo");
+    } finally {
+      setUploadingAsset(null);
+      e.target.value = "";
+    }
+  };
+
+  const handleReviewAvatarUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setError(null);
+    setUploadingAsset("reviewAvatar");
+    try {
+      const urls: string[] = [];
+      for (const file of files) {
+        urls.push(await uploadSingleImage(file));
+      }
+      setProfileField("reviewAvatarUrls", [...form.profile.reviewAvatarUrls, ...urls]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al subir avatares");
     } finally {
       setUploadingAsset(null);
       e.target.value = "";
@@ -1130,6 +1203,241 @@ export function FranchiseForm({
                   {fieldErrors.contactEmail && (
                     <p className="text-xs text-red-600">{fieldErrors.contactEmail}</p>
                   )}
+                </div>
+              </div>
+
+              {/* ── Hero ─────────────────────────────────────────── */}
+              <div className="space-y-3 rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-blue-600">Hero</p>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-gray-700">Título hero</label>
+                    <Input
+                      value={form.profile.heroTitle}
+                      onChange={(e) => setProfileField("heroTitle", e.target.value)}
+                      placeholder="Ej: TU MARCA, TU LEGADO"
+                      className="rounded-lg"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-gray-700">CTA del hero</label>
+                    <Input
+                      value={form.profile.heroCtaLabel}
+                      onChange={(e) => setProfileField("heroCtaLabel", e.target.value)}
+                      placeholder="Ej: Solicitar información"
+                      className="rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-gray-700">Subtítulo hero</label>
+                  <textarea
+                    value={form.profile.heroSubtitle}
+                    onChange={(e) => setProfileField("heroSubtitle", e.target.value)}
+                    placeholder="Descripción breve visible bajo el título"
+                    rows={2}
+                    className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Stats del hero (máx 3)</label>
+                  {form.profile.heroStats.map((stat, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <Input
+                        value={stat.value}
+                        onChange={(e) =>
+                          setProfileField(
+                            "heroStats",
+                            form.profile.heroStats.map((s, i) =>
+                              i === idx ? { ...s, value: e.target.value } : s
+                            )
+                          )
+                        }
+                        placeholder="Valor (ej: $50K)"
+                        className="rounded-lg"
+                      />
+                      <Input
+                        value={stat.label}
+                        onChange={(e) =>
+                          setProfileField(
+                            "heroStats",
+                            form.profile.heroStats.map((s, i) =>
+                              i === idx ? { ...s, label: e.target.value } : s
+                            )
+                          )
+                        }
+                        placeholder="Etiqueta (ej: Inversión)"
+                        className="rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          setProfileField(
+                            "heroStats",
+                            form.profile.heroStats.filter((_, i) => i !== idx)
+                          )
+                        }
+                        className="rounded-lg"
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                  {form.profile.heroStats.length < 3 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        setProfileField("heroStats", [
+                          ...form.profile.heroStats,
+                          { value: "", label: "" },
+                        ])
+                      }
+                      className="rounded-lg"
+                    >
+                      + Agregar stat
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Reseñas ──────────────────────────────────────── */}
+              <div className="space-y-3 rounded-xl border border-amber-100 bg-amber-50/40 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-amber-600">Reseñas</p>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={form.profile.showReviewsBadge}
+                      onChange={(e) => setProfileField("showReviewsBadge", e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                    />
+                    Mostrar badge
+                  </label>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-gray-700">Rating (0–5)</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="5"
+                      step="0.1"
+                      value={form.profile.reviewRating}
+                      onChange={(e) => setProfileField("reviewRating", e.target.value)}
+                      placeholder="4.9"
+                      className="rounded-lg"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-gray-700">Texto del badge</label>
+                    <Input
+                      value={form.profile.reviewBadgeLabel}
+                      onChange={(e) => setProfileField("reviewBadgeLabel", e.target.value)}
+                      placeholder="Ej: Franquiciados activos"
+                      className="rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Avatares (URLs, máx 4)</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp,image/avif"
+                    onChange={handleReviewAvatarUpload}
+                    disabled={uploadingAsset !== null}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-amber-50 file:px-3 file:py-1.5 file:font-medium file:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                  {uploadingAsset === "reviewAvatar" && (
+                    <p className="text-xs text-amber-600">Subiendo avatares...</p>
+                  )}
+                  {form.profile.reviewAvatarUrls.map((url, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <Input
+                        value={url}
+                        onChange={(e) =>
+                          setProfileField(
+                            "reviewAvatarUrls",
+                            form.profile.reviewAvatarUrls.map((u, i) =>
+                              i === idx ? e.target.value : u
+                            )
+                          )
+                        }
+                        className="rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          setProfileField(
+                            "reviewAvatarUrls",
+                            form.profile.reviewAvatarUrls.filter((_, i) => i !== idx)
+                          )
+                        }
+                        className="rounded-lg"
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                  {form.profile.reviewAvatarUrls.length < 4 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        setProfileField("reviewAvatarUrls", [
+                          ...form.profile.reviewAvatarUrls,
+                          "",
+                        ])
+                      }
+                      className="rounded-lg"
+                    >
+                      + Agregar URL de avatar
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Navbar ───────────────────────────────────────── */}
+              <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Navbar</p>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={form.profile.showFranchiseLogo}
+                      onChange={(e) => setProfileField("showFranchiseLogo", e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    Mostrar logo franquicia en navbar
+                  </label>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Logo de franquicia (navbar)</label>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif,image/svg+xml"
+                    onChange={handleNavbarLogoUpload}
+                    disabled={uploadingAsset !== null}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:font-medium file:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                  {uploadingAsset === "navbarLogo" && (
+                    <p className="text-xs text-slate-500">Subiendo logo...</p>
+                  )}
+                  <Input
+                    value={form.profile.franchiseLogoUrl}
+                    onChange={(e) => setProfileField("franchiseLogoUrl", e.target.value)}
+                    placeholder="https://... o /uploads/..."
+                    className="rounded-lg"
+                  />
                 </div>
               </div>
             </div>
