@@ -234,7 +234,7 @@ function HowItWorks() {
                       {index + 1}
                     </span>
                     <div className="min-w-0">
-                      <h3 className="text-lg font-bold text-slate-900 sm:text-xl">{card.title}</h3>
+                    do it  <h3 className="text-lg font-bold text-slate-900 sm:text-xl">{card.title}</h3>
                     </div>
                   </div>
                 </article>

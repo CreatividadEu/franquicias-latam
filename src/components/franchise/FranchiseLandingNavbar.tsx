@@ -38,7 +38,7 @@ export function FranchiseLandingNavbar({
             alt="Franquicias LATAM"
             width={640}
             height={160}
-            className="h-[6.4rem] w-auto sm:h-32"
+            className="h-10 w-auto sm:h-11"
             priority
           />
         </Link>
