@@ -12,6 +12,7 @@ import {
   Megaphone,
   Play,
   Quote,
+  Ribbon,
   ShieldCheck,
   Store,
   TrendingUp,
@@ -548,7 +549,7 @@ export function HeroFranchise({
   primaryHref,
   imageUrl,
   name,
-  logoUrl,
+  logoUrl: _logoUrl,
   // New hero fields
   heroTitle,
   heroSubtitle,
@@ -619,22 +620,10 @@ export function HeroFranchise({
       <div className="relative w-full px-8 pb-16 sm:px-10 sm:pb-20">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl space-y-6">
-            {/* Logo mark */}
-            {logoUrl && (
-              <div className="size-16 overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm">
-                <MediaAsset
-                  src={logoUrl}
-                  alt={name}
-                  sizes="64px"
-                  className="h-full w-full object-contain p-2"
-                />
-              </div>
-            )}
-
-            {/* Badge */}
-            <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
-              <span className="inline-block h-px w-4 bg-white/40" />
-              Franquicia verificada · LATAM
+            {/* Brand badge */}
+            <p className="inline-flex items-center gap-2.5 text-[21px] font-extrabold tracking-tight text-white/95">
+              <Ribbon className="size-[1.3rem] shrink-0" />
+              Franquicia desarrollada por Franquicias LATAM
             </p>
 
             {/* Headline */}
@@ -642,7 +631,7 @@ export function HeroFranchise({
               <h1 className="text-5xl font-bold uppercase leading-[0.92] tracking-tight text-white sm:text-6xl lg:text-7xl">
                 {displayTitle}
               </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-white/75">
+              <p className="max-w-xl text-lg font-bold leading-relaxed text-white/90">
                 {displaySubtitle}
               </p>
             </div>
@@ -652,7 +641,7 @@ export function HeroFranchise({
               <Button
                 asChild
                 size="lg"
-                className="h-auto rounded-full bg-white text-slate-950 hover:bg-slate-100"
+                className="h-auto rounded-full bg-orange-500 font-extrabold text-white shadow-[0_16px_36px_-18px_rgba(249,115,22,0.55)] hover:bg-orange-400"
               >
                 <Link href={primaryHref}>
                   {displayCtaLabel}
@@ -1092,7 +1081,7 @@ export function CTASection({
             <Button
               asChild
               size="lg"
-              className="h-auto bg-white text-slate-950 hover:bg-slate-100"
+              className="h-auto bg-orange-500 font-bold text-white shadow-[0_12px_30px_-22px_rgba(249,115,22,0.42)] hover:bg-orange-600"
             >
               <Link href={applyHref}>
                 Aplicar para recibir el dossier

@@ -27,7 +27,7 @@ export function FranchiseLandingNavbar({
       className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
         scrolled
           ? "bg-white/95 shadow-sm backdrop-blur-md"
-          : "bg-transparent"
+          : "border-b border-black/5 bg-white/55 backdrop-blur-[10px]"
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 sm:px-6 sm:py-2">
