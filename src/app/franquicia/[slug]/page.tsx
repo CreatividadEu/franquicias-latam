@@ -238,6 +238,7 @@ export default async function FranchiseLandingPage({
         title={headline}
         description={subheadline}
         stats={stats}
+        slug={slug}
         primaryHref="/quiz"
         secondaryHref={
           featureFlags?.showDownloads && profile?.brochureUrl

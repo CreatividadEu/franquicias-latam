@@ -54,16 +54,16 @@ export async function GET() {
       },
     });
 
-    for (const franchise of existingFranchises) {
-      try {
-        await ensureFranchiseLandingConfig(franchise);
-      } catch (error) {
-        console.error(
-          `GET /api/franchises: failed to ensure landing config for franchise ${franchise.id}`,
-          error
-        );
-      }
-    }
+    await Promise.all(
+      existingFranchises.map((franchise) =>
+        ensureFranchiseLandingConfig(franchise).catch((error) =>
+          console.error(
+            `GET /api/franchises: failed to ensure landing config for franchise ${franchise.id}`,
+            error
+          )
+        )
+      )
+    );
 
     const franchises = await prisma.franchise.findMany({
       orderBy: { createdAt: "desc" },

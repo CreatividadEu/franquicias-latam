@@ -126,32 +126,32 @@ export function buildDefaultFranchiseBotConfig() {
 export async function ensureFranchiseLandingConfig(
   franchise: FranchiseSeedShape
 ) {
-  await prisma.franchiseProfile.upsert({
-    where: { franchiseId: franchise.id },
-    update: {},
-    create: {
-      franchiseId: franchise.id,
-      ...buildDefaultFranchiseProfile(franchise),
-    },
-  });
-
-  await prisma.franchiseFeatureFlags.upsert({
-    where: { franchiseId: franchise.id },
-    update: {},
-    create: {
-      franchiseId: franchise.id,
-      ...buildDefaultFranchiseFeatureFlags(franchise),
-    },
-  });
-
-  await prisma.franchiseBotConfig.upsert({
-    where: { franchiseId: franchise.id },
-    update: {},
-    create: {
-      franchiseId: franchise.id,
-      ...buildDefaultFranchiseBotConfig(),
-    },
-  });
+  await Promise.all([
+    prisma.franchiseProfile.upsert({
+      where: { franchiseId: franchise.id },
+      update: {},
+      create: {
+        franchiseId: franchise.id,
+        ...buildDefaultFranchiseProfile(franchise),
+      },
+    }),
+    prisma.franchiseFeatureFlags.upsert({
+      where: { franchiseId: franchise.id },
+      update: {},
+      create: {
+        franchiseId: franchise.id,
+        ...buildDefaultFranchiseFeatureFlags(franchise),
+      },
+    }),
+    prisma.franchiseBotConfig.upsert({
+      where: { franchiseId: franchise.id },
+      update: {},
+      create: {
+        franchiseId: franchise.id,
+        ...buildDefaultFranchiseBotConfig(),
+      },
+    }),
+  ]);
 }
 
 export async function syncFranchiseBotFaqs(
@@ -172,12 +172,9 @@ export async function syncFranchiseBotFaqs(
     }))
     .filter((faq) => faq.question && faq.answer);
 
-  for (const faq of cleanFaqs) {
-    await prisma.franchiseBotFaq.create({
-      data: {
-        franchiseId,
-        ...faq,
-      },
+  if (cleanFaqs.length > 0) {
+    await prisma.franchiseBotFaq.createMany({
+      data: cleanFaqs.map((faq) => ({ franchiseId, ...faq })),
     });
   }
 }

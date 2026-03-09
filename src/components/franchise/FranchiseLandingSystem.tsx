@@ -12,7 +12,6 @@ import {
   Megaphone,
   Play,
   Quote,
-  Ribbon,
   ShieldCheck,
   Store,
   TrendingUp,
@@ -388,14 +387,15 @@ export function HeroFranchise({
   title,
   description,
   stats,
-  primaryHref,
+  primaryHref: _primaryHref,
   imageUrl,
   name,
+  slug,
   heroTitle,
   heroSubtitle,
-  heroCtaLabel,
   heroStats,
   // Legacy / unused props kept for compat
+  heroCtaLabel: _heroCtaLabel,
   showReviewsBadge: _showReviewsBadge,
   reviewRating: _reviewRating,
   reviewBadgeLabel: _reviewBadgeLabel,
@@ -411,6 +411,7 @@ export function HeroFranchise({
   description: string;
   stats: StatItem[];
   primaryHref: string;
+  slug: string;
   secondaryHref: string;
   secondaryLabel: string;
   secondaryExternal?: boolean;
@@ -430,25 +431,28 @@ export function HeroFranchise({
 }) {
   const displayTitle = heroTitle || title;
   const displaySubtitle = heroSubtitle || description;
-  const displayCtaLabel = heroCtaLabel || "Solicitar información";
   const displayStats =
     heroStats && heroStats.length > 0 ? heroStats : stats.slice(0, 3);
+  const calendlyHref = `https://calendly.com/franquicias-latam/${slug}`;
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-[#ede8e0]">
-      {/* Warm radial glow behind image */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -right-40 top-1/2 h-[700px] w-[700px] -translate-y-1/2 rounded-full bg-stone-400/30 blur-[140px]" />
-      </div>
-
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center gap-12 px-6 pb-16 pt-28 sm:px-10 lg:flex-row lg:gap-16 lg:pt-0">
         {/* Left: content */}
         <div className="flex flex-1 flex-col justify-center space-y-8 lg:max-w-[520px]">
-          {/* Brand badge */}
-          <p className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-stone-500">
-            <Ribbon className="size-4 shrink-0" />
-            Franquicia desarrollada por Franquicias LATAM
-          </p>
+          {/* System trust mark */}
+          <div className="inline-flex items-center gap-3">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1E1E1E]/50">
+              Franquicia desarrollada por
+            </span>
+            <Image
+              src="/logo_latam/franquicias_latam_logo.png"
+              alt="Franquicias LATAM"
+              width={120}
+              height={30}
+              className="h-5 w-auto opacity-60"
+            />
+          </div>
 
           {/* Headline */}
           <h1
@@ -466,17 +470,29 @@ export function HeroFranchise({
             {displaySubtitle}
           </p>
 
-          {/* CTA */}
-          <div>
+          {/* CTAs */}
+          <div className="flex flex-wrap gap-3">
             <Button
               asChild
               size="lg"
-              className="h-auto rounded-full bg-stone-950 font-semibold text-white shadow-none hover:bg-stone-800"
+              className="h-auto rounded-full bg-[#2860E7] font-semibold text-white shadow-none hover:bg-blue-700"
             >
-              <Link href={primaryHref}>
-                {displayCtaLabel}
+              <a
+                href={calendlyHref}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Reservar llamada
                 <ArrowRight className="size-4" />
-              </Link>
+              </a>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="h-auto rounded-full border-stone-300 bg-transparent font-semibold text-stone-700 shadow-none hover:bg-stone-100"
+            >
+              <a href="#apply">Ver más</a>
             </Button>
           </div>
 
@@ -499,27 +515,21 @@ export function HeroFranchise({
 
         {/* Right: portrait image */}
         <div className="flex flex-1 items-center justify-center lg:justify-end">
-          <div className="relative w-full max-w-[340px] lg:max-w-[400px]">
-            {/* Decorative blur behind container */}
-            <div className="absolute -inset-4 rounded-[2.5rem] bg-stone-400/25 blur-2xl" />
-            {/* Image frame */}
-            <div
-              className="relative overflow-hidden rounded-[2rem] border border-stone-300/60 bg-stone-200 shadow-[0_40px_80px_-20px_rgba(100,80,60,0.28),0_0_0_1px_rgba(255,255,255,0.65)_inset]"
-              style={{ aspectRatio: "3/4" }}
-            >
-              {imageUrl ? (
-                <MediaAsset
-                  src={imageUrl}
-                  alt={name}
-                  sizes="(max-width: 768px) 90vw, 400px"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="h-full w-full bg-gradient-to-br from-stone-300 to-stone-400" />
-              )}
-              {/* Inner ring for depth */}
-              <div className="pointer-events-none absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/25" />
-            </div>
+          <div
+            className="relative w-full max-w-[340px] overflow-hidden rounded-[2rem] border border-stone-300/60 bg-stone-200 shadow-[0_40px_80px_-20px_rgba(100,80,60,0.28),0_0_0_1px_rgba(255,255,255,0.65)_inset] lg:max-w-[400px]"
+            style={{ aspectRatio: "3/4" }}
+          >
+            {imageUrl ? (
+              <MediaAsset
+                src={imageUrl}
+                alt={name}
+                sizes="(max-width: 768px) 90vw, 400px"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-stone-300 to-stone-400" />
+            )}
+            <div className="pointer-events-none absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/25" />
           </div>
         </div>
       </div>
