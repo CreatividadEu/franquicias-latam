@@ -579,7 +579,7 @@ export function VideoSection({
 
   return (
     <section
-      className="relative overflow-hidden rounded-3xl"
+      className="relative overflow-hidden"
       style={{
         backgroundColor: "#f2ece4",
         backgroundImage:

@@ -272,6 +272,14 @@ export default async function FranchiseLandingPage({
         }
       />
 
+      {/* Standalone full-width video section — sibling to hero */}
+      <VideoSection
+        imageUrl={heroImageUrl}
+        videoUrl={heroVideoUrl}
+        showVideo={Boolean(featureFlags?.showVideo)}
+        title={franchise.name}
+      />
+
       {/* Rest of sections in padded container */}
       <div className="mx-auto w-full max-w-6xl space-y-16 px-4 py-14 sm:px-6 sm:space-y-20">
         {/* Back navigation */}
@@ -286,13 +294,6 @@ export default async function FranchiseLandingPage({
         </div>
 
         <ValueProposition items={valueItems} />
-
-        <VideoSection
-          imageUrl={heroImageUrl}
-          videoUrl={heroVideoUrl}
-          showVideo={Boolean(featureFlags?.showVideo)}
-          title={franchise.name}
-        />
 
         <CoverageMarkets items={coverageItems} />
 
