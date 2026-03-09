@@ -441,16 +441,17 @@ export function HeroFranchise({
         {/* Left: content */}
         <div className="flex flex-1 flex-col justify-center space-y-8 lg:max-w-[680px]">
           {/* System trust mark */}
-          <div className="inline-flex items-center gap-4">
-            <span className="text-[44px] font-semibold uppercase tracking-[0.14em] text-[#1E1E1E]/50 leading-none">
+          <div className="inline-flex w-fit items-center gap-3 rounded-full border border-neutral-300 bg-neutral-50/60 px-7 py-3">
+            <span className="text-[13px] font-bold uppercase tracking-[0.18em] text-[#1E1E1E]/75 leading-none">
               Franquicia desarrollada por
             </span>
+            <div className="h-4 w-px bg-neutral-300" />
             <Image
               src="/logo_latam/franquicias_latam_logo.png"
               alt="Franquicias LATAM"
-              width={480}
-              height={120}
-              className="h-20 w-auto opacity-60"
+              width={240}
+              height={60}
+              className="h-7 w-auto opacity-80"
             />
           </div>
 
