@@ -464,7 +464,10 @@ export function HeroFranchise({
           </h1>
 
           {/* Subtitle */}
-          <p className="text-lg font-semibold leading-relaxed text-stone-700">
+          <p
+            className="max-w-[580px] text-lg font-semibold leading-relaxed text-stone-700"
+            style={{ textWrap: "balance" } as React.CSSProperties}
+          >
             {displaySubtitle}
           </p>
 

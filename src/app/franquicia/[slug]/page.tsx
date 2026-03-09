@@ -116,11 +116,7 @@ export default async function FranchiseLandingPage({
   const botConfig = franchise.botConfig;
 
   const headline = profile?.headline || franchise.name;
-  const rawSubheadline = profile?.subheadline || franchise.description;
-  const subheadline =
-    rawSubheadline.length > 145
-      ? `${rawSubheadline.slice(0, 142).trimEnd()}...`
-      : rawSubheadline;
+  const subheadline = profile?.subheadline || franchise.description;
   const heroImageUrl = profile?.heroImageUrl || franchise.logo;
   const heroVideoUrl = profile?.heroVideoUrl || franchise.video;
   const galleryUrls = profile?.galleryUrls || [];
