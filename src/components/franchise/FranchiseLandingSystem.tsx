@@ -439,7 +439,7 @@ export function HeroFranchise({
     <section className="relative min-h-screen overflow-hidden bg-[#ede8e0]">
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center gap-12 px-6 pb-16 pt-28 sm:px-10 lg:flex-row lg:gap-16 lg:pt-0">
         {/* Left: content */}
-        <div className="flex flex-1 flex-col justify-center space-y-8 lg:flex-[3] lg:max-w-[820px]">
+        <div className="flex flex-1 flex-col justify-center space-y-5 lg:flex-[3] lg:max-w-[820px]">
           {/* System trust mark */}
           <div className="inline-flex w-fit items-center gap-4 rounded-full border border-neutral-300 bg-neutral-50/70 px-8 py-3">
             <span className="text-[13px] font-bold uppercase tracking-[0.18em] text-[#1E1E1E]/75 leading-none">
@@ -491,7 +491,7 @@ export function HeroFranchise({
               asChild
               size="lg"
               variant="outline"
-              className="h-auto rounded-full border-stone-300 bg-transparent font-semibold text-stone-700 shadow-none hover:bg-stone-100"
+              className="h-auto rounded-full border-stone-400 bg-transparent font-semibold text-stone-700 shadow-none hover:bg-stone-100"
             >
               <a href="#apply">Ver más</a>
             </Button>
@@ -499,7 +499,7 @@ export function HeroFranchise({
 
           {/* Stats */}
           {displayStats.length > 0 && (
-            <div className="flex flex-wrap gap-8 border-t border-stone-200 pt-6">
+            <div className="flex flex-wrap gap-8 border-t border-stone-200 pt-4">
               {displayStats.map((item) => (
                 <div key={item.label}>
                   <p className="text-xl font-bold text-stone-950">
