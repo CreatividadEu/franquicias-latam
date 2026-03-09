@@ -439,7 +439,7 @@ export function HeroFranchise({
     <section className="relative min-h-screen overflow-hidden bg-[#ede8e0]">
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center gap-12 px-6 pb-16 pt-28 sm:px-10 lg:flex-row lg:gap-16 lg:pt-0">
         {/* Left: content */}
-        <div className="flex flex-1 flex-col justify-center space-y-5 lg:flex-[3] lg:max-w-[820px]">
+        <div className="flex flex-1 flex-col justify-center space-y-5 lg:flex-[11] lg:max-w-[820px]">
           {/* System trust mark */}
           <div className="inline-flex w-fit items-center gap-4 rounded-full border border-neutral-300 bg-neutral-50/70 px-8 py-3">
             <span className="text-[13px] font-bold uppercase tracking-[0.18em] text-[#1E1E1E]/75 leading-none">
@@ -515,7 +515,7 @@ export function HeroFranchise({
         </div>
 
         {/* Right: portrait image */}
-        <div className="flex flex-1 items-center justify-center lg:flex-[2] lg:justify-end">
+        <div className="flex flex-1 items-center justify-center lg:flex-[10] lg:justify-end">
           <div
             className="relative w-full max-w-[340px] overflow-hidden rounded-[2rem] border border-stone-300/60 bg-stone-200 shadow-[0_40px_80px_-20px_rgba(100,80,60,0.28),0_0_0_1px_rgba(255,255,255,0.65)_inset] lg:max-w-[400px]"
             style={{ aspectRatio: "3/4" }}
