@@ -197,6 +197,11 @@ function HowItWorks() {
     <section
       id="proceso"
       className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-24"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(140,128,115,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(140,128,115,0.07) 1px, transparent 1px)",
+        backgroundSize: "48px 48px",
+      }}
     >
       <div
         aria-hidden="true"
