@@ -151,22 +151,6 @@ function buildEmbedUrl(url: string) {
   return url;
 }
 
-// ── Stat pill (hero) ─────────────────────────────────────────────────
-
-function StatPill({ item }: { item: StatItem }) {
-  return (
-    <div className="flex items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 shadow-[0_8px_20px_-12px_rgba(15,23,42,0.14)]">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-        {item.label}
-      </span>
-      <span className="h-3 w-px bg-slate-200" />
-      <span className="text-sm font-semibold tracking-tight text-slate-900">
-        {item.value}
-      </span>
-    </div>
-  );
-}
-
 // ── Feature card ─────────────────────────────────────────────────────
 
 function FeatureCard({ item }: { item: FeatureItem }) {
@@ -285,84 +269,6 @@ function ValuePointCard({ item }: { item: ValuePointItem }) {
   );
 }
 
-// ── Hero visual (right side) ─────────────────────────────────────────
-
-function HeroVisual({
-  imageUrl,
-  videoUrl,
-  showVideo,
-  name,
-  galleryUrls,
-}: {
-  imageUrl?: string | null;
-  videoUrl?: string | null;
-  showVideo: boolean;
-  name: string;
-  galleryUrls: string[];
-}) {
-  const previewImages = galleryUrls.filter(Boolean).slice(0, 2);
-  const shouldUseVideo = !imageUrl && showVideo && Boolean(videoUrl);
-
-  return (
-    <SurfaceCard className="overflow-hidden rounded-3xl">
-      <CardContent className="space-y-3 p-4 sm:p-5">
-        <div className="relative min-h-[340px] overflow-hidden rounded-2xl border border-slate-200/60 bg-slate-100 shadow-[0_16px_48px_-24px_rgba(15,23,42,0.18)]">
-          {shouldUseVideo && videoUrl ? (
-            videoUrl.endsWith(".mp4") ? (
-              <video
-                controls
-                playsInline
-                className="h-full min-h-[340px] w-full object-cover"
-                src={videoUrl}
-              />
-            ) : (
-              <iframe
-                className="h-full min-h-[340px] w-full"
-                src={buildEmbedUrl(videoUrl)}
-                title={`Visual de ${name}`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            )
-          ) : imageUrl ? (
-            <MediaAsset
-              src={imageUrl}
-              alt={name}
-              sizes="(min-width: 1024px) 44vw, 100vw"
-              className="h-full min-h-[340px] w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full min-h-[340px] items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-100">
-              <div className="text-center text-slate-400">
-                <Play className="mx-auto size-10" />
-                <p className="mt-3 text-sm font-medium">Imagen principal pendiente</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {previewImages.length > 0 && (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {previewImages.map((url, index) => (
-              <div
-                key={`${url}-${index}`}
-                className="relative h-24 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-100 shadow-[0_8px_24px_-16px_rgba(0,0,0,0.14)]"
-              >
-                <MediaAsset
-                  src={url}
-                  alt={`${name} vista ${index + 1}`}
-                  sizes="(min-width: 640px) 18vw, 40vw"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </SurfaceCard>
-  );
-}
-
 // ── Video player ─────────────────────────────────────────────────────
 
 function VideoPlayer({
@@ -474,71 +380,7 @@ function ChatbotPanel({
 
 // ── Exports ──────────────────────────────────────────────────────────
 
-// ── Reviews badge ────────────────────────────────────────────────────
-
-function ReviewsBadge({
-  rating,
-  label,
-  avatarUrls,
-}: {
-  rating: number;
-  label?: string | null;
-  avatarUrls: string[];
-}) {
-  const placeholderColors = ["bg-blue-400", "bg-emerald-400", "bg-amber-400"];
-  const displayAvatars = avatarUrls.filter(Boolean).slice(0, 4);
-  const safeRating = Math.min(5, Math.max(0, rating));
-
-  return (
-    <div className="absolute bottom-8 right-6 hidden md:block">
-      <div className="flex items-center gap-3 rounded-2xl border border-white/20 bg-white px-4 py-3 shadow-[0_20px_50px_-20px_rgba(15,23,42,0.3)]">
-        {/* Overlapping avatars */}
-        <div className="flex -space-x-2">
-          {displayAvatars.length > 0
-            ? displayAvatars.map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={i}
-                  src={url}
-                  alt=""
-                  className="size-8 rounded-full border-2 border-white object-cover"
-                />
-              ))
-            : placeholderColors.map((color, i) => (
-                <div
-                  key={i}
-                  className={`size-8 rounded-full border-2 border-white ${color}`}
-                />
-              ))}
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold text-slate-900">
-            {label || "Franquiciados activos"}
-          </p>
-          <div className="flex items-center gap-1.5">
-            <div className="flex">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <svg
-                  key={i}
-                  className={`size-3 ${i <= Math.round(safeRating) ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`}
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-            <span className="text-xs font-bold text-slate-700">
-              {safeRating.toFixed(1)} / 5
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── HeroFranchise (full-bleed) ────────────────────────────────────────
+// ── HeroFranchise ─────────────────────────────────────────────────────
 
 export type HeroStatItem = { value: string; label: string };
 
@@ -549,18 +391,15 @@ export function HeroFranchise({
   primaryHref,
   imageUrl,
   name,
-  logoUrl: _logoUrl,
-  // New hero fields
   heroTitle,
   heroSubtitle,
   heroCtaLabel,
   heroStats,
-  // Reviews badge
-  showReviewsBadge = false,
-  reviewRating = 5,
-  reviewBadgeLabel,
-  reviewAvatarUrls = [],
-  // Legacy props kept for compat
+  // Legacy / unused props kept for compat
+  showReviewsBadge: _showReviewsBadge,
+  reviewRating: _reviewRating,
+  reviewBadgeLabel: _reviewBadgeLabel,
+  reviewAvatarUrls: _reviewAvatarUrls,
   secondaryHref: _secondaryHref,
   secondaryLabel: _secondaryLabel,
   secondaryExternal: _secondaryExternal,
@@ -580,8 +419,6 @@ export function HeroFranchise({
   showVideo: boolean;
   name: string;
   galleryUrls: string[];
-  logoUrl?: string | null;
-  // New
   heroTitle?: string | null;
   heroSubtitle?: string | null;
   heroCtaLabel?: string | null;
@@ -598,86 +435,94 @@ export function HeroFranchise({
     heroStats && heroStats.length > 0 ? heroStats : stats.slice(0, 3);
 
   return (
-    <section className="relative flex min-h-[82vh] items-end overflow-hidden">
-      {/* Background image */}
-      {imageUrl ? (
-        <div className="absolute inset-0">
-          <MediaAsset
-            src={imageUrl}
-            alt={name}
-            sizes="100vw"
-            className="h-full w-full object-cover"
-          />
+    <section className="relative min-h-screen overflow-hidden bg-[#ede8e0]">
+      {/* Warm radial glow behind image */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -right-40 top-1/2 h-[700px] w-[700px] -translate-y-1/2 rounded-full bg-stone-400/30 blur-[140px]" />
+      </div>
+
+      <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center gap-12 px-6 pb-16 pt-28 sm:px-10 lg:flex-row lg:gap-16 lg:pt-0">
+        {/* Left: content */}
+        <div className="flex flex-1 flex-col justify-center space-y-8 lg:max-w-[520px]">
+          {/* Brand badge */}
+          <p className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-stone-500">
+            <Ribbon className="size-4 shrink-0" />
+            Franquicia desarrollada por Franquicias LATAM
+          </p>
+
+          {/* Headline */}
+          <h1
+            className="text-[3rem] font-bold leading-[1.05] tracking-tight text-stone-950 sm:text-5xl lg:text-[3.5rem]"
+            style={{ textWrap: "balance" } as React.CSSProperties}
+          >
+            {displayTitle}
+          </h1>
+
+          {/* Subtitle */}
+          <p
+            className="text-lg leading-relaxed text-stone-500"
+            style={{ textWrap: "balance" } as React.CSSProperties}
+          >
+            {displaySubtitle}
+          </p>
+
+          {/* CTA */}
+          <div>
+            <Button
+              asChild
+              size="lg"
+              className="h-auto rounded-full bg-stone-950 font-semibold text-white shadow-none hover:bg-stone-800"
+            >
+              <Link href={primaryHref}>
+                {displayCtaLabel}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+
+          {/* Stats */}
+          {displayStats.length > 0 && (
+            <div className="flex flex-wrap gap-8 border-t border-stone-200 pt-6">
+              {displayStats.map((item) => (
+                <div key={item.label}>
+                  <p className="text-xl font-bold text-stone-950">
+                    {item.value}
+                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-stone-400">
+                    {item.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700" />
-      )}
 
-      {/* Gradient overlay — left dark, right transparent */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-
-      {/* Content — bottom-left */}
-      <div className="relative w-full px-8 pb-16 sm:px-10 sm:pb-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-2xl space-y-6">
-            {/* Brand badge */}
-            <p className="inline-flex items-center gap-2.5 text-[21px] font-extrabold tracking-tight text-white/95">
-              <Ribbon className="size-[1.3rem] shrink-0" />
-              Franquicia desarrollada por Franquicias LATAM
-            </p>
-
-            {/* Headline */}
-            <div className="space-y-3">
-              <h1 className="text-5xl font-bold uppercase leading-[0.92] tracking-tight text-white sm:text-6xl lg:text-7xl">
-                {displayTitle}
-              </h1>
-              <p className="max-w-xl text-lg font-bold leading-relaxed text-white/90">
-                {displaySubtitle}
-              </p>
+        {/* Right: portrait image */}
+        <div className="flex flex-1 items-center justify-center lg:justify-end">
+          <div className="relative w-full max-w-[340px] lg:max-w-[400px]">
+            {/* Decorative blur behind container */}
+            <div className="absolute -inset-4 rounded-[2.5rem] bg-stone-400/25 blur-2xl" />
+            {/* Image frame */}
+            <div
+              className="relative overflow-hidden rounded-[2rem] border border-stone-300/60 bg-stone-200 shadow-[0_40px_80px_-20px_rgba(100,80,60,0.28),0_0_0_1px_rgba(255,255,255,0.65)_inset]"
+              style={{ aspectRatio: "3/4" }}
+            >
+              {imageUrl ? (
+                <MediaAsset
+                  src={imageUrl}
+                  alt={name}
+                  sizes="(max-width: 768px) 90vw, 400px"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-full w-full bg-gradient-to-br from-stone-300 to-stone-400" />
+              )}
+              {/* Inner ring for depth */}
+              <div className="pointer-events-none absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/25" />
             </div>
-
-            {/* CTA */}
-            <div>
-              <Button
-                asChild
-                size="lg"
-                className="h-auto rounded-full bg-orange-500 font-extrabold text-white shadow-[0_16px_36px_-18px_rgba(249,115,22,0.55)] hover:bg-orange-400"
-              >
-                <Link href={primaryHref}>
-                  {displayCtaLabel}
-                  <ArrowRight className="size-5" />
-                </Link>
-              </Button>
-            </div>
-
-            {/* Stats row */}
-            {displayStats.length > 0 && (
-              <div className="flex flex-wrap gap-3 pt-2">
-                {displayStats.map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-sm"
-                  >
-                    <p className="text-xl font-bold text-white">{item.value}</p>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55">
-                      {item.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>
-
-      {/* Reviews badge — bottom-right */}
-      {showReviewsBadge && (
-        <ReviewsBadge
-          rating={reviewRating ?? 5}
-          label={reviewBadgeLabel}
-          avatarUrls={reviewAvatarUrls ?? []}
-        />
-      )}
     </section>
   );
 }
@@ -685,6 +530,7 @@ export function HeroFranchise({
 export function ValueProposition({ items }: { items: FeatureItem[] }) {
   return (
     <SectionContainer
+      id="ventajas"
       badge="Ventajas"
       title="Por qué elegir este modelo."
       description="Una lectura rápida del valor operativo y la claridad con la que se transfiere el sistema."
@@ -784,6 +630,7 @@ export function VideoSection({
 export function CoverageMarkets({ items }: { items: CoverageItem[] }) {
   return (
     <SectionContainer
+      id="cobertura"
       badge="Mercados"
       title="Cobertura activa."
       description={
@@ -823,6 +670,7 @@ export function CoverageMarkets({ items }: { items: CoverageItem[] }) {
 export function HowItWorks3Steps({ items }: { items: StepItem[] }) {
   return (
     <SectionContainer
+      id="proceso"
       badge="Proceso"
       title="Cómo funciona."
       description="Tres pasos claros para revisar el modelo, validar encaje y activar la siguiente fase."
@@ -891,7 +739,7 @@ export function Investment({ items }: { items: InvestmentItem[] }) {
   const secondaryItems = items.slice(1, 3);
 
   return (
-    <section className="space-y-8">
+    <section id="inversion" className="space-y-8">
       <SectionHeader
         badge="Inversión"
         title="Ticket de entrada."

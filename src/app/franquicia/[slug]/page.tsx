@@ -257,7 +257,6 @@ export default async function FranchiseLandingPage({
         showVideo={Boolean(featureFlags?.showVideo)}
         name={franchise.name}
         galleryUrls={featureFlags?.showGallery ? galleryUrls : []}
-        logoUrl={franchise.logo}
         heroTitle={profile?.heroTitle}
         heroSubtitle={profile?.heroSubtitle}
         heroCtaLabel={profile?.heroCtaLabel}

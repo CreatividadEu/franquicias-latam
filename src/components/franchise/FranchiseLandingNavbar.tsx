@@ -4,10 +4,18 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+const NAV_LINKS = [
+  { label: "Ventajas", href: "#ventajas" },
+  { label: "Proceso", href: "#proceso" },
+  { label: "Inversión", href: "#inversion" },
+  { label: "Contacto", href: "#apply" },
+];
+
 export function FranchiseLandingNavbar({
-  showFranchiseLogo = false,
-  franchiseLogoUrl,
-  franchiseName,
+  // Legacy props kept for compat — no longer rendered
+  showFranchiseLogo: _showFranchiseLogo,
+  franchiseLogoUrl: _franchiseLogoUrl,
+  franchiseName: _franchiseName,
 }: {
   showFranchiseLogo?: boolean;
   franchiseLogoUrl?: string | null;
@@ -31,7 +39,7 @@ export function FranchiseLandingNavbar({
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 sm:px-6 sm:py-2">
-        {/* FL logo — left */}
+        {/* FL logo */}
         <Link href="/">
           <Image
             src="/logo_latam/franquicias_latam_logo.png"
@@ -43,15 +51,18 @@ export function FranchiseLandingNavbar({
           />
         </Link>
 
-        {/* Franchise logo — right, same margin distance, same height */}
-        {showFranchiseLogo && franchiseLogoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={franchiseLogoUrl}
-            alt={franchiseName ?? "Logo franquicia"}
-            className="h-8 w-auto object-contain"
-          />
-        )}
+        {/* Scroll links */}
+        <div className="hidden items-center gap-6 sm:flex">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="text-sm font-medium text-stone-600 transition-colors hover:text-stone-950"
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
       </div>
     </nav>
   );
