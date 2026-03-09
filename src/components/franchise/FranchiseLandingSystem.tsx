@@ -565,8 +565,8 @@ export function VideoSection({
   videoUrl,
   showVideo,
   title,
-  applyHref = "/quiz",
-  systemHref = "#support",
+  applyHref: _applyHref,
+  systemHref: _systemHref,
 }: {
   imageUrl?: string | null;
   videoUrl?: string | null;
@@ -575,71 +575,72 @@ export function VideoSection({
   applyHref?: string;
   systemHref?: string;
 }) {
-  const valuePoints: ValuePointItem[] = [
-    {
-      icon: <Store className="size-4" />,
-      title: "Experiencia en tienda",
-      description: "Observa cómo se vive el formato y su lectura comercial.",
-      iconClassName: "bg-gradient-to-br from-blue-600 to-cyan-500",
-      surfaceClassName: "bg-blue-500/5",
-      borderClassName: "border-blue-200/80",
-    },
-    {
-      icon: <ShieldCheck className="size-4" />,
-      title: "Tecnología aplicada",
-      description: "Identifica el nivel de orden, control y trazabilidad.",
-      iconClassName: "bg-gradient-to-br from-fuchsia-500 to-pink-500",
-      surfaceClassName: "bg-fuchsia-500/5",
-      borderClassName: "border-fuchsia-200/80",
-    },
-    {
-      icon: <TrendingUp className="size-4" />,
-      title: "Modelo replicable",
-      description: "Valida qué tan transferible se siente la expansión.",
-      iconClassName: "bg-gradient-to-br from-emerald-500 to-teal-500",
-      surfaceClassName: "bg-emerald-500/5",
-      borderClassName: "border-emerald-200/80",
-    },
-  ];
+  const canEmbed = showVideo && Boolean(videoUrl);
 
   return (
-    <SectionContainer
-      badge="Video · Tour"
-      title="Descubre cómo funciona."
-      description="Una lectura visual rápida para entender el modelo, la experiencia y la lógica de expansión."
+    <section
+      className="relative overflow-hidden rounded-3xl"
+      style={{
+        backgroundColor: "#f2ece4",
+        backgroundImage:
+          "linear-gradient(rgba(140,128,115,0.13) 1px, transparent 1px), linear-gradient(90deg, rgba(140,128,115,0.13) 1px, transparent 1px)",
+        backgroundSize: "48px 48px",
+      }}
     >
-      <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div className="space-y-6">
-          <div className="space-y-4">
-            {valuePoints.map((item) => (
-              <ValuePointCard key={item.title} item={item} />
-            ))}
-          </div>
+      {/* Heading block */}
+      <div className="mx-auto max-w-2xl px-6 pb-10 pt-14 text-center sm:px-10 sm:pt-16">
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500">
+          Video · Tour
+        </p>
+        <h2
+          className="text-3xl font-bold tracking-tight text-stone-950 sm:text-[2.5rem]"
+          style={{ textWrap: "balance" } as React.CSSProperties}
+        >
+          Descubre cómo funciona.
+        </h2>
+        <p className="mt-4 text-base leading-relaxed text-stone-600 sm:text-lg">
+          Una lectura visual rápida para entender el modelo, la experiencia y la
+          lógica de expansión.
+        </p>
+      </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="h-auto">
-              <Link href={applyHref}>
-                Aplicar ahora
-                <ArrowRight className="size-5" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="h-auto">
-              <Link href={systemHref}>
-                Ver sistema
-                <ChevronRight className="size-5" />
-              </Link>
-            </Button>
+      {/* Player stage */}
+      <div className="px-4 pb-12 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-[1.5rem] border border-stone-300/50 bg-stone-950 shadow-[0_40px_100px_-30px_rgba(80,60,40,0.38)]">
+          <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
+            {canEmbed && videoUrl ? (
+              videoUrl.endsWith(".mp4") ? (
+                <video
+                  controls
+                  playsInline
+                  className="h-full w-full object-cover"
+                  src={videoUrl}
+                />
+              ) : (
+                <iframe
+                  className="h-full w-full"
+                  src={buildEmbedUrl(videoUrl)}
+                  title={`Video de ${title}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )
+            ) : imageUrl ? (
+              <MediaAsset
+                src={imageUrl}
+                alt={title}
+                sizes="(max-width: 768px) 100vw, 80vw"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-gradient-to-br from-stone-800 to-stone-950">
+                <Play className="size-14 text-stone-600" />
+              </div>
+            )}
           </div>
         </div>
-
-        <VideoPlayer
-          title={`Video de ${title}`}
-          imageUrl={imageUrl}
-          videoUrl={videoUrl}
-          showVideo={showVideo}
-        />
       </div>
-    </SectionContainer>
+    </section>
   );
 }
 
