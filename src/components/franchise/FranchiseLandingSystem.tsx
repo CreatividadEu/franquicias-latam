@@ -516,21 +516,26 @@ export function HeroFranchise({
 
         {/* Right: portrait image */}
         <div className="flex flex-1 items-center justify-center lg:flex-[10] lg:justify-end">
+          {/* Gradient stroke wrapper */}
           <div
-            className="relative w-full max-w-[340px] overflow-hidden rounded-[2rem] border border-stone-300/60 bg-stone-200 shadow-[0_40px_80px_-20px_rgba(100,80,60,0.28),0_0_0_1px_rgba(255,255,255,0.65)_inset] lg:max-w-[480px]"
-            style={{ aspectRatio: "3/4" }}
+            className="relative w-full max-w-[340px] rounded-[2rem] bg-gradient-to-b from-white/90 via-white/55 to-white/15 p-[5px] shadow-[0_40px_80px_-20px_rgba(100,80,60,0.32)] lg:max-w-[480px]"
           >
-            {imageUrl ? (
-              <MediaAsset
-                src={imageUrl}
-                alt={name}
-                sizes="(max-width: 768px) 90vw, 400px"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full bg-gradient-to-br from-stone-300 to-stone-400" />
-            )}
-            <div className="pointer-events-none absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/25" />
+            <div
+              className="relative overflow-hidden rounded-[1.65rem] bg-stone-200"
+              style={{ aspectRatio: "3/4" }}
+            >
+              {imageUrl ? (
+                <MediaAsset
+                  src={imageUrl}
+                  alt={name}
+                  sizes="(max-width: 768px) 90vw, 480px"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-full w-full bg-gradient-to-br from-stone-300 to-stone-400" />
+              )}
+              <div className="pointer-events-none absolute inset-0 rounded-[1.65rem] ring-1 ring-inset ring-white/20" />
+            </div>
           </div>
         </div>
       </div>
