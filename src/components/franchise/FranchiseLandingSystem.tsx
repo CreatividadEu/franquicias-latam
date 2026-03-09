@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { VideoPlayerFacade } from "@/components/franchise/VideoPlayerFacade";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -598,7 +599,7 @@ export function VideoSection({
         >
           Descubre cómo funciona.
         </h2>
-        <p className="mt-4 text-base leading-relaxed text-stone-600 sm:text-lg">
+        <p className="mt-4 text-base font-medium leading-relaxed text-stone-700 sm:text-lg">
           Una lectura visual rápida para entender el modelo, la experiencia y la
           lógica de expansión.
         </p>
@@ -617,12 +618,10 @@ export function VideoSection({
                   src={videoUrl}
                 />
               ) : (
-                <iframe
-                  className="h-full w-full"
-                  src={buildEmbedUrl(videoUrl)}
-                  title={`Video de ${title}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
+                <VideoPlayerFacade
+                  videoUrl={videoUrl}
+                  imageUrl={imageUrl}
+                  title={title}
                 />
               )
             ) : imageUrl ? (
