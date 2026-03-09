@@ -517,7 +517,7 @@ export function HeroFranchise({
         {/* Right: portrait image */}
         <div className="flex flex-1 items-center justify-center lg:flex-[10] lg:justify-end">
           <div
-            className="relative w-full max-w-[340px] overflow-hidden rounded-[2rem] border border-stone-300/60 bg-stone-200 shadow-[0_40px_80px_-20px_rgba(100,80,60,0.28),0_0_0_1px_rgba(255,255,255,0.65)_inset] lg:max-w-[400px]"
+            className="relative w-full max-w-[340px] overflow-hidden rounded-[2rem] border border-stone-300/60 bg-stone-200 shadow-[0_40px_80px_-20px_rgba(100,80,60,0.28),0_0_0_1px_rgba(255,255,255,0.65)_inset] lg:max-w-[480px]"
             style={{ aspectRatio: "3/4" }}
           >
             {imageUrl ? (
