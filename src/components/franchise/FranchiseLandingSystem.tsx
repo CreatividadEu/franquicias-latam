@@ -439,18 +439,18 @@ export function HeroFranchise({
     <section className="relative min-h-screen overflow-hidden bg-[#ede8e0]">
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center gap-12 px-6 pb-16 pt-28 sm:px-10 lg:flex-row lg:gap-16 lg:pt-0">
         {/* Left: content */}
-        <div className="flex flex-1 flex-col justify-center space-y-8 lg:max-w-[520px]">
+        <div className="flex flex-1 flex-col justify-center space-y-8 lg:max-w-[680px]">
           {/* System trust mark */}
-          <div className="inline-flex items-center gap-3">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1E1E1E]/50">
+          <div className="inline-flex items-center gap-4">
+            <span className="text-[44px] font-semibold uppercase tracking-[0.14em] text-[#1E1E1E]/50 leading-none">
               Franquicia desarrollada por
             </span>
             <Image
               src="/logo_latam/franquicias_latam_logo.png"
               alt="Franquicias LATAM"
-              width={120}
-              height={30}
-              className="h-5 w-auto opacity-60"
+              width={480}
+              height={120}
+              className="h-20 w-auto opacity-60"
             />
           </div>
 
@@ -464,7 +464,7 @@ export function HeroFranchise({
 
           {/* Subtitle */}
           <p
-            className="text-lg leading-relaxed text-stone-500"
+            className="text-lg font-semibold leading-relaxed text-stone-700"
             style={{ textWrap: "balance" } as React.CSSProperties}
           >
             {displaySubtitle}
