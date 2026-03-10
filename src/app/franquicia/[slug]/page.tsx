@@ -293,6 +293,12 @@ export default async function FranchiseLandingPage({
           </Link>
         </div>
 
+        <ChatbotSection
+          assistant={chatbotPanel}
+          enabled={chatbotEnabled}
+          contactEmail={franchise.contactEmail}
+        />
+
         <ValueProposition items={valueItems} />
 
         <CoverageMarkets items={coverageItems} />
@@ -304,12 +310,6 @@ export default async function FranchiseLandingPage({
         <Investment items={investmentItems} />
 
         <TrustSignals items={trustItems} />
-
-        <ChatbotSection
-          assistant={chatbotPanel}
-          enabled={chatbotEnabled}
-          contactEmail={franchise.contactEmail}
-        />
 
         <CTASection
           headline={`Recibe el dossier de ${franchise.name} y valida tu fit.`}

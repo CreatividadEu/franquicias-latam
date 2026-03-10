@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   BookOpenCheck,
-  ChevronRight,
   Circle,
   GraduationCap,
   Handshake,
@@ -437,106 +436,108 @@ export function HeroFranchise({
   const calendlyHref = `https://calendly.com/franquicias-latam/${slug}`;
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[#ede8e0]">
-      <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col items-center gap-12 px-6 pb-16 pt-28 sm:px-10 lg:flex-row lg:gap-16 lg:pt-0">
-        {/* Left: content */}
-        <div className="flex flex-1 flex-col justify-center space-y-5 lg:flex-[11] lg:max-w-[820px]">
-          {/* System trust mark */}
-          <div className="inline-flex w-fit items-center gap-4 rounded-full border border-neutral-300 bg-neutral-50/70 px-8 py-3">
-            <span className="text-[13px] font-bold uppercase tracking-[0.18em] text-[#1E1E1E]/75 leading-none">
-              Franquicia desarrollada por
-            </span>
-            <div className="h-5 w-px bg-neutral-300" />
-            <Image
-              src="/fotos_home/icon_latam.png"
-              alt="Franquicias Latam"
-              width={40}
-              height={40}
-              className="h-8 w-auto"
-            />
-          </div>
+    <section className="relative min-h-screen overflow-hidden bg-[#060912]">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(900px 520px at 10% 16%, rgba(37,99,235,0.18), transparent 60%), radial-gradient(980px 620px at 92% 12%, rgba(15,23,42,0.45), transparent 65%), linear-gradient(180deg, rgba(2,6,23,0.15), rgba(2,6,23,0.65))",
+        }}
+      />
 
-          {/* Headline */}
-          <h1
-            className="text-[3rem] font-bold leading-[1.05] tracking-tight text-stone-950 sm:text-5xl lg:text-[3.5rem]"
-            style={{ textWrap: "balance" } as React.CSSProperties}
-          >
-            {displayTitle}
-          </h1>
-
-          {/* Subtitle */}
-          <p
-            className="max-w-[580px] text-lg font-semibold leading-relaxed text-stone-700"
-            style={{ textWrap: "balance" } as React.CSSProperties}
-          >
-            {displaySubtitle}
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-wrap gap-3">
-            <Button
-              asChild
-              size="lg"
-              className="h-auto rounded-full bg-[#2860E7] font-semibold text-white shadow-none hover:bg-blue-700"
-            >
-              <a
-                href={calendlyHref}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Reservar llamada
-                <ArrowRight className="size-4" />
-              </a>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="h-auto rounded-full border-white/50 bg-white/25 font-bold text-neutral-800 shadow-[0_1px_2px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-md transition-all duration-300 hover:border-white/70 hover:bg-white/38 hover:shadow-[0_2px_8px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.7)] active:scale-[0.98] active:shadow-none"
-            >
-              <a href="#apply">Chat Ahora</a>
-            </Button>
-          </div>
-
-          {/* Stats */}
-          {displayStats.length > 0 && (
-            <div className="flex flex-wrap gap-8 border-t border-stone-200 pt-4">
-              {displayStats.map((item) => (
-                <div key={item.label}>
-                  <p className="text-xl font-bold text-stone-950">
-                    {item.value}
-                  </p>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-stone-400">
-                    {item.label}
-                  </p>
-                </div>
-              ))}
+      <div className="relative mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 gap-8 px-4 pb-12 pt-28 sm:px-6 sm:pb-16 sm:pt-32 lg:grid-cols-[0.92fr_1.08fr] lg:items-stretch lg:gap-10 lg:pb-10 lg:pt-44">
+        {/* Left content panel */}
+        <div className="flex min-w-0 flex-col justify-center lg:pr-8">
+          <div className="max-w-[680px] space-y-8">
+            <div className="inline-flex w-fit items-center gap-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[13px] font-medium text-slate-300">
+              <span className="inline-block size-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(52,211,153,0.18)]" />
+              Disponible para aplicar
             </div>
-          )}
+
+            <h1
+              className="text-[2.7rem] font-semibold leading-[1.03] tracking-tight text-white sm:text-[3.3rem] lg:text-[5.1rem] lg:leading-[0.98]"
+              style={{ textWrap: "balance" } as React.CSSProperties}
+            >
+              {displayTitle}
+            </h1>
+
+            <p
+              className="max-w-[620px] text-base leading-relaxed text-slate-300 sm:text-xl sm:leading-relaxed"
+              style={{ textWrap: "balance" } as React.CSSProperties}
+            >
+              {displaySubtitle}
+            </p>
+
+            <div className="flex flex-wrap gap-3">
+              <Button
+                asChild
+                size="lg"
+                className="h-auto rounded-full border border-white/20 bg-white/10 px-7 py-3 text-base font-medium text-white shadow-[0_18px_44px_-28px_rgba(15,23,42,0.9)] backdrop-blur-md transition-all duration-300 hover:bg-white/16"
+              >
+                <a
+                  href={calendlyHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Reservar llamada
+                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-white text-slate-900">
+                    <ArrowRight className="size-4" />
+                  </span>
+                </a>
+              </Button>
+
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-auto rounded-full border-white/30 bg-transparent px-7 py-3 text-base font-medium text-white hover:bg-white/8"
+              >
+                <a href="#apply">Chat Ahora</a>
+              </Button>
+            </div>
+
+            {displayStats.length > 0 && (
+              <div className="grid grid-cols-1 gap-4 border-t border-white/12 pt-6 sm:grid-cols-3">
+                {displayStats.map((item) => (
+                  <div key={item.label} className="space-y-1">
+                    <p className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                      {item.value}
+                    </p>
+                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-slate-400">
+                      {item.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Right: portrait image */}
-        <div className="flex flex-1 items-center justify-center lg:flex-[10] lg:justify-end">
-          {/* Gradient stroke wrapper */}
-          <div
-            className="relative w-full max-w-[340px] rounded-[2rem] bg-gradient-to-b from-white/90 via-white/55 to-white/15 p-[5px] shadow-[0_40px_80px_-20px_rgba(100,80,60,0.32)] lg:max-w-[480px]"
-          >
-            <div
-              className="relative overflow-hidden rounded-[1.65rem] bg-stone-200"
-              style={{ aspectRatio: "3/4" }}
-            >
-              {imageUrl ? (
-                <MediaAsset
-                  src={imageUrl}
-                  alt={name}
-                  sizes="(max-width: 768px) 90vw, 480px"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="h-full w-full bg-gradient-to-br from-stone-300 to-stone-400" />
-              )}
-              <div className="pointer-events-none absolute inset-0 rounded-[1.65rem] ring-1 ring-inset ring-white/20" />
+        {/* Right visual panel */}
+        <div className="relative flex min-h-[62vh] items-stretch lg:ml-auto lg:mt-5 lg:min-h-[calc(100vh-14rem)] lg:w-[calc(100%+12rem)]">
+          <div className="relative w-full overflow-hidden rounded-[1.95rem] border border-white/12 bg-slate-900 shadow-[0_42px_96px_-36px_rgba(0,0,0,0.72)]">
+            <div className="absolute inset-x-0 top-0 z-10 hidden h-16 items-center justify-center gap-10 border-b border-white/10 bg-slate-950/40 px-6 backdrop-blur-sm lg:flex">
+              {["About", "Services", "Our work", "FAQs", "Contact"].map((item) => (
+                <span key={item} className="text-sm font-medium text-slate-200">
+                  {item}
+                </span>
+              ))}
             </div>
+
+            {imageUrl ? (
+              <MediaAsset
+                src={imageUrl}
+                alt={name}
+                sizes="(max-width: 1024px) 100vw, 52vw"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-slate-700 to-slate-900" />
+            )}
+
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.02),rgba(2,6,23,0.28))]" />
+            <div className="pointer-events-none absolute inset-0 rounded-[1.95rem] ring-1 ring-inset ring-white/16" />
           </div>
         </div>
       </div>
