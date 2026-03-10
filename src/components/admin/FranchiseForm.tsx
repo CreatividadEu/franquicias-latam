@@ -1134,7 +1134,7 @@ export function FranchiseForm({
                 )}
                 <div className="space-y-2">
                   {form.profile.galleryUrls.map((url, index) => (
-                    <div key={`${url}-${index}`} className="flex gap-2">
+                    <div key={index} className="flex gap-2">
                       <Input
                         value={url}
                         onChange={(e) =>

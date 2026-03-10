@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -178,9 +178,11 @@ export function FranchisesTable({
     setEditingFranchise(null);
   };
 
-  const formInitialData = editingFranchise
-    ? {
-        id: editingFranchise.id,
+  const formInitialData = useMemo(
+    () =>
+      editingFranchise
+        ? {
+            id: editingFranchise.id,
         name: editingFranchise.name,
         description: editingFranchise.description,
         logo: editingFranchise.logo || "",
@@ -260,7 +262,9 @@ export function FranchisesTable({
           })),
         },
       }
-    : null;
+        : null,
+    [editingFranchise]
+  );
 
   return (
     <>
@@ -402,6 +406,7 @@ export function FranchisesTable({
       </div>
 
       <FranchiseForm
+        key={editingFranchise?.id ?? "new"}
         open={showForm}
         onClose={closeForm}
         onSubmit={editingFranchise ? handleEdit : handleCreate}
