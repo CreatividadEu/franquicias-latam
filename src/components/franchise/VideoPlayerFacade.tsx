@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Play } from "lucide-react";
-import Image from "next/image";
 
 function buildAutoplayEmbedUrl(url: string): string {
   if (url.includes("youtube.com/watch")) {
@@ -75,12 +74,11 @@ export function VideoPlayerFacade({
     >
       {/* Thumbnail */}
       {thumbnail ? (
-        <Image
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
           src={thumbnail}
           alt={title}
-          fill
-          sizes="(max-width: 768px) 100vw, 80vw"
-          className="object-cover opacity-80 transition-opacity duration-300 group-hover:opacity-70"
+          className="absolute inset-0 h-full w-full object-cover opacity-80 transition-opacity duration-300 group-hover:opacity-70"
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-stone-800 to-stone-950" />
