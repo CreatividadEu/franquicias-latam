@@ -170,7 +170,7 @@ body::after {
 
 body::before {
   z-index: -2;
-  background: #ebebeb;
+  background: #ffffff;
   opacity: 1;
 }
 
@@ -247,7 +247,7 @@ body::after {
 
 /* Hero gradient background */
 .gradient-bg {
-  background: #ebebeb;
+  background: #ffffff;
 }
 
 @keyframes soft-glow-drift {
@@ -263,7 +263,7 @@ body::after {
 }
 
 .soft-glow-layer {
-  background-color: #ebebeb;
+  background-color: #ffffff;
   background-image: none;
   animation: none;
   filter: none;
