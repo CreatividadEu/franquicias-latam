@@ -242,7 +242,7 @@ function renderIndicatorVisual(item: IndicatorItem, reducedMotion: boolean): Rea
           {item.value}
         </p>
         <p className="mt-1 text-sm text-slate-600">{item.supporting}</p>
-        <div className="mt-2 rounded-xl border border-slate-200/80 bg-white/70 px-2 py-2 md:px-2.5 md:py-2.5">
+        <div className="mt-2 rounded-xl border border-black/8 bg-white px-2 py-2 md:px-2.5 md:py-2.5">
           <div className="h-1 rounded-full bg-slate-200">
             <motion.div
               className="h-1 rounded-full bg-[#2860E7]/65"
@@ -350,7 +350,7 @@ export function PerformanceIndicators({ className = "" }: PerformanceIndicatorsP
 
   return (
     <section
-      className={`rounded-3xl border border-slate-200/80 bg-gradient-to-b from-white via-white to-slate-50/55 p-4 shadow-md sm:p-6 ${className}`.trim()}
+      className={`rounded-3xl border border-black/8 bg-white p-4 shadow-[0_2px_20px_rgba(0,0,0,0.07)] sm:p-6 ${className}`.trim()}
     >
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
         Resultados reales
@@ -406,7 +406,7 @@ export function PerformanceIndicators({ className = "" }: PerformanceIndicatorsP
                   <motion.article
                     key={item.id}
                     {...cardMotion(index, reducedMotion)}
-                    className={`min-w-0 overflow-x-hidden rounded-xl border border-slate-200/80 bg-white/75 p-4 md:rounded-none md:border-0 md:bg-transparent md:p-5 ${cellDividerClasses[index]}`}
+                    className={`min-w-0 overflow-x-hidden rounded-xl border border-black/8 bg-white p-4 md:rounded-none md:border-0 md:bg-transparent md:p-5 ${cellDividerClasses[index]}`}
                   >
                     <div className="min-w-0">
                       <p className="max-w-full whitespace-normal break-words hyphens-auto text-[11px] font-semibold uppercase leading-snug tracking-[0.12em] text-slate-500 line-clamp-2 md:line-clamp-none">

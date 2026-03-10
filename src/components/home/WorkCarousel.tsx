@@ -97,7 +97,7 @@ function WorkCard({ item }: { item: SuccessfulFranchise }) {
 
   return (
     <article className="w-[280px] shrink-0 sm:w-[320px] md:w-[344px] lg:w-[360px]">
-      <div className="relative h-[429px] overflow-hidden rounded-[24px] bg-gradient-to-br from-slate-300 via-slate-200 to-slate-100">
+      <div className="relative h-[429px] overflow-hidden rounded-[24px] bg-[#d4d4d4]">
         {item.imageUrl && !imageFailed && (
           <Image
             src={item.imageUrl}

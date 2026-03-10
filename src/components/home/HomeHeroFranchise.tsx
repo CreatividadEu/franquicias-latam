@@ -199,29 +199,25 @@ function HowItWorks() {
       className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-24"
       style={{
         backgroundImage:
-          "linear-gradient(rgba(140,128,115,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(140,128,115,0.07) 1px, transparent 1px)",
+          "linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px)",
         backgroundSize: "48px 48px",
       }}
     >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          backgroundImage:
-            "linear-gradient(96deg, rgba(40,96,231,0.06) 0%, rgba(40,96,231,0.03) 28%, rgba(255,255,255,0) 52%), radial-gradient(880px 520px at 14% 8%, rgba(40,96,231,0.09), transparent 62%), radial-gradient(640px 420px at 12% 78%, rgba(56,189,248,0.05), transparent 70%)",
-        }}
       />
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
           <div className="min-w-0">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:mb-4 sm:text-xs">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-900 sm:mb-4 sm:text-xs">
               PROGRAMA ACELERACI&Oacute;N DE FRANQUICIAS
             </p>
             <h1 className="text-4xl font-bold leading-[1.02] tracking-tight text-slate-900 sm:text-5xl lg:text-[3.5rem]">
               Convierte tu Negocio
               <span className="block">en Franquicia.</span>
             </h1>
-            <p className="mt-4 max-w-2xl text-lg font-medium text-slate-800 sm:text-xl">
+            <p className="mt-4 max-w-2xl text-lg font-medium text-slate-900 sm:text-xl">
               Sistema premiado por el BID, Naciones Unidas, MinTIC y Propa&iacute;s.
             </p>
 
@@ -230,7 +226,7 @@ function HowItWorks() {
               {programShowcaseCards.map((card, index) => (
                 <article
                   key={card.title}
-                  className="rounded-2xl border border-black/5 bg-white/62 p-5 shadow-[0_18px_38px_-30px_rgba(15,23,42,0.24)] backdrop-blur-xl sm:p-6"
+                  className="rounded-2xl border border-black/8 bg-white p-5 shadow-[0_2px_16px_rgba(0,0,0,0.07)] sm:p-6"
                 >
                   <div className="flex items-start gap-4">
                     <span
@@ -239,13 +235,13 @@ function HowItWorks() {
                       {index + 1}
                     </span>
                     <div className="min-w-0">
-                    do it  <h3 className="text-lg font-bold text-slate-900 sm:text-xl">{card.title}</h3>
+                    <h3 className="text-lg font-bold text-slate-900 sm:text-xl">{card.title}</h3>
                     </div>
                   </div>
                 </article>
               ))}
 
-              <p className="mb-3 text-[13px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              <p className="mb-3 text-[13px] font-bold uppercase tracking-[0.18em] text-slate-900">
                 Programa implementado por:
               </p>
 
@@ -292,7 +288,7 @@ function HowItWorks() {
 
           <aside
             id="resultados-reales"
-            className="min-w-0 rounded-3xl border border-black/5 bg-white/64 p-4 shadow-[0_34px_72px_-44px_rgba(15,23,42,0.26)] backdrop-blur-xl sm:p-5 lg:px-6 lg:py-5"
+            className="min-w-0 rounded-3xl border border-black/8 bg-white p-4 shadow-[0_2px_24px_rgba(0,0,0,0.08)] sm:p-5 lg:px-6 lg:py-5"
           >
             <div className="flex min-w-0 flex-col">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2860E7]">
@@ -301,7 +297,7 @@ function HowItWorks() {
               <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                 Aplica a Nuestro Programa
               </h2>
-              <p className="mt-1 text-base leading-relaxed tracking-[0.015em] text-slate-600 sm:text-lg">
+              <p className="mt-1 text-base leading-relaxed tracking-[0.015em] text-slate-900 sm:text-lg">
                 Indicadores promedio de negocios participantes.
               </p>
               <div className="mt-1.5 flex-0">
@@ -320,8 +316,8 @@ function HowItWorks() {
                       className="flex min-h-0 flex-col justify-center overflow-visible sm:flex-1"
                     >
                       <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 sm:grid-cols-2 sm:auto-rows-fr">
-                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-black/5 bg-white/72 p-4 shadow-[0_14px_28px_-24px_rgba(15,23,42,0.16)] backdrop-blur-lg transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-black/10 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-black/8 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-black/12 hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-900">
                             &ge;20% EBITDA
                           </p>
                           <div className="mt-2 flex items-center justify-between gap-3 overflow-visible">
@@ -356,13 +352,13 @@ function HowItWorks() {
                               />
                             </svg>
                           </div>
-                          <p className="mt-1 text-[14.4px] font-medium text-slate-600 md:text-xs">
+                          <p className="mt-1 text-[14.4px] font-medium text-slate-900 md:text-xs">
                             de empresas
                           </p>
                         </article>
 
-                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-black/5 bg-white/72 p-4 shadow-[0_14px_28px_-24px_rgba(15,23,42,0.16)] backdrop-blur-lg transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-black/10 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-black/8 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-black/12 hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-900">
                             MARGEN BRUTO
                           </p>
                           <p className="mt-2 break-words text-3xl font-extrabold leading-none tabular-nums text-slate-900 sm:text-4xl md:text-5xl">
@@ -386,13 +382,13 @@ function HowItWorks() {
                               />
                             </svg>
                           </div>
-                          <p className="mt-1 text-[14.4px] font-medium text-slate-600 md:text-xs">
+                          <p className="mt-1 text-[14.4px] font-medium text-slate-900 md:text-xs">
                             mejora promedio
                           </p>
                         </article>
 
-                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-black/5 bg-white/72 p-4 shadow-[0_14px_28px_-24px_rgba(15,23,42,0.16)] backdrop-blur-lg transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-black/10 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-black/8 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-black/12 hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-900">
                             MODELO FRANQUICIABLE
                           </p>
                           <p className="mt-2 break-words text-3xl font-extrabold leading-tight tabular-nums text-slate-900 sm:text-4xl">
@@ -403,19 +399,19 @@ function HowItWorks() {
                               <div className="metric-progress-fill h-2.5 w-[72%] rounded-full bg-[linear-gradient(90deg,#2860E7_0%,#3B82F6_100%)]" />
                             </div>
                           </div>
-                          <p className="mt-1 text-[14.4px] font-medium text-slate-600 md:text-xs">
+                          <p className="mt-1 text-[14.4px] font-medium text-slate-900 md:text-xs">
                             tiempo promedio
                           </p>
                         </article>
 
-                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-black/5 bg-white/72 p-4 shadow-[0_14px_28px_-24px_rgba(15,23,42,0.16)] backdrop-blur-lg transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-black/10 hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.3)]">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        <article className="stats-card h-full w-full max-w-none min-w-0 overflow-visible rounded-2xl border border-black/8 bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 ease-out hover:-translate-y-[1px] hover:border-black/12 hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-900">
                             PROYECTOS DESARROLLADOS
                           </p>
                           <p className="mt-2 break-words text-3xl font-extrabold leading-none tabular-nums text-slate-900 sm:text-4xl md:text-5xl">
                             <span ref={projectsValueRef}>750+</span>
                           </p>
-                          <p className="mt-1 text-[14.4px] font-medium text-slate-600 md:text-xs">
+                          <p className="mt-1 text-[14.4px] font-medium text-slate-900 md:text-xs">
                             implementados con nuestro m&eacute;todo
                           </p>
                         </article>
@@ -429,7 +425,7 @@ function HowItWorks() {
                       >
                         Aplicar al Programa
                       </button>
-                      <p className="mt-1.5 text-center text-xs text-slate-500">
+                      <p className="mt-1.5 text-center text-xs text-slate-900">
                         Cupos limitados por cohorte.
                       </p>
                     </div>
@@ -444,16 +440,16 @@ function HowItWorks() {
                         : "pointer-events-none hidden translate-y-2 opacity-0 sm:flex"
                     }`}
                   >
-                    <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-black/5 bg-white/60 p-4 shadow-[0_16px_34px_-28px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:h-full sm:p-5">
+                    <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-black/8 bg-white p-4 shadow-[0_2px_16px_rgba(0,0,0,0.07)] sm:h-full sm:p-5">
                       <div className="mb-4 flex items-center justify-between gap-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-900">
                           Diagn&oacute;stico Express
                         </p>
                         <button
                           type="button"
                           onClick={() => setShowQuiz(false)}
                           disabled={!showQuiz}
-                          className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-slate-400 hover:text-slate-800 disabled:pointer-events-none disabled:opacity-70"
+                          className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-900 transition hover:border-slate-400 hover:text-slate-800 disabled:pointer-events-none disabled:opacity-70"
                         >
                           Cerrar
                         </button>
@@ -663,7 +659,7 @@ export function MethodologyStrip() {
   return (
     <section className="border-y border-black/5 bg-transparent py-10 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <h2 className="text-center text-sm font-bold uppercase tracking-[0.2em] text-slate-500 sm:text-base">
+        <h2 className="text-center text-sm font-bold uppercase tracking-[0.2em] text-slate-900 sm:text-base">
           HAN ESCRITO SOBRE NOSOTROS
         </h2>
         <div className="mt-[27.6px] flex flex-wrap items-center justify-center gap-[14.4px] sm:gap-[19.2px]">

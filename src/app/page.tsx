@@ -284,7 +284,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen text-[#171717]">
       {/* ─── Navigation ─── */}
-      <nav className="sticky top-0 z-50 border-b border-black/5 bg-white/55 backdrop-blur-[10px]">
+      <nav className="sticky top-0 z-50 border-b border-black/8 bg-white/92 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 sm:py-2">
           <div className="flex items-center justify-between">
             <Image
@@ -410,7 +410,7 @@ export default function HomePage() {
         <section id="diagnostico" className="max-w-7xl mx-auto scroll-mt-28 px-4 sm:px-6 sm:scroll-mt-36">
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-block mb-4 sm:mb-6">
-              <span className="section-label bg-gray-100 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full">
+              <span className="section-pill">
                 Crece con Nosotros
               </span>
             </div>
@@ -420,10 +420,10 @@ export default function HomePage() {
               <br className="hidden sm:block" /> en minutos.
             </h1>
 
-            <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-2">
-              Desarrollamos y Vendemos las Mejores Franquicias. 
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-900 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-2">
+              Desarrollamos y Vendemos las Mejores Franquicias.
               <br className="hidden sm:block" />
-              <strong className="text-gray-500 font-semibold">
+              <strong className="text-gray-900 font-semibold">
                 ¿Cómo quieres crecer hoy?
               </strong>
             </p>
@@ -443,7 +443,7 @@ export default function HomePage() {
               </a>
             </div>
 
-            <p className="text-base sm:text-lg text-gray-500 font-extrabold mb-6 sm:mb-8">
+            <p className="text-base sm:text-lg text-gray-900 font-extrabold mb-6 sm:mb-8">
               Más de 750 franquicias líderes desarrolladas.
             </p>
 
@@ -473,14 +473,14 @@ export default function HomePage() {
                 ref={cardRef}
                 className="hero-image hero-quiz-glass rounded-xl sm:rounded-2xl px-[1.77rem] py-[2.06rem] sm:px-[2.36rem] sm:py-[2.66rem]"
               >
-                <p className="text-center text-sm text-gray-500 mb-1">
+                <p className="text-center text-sm text-gray-900 mb-1">
                   Paso 1 de 5
                 </p>
                 <h3 className="text-center text-lg sm:text-xl font-semibold mb-1">
                   ¿En qué sectores te interesa invertir?
                 </h3>
                 {heroSelected.length === 0 && (
-                  <p className="text-center text-[0.90rem] text-gray-500 mb-4">
+                  <p className="text-center text-[0.90rem] text-gray-900 mb-4">
                     Empieza seleccionando uno o más sectores 👇
                   </p>
                 )}
@@ -559,13 +559,13 @@ export default function HomePage() {
       >
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <p className="text-[14px] font-semibold uppercase tracking-[0.18em] text-slate-600 md:text-[17px]">
+            <p className="text-[14px] font-semibold uppercase tracking-[0.18em] text-slate-900 md:text-[17px]">
               CASOS DE ÉXITO · TOTTO X FRANQUICIAS LATAM
             </p>
             <h2 className="mt-4 text-[1.9rem] font-semibold leading-[1.05] tracking-tight text-slate-900 sm:text-[2.55rem] md:mt-5 md:text-[3.2rem]">
               Totto: de 0 a 450 tiendas.
             </h2>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-900 md:text-lg">
               Escala real con control: operación replicable, números sanos y crecimiento sostenido.
             </p>
           </div>
@@ -643,9 +643,9 @@ export default function HomePage() {
 
           <div
             ref={tottoStatsRef}
-            className="mt-10 mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-white/80 bg-gradient-to-br from-white/78 via-white/64 to-[#e8f1ff]/64 shadow-[0_18px_54px_rgba(15,23,42,0.08)] ring-1 ring-white/40 backdrop-blur-xl md:mt-12"
+            className="mt-10 mx-auto max-w-5xl overflow-hidden rounded-[28px] border border-black/8 bg-white shadow-[0_2px_24px_rgba(0,0,0,0.08)] md:mt-12"
           >
-            <div className="grid grid-cols-1 divide-y divide-white/55 text-center sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <div className="grid grid-cols-1 divide-y divide-black/8 text-center sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               <div
                 className={`totto-stat-item py-6 md:py-7 ${
                   tottoStatsReady ? "totto-stat-item--visible" : ""
@@ -658,7 +658,7 @@ export default function HomePage() {
                 >
                   +450
                 </p>
-                <p className="mt-2 text-[15px] font-semibold text-slate-700 md:text-[17px]">
+                <p className="mt-2 text-[15px] font-semibold text-slate-900 md:text-[17px]">
                   Tiendas
                 </p>
               </div>
@@ -676,7 +676,7 @@ export default function HomePage() {
                 >
                   45
                 </p>
-                <p className="mt-2 text-[15px] font-semibold text-slate-700 md:text-[17px]">
+                <p className="mt-2 text-[15px] font-semibold text-slate-900 md:text-[17px]">
                   Países
                 </p>
               </div>
@@ -694,7 +694,7 @@ export default function HomePage() {
                 >
                   +US$200M
                 </p>
-                <p className="mt-2 text-[15px] font-semibold text-slate-700 md:text-[17px]">
+                <p className="mt-2 text-[15px] font-semibold text-slate-900 md:text-[17px]">
                   Ventas anuales
                 </p>
               </div>
@@ -806,7 +806,7 @@ export default function HomePage() {
                 key={c.label}
                 href={c.href}
                 aria-label={`Ver franquicia ${c.title}`}
-                className={`rounded-xl border border-black/5 bg-white/60 shadow-[0_18px_38px_-28px_rgba(15,23,42,0.22)] backdrop-blur-xl sm:rounded-2xl overflow-hidden hover:shadow-xl transition-all scroll-fade-in ${
+                className={`rounded-xl border border-black/8 bg-white shadow-[0_2px_14px_rgba(0,0,0,0.07)] sm:rounded-2xl overflow-hidden hover:shadow-[0_4px_24px_rgba(0,0,0,0.12)] transition-all scroll-fade-in ${
                   c.extraClass || ""
                 }`}
               >
@@ -833,7 +833,7 @@ export default function HomePage() {
                   <h3 className="text-xl sm:text-2xl font-bold mt-2 sm:mt-3 mb-2 sm:mb-3">
                     {c.title}
                   </h3>
-                  <p className="text-gray-600 text-sm sm:text-base">
+                  <p className="text-gray-900 text-sm sm:text-base">
                     {c.desc}
                   </p>
                 </div>
@@ -853,7 +853,7 @@ export default function HomePage() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
               Tu Match Perfecto.
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-2">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-900 max-w-3xl mx-auto px-2">
               Nuestra plataforma analiza tu perfil de inversor y encuentra las
               franquicias que mejor se ajustan: sector, inversi&oacute;n,
               pa&iacute;s y experiencia.
@@ -894,7 +894,7 @@ export default function HomePage() {
 
           {/* Mockup Display */}
           <div className="max-w-5xl mx-auto scroll-fade-in">
-            <div className="hero-image bg-gradient-to-br from-blue-50 to-purple-50 aspect-[4/3] sm:aspect-video relative overflow-hidden">
+            <div className="hero-image bg-[#f0f0f0] aspect-[4/3] sm:aspect-video relative overflow-hidden">
               {activeView === "quiz" ||
               activeView === "matching" ||
               activeView === "resultados" ||
@@ -929,7 +929,7 @@ export default function HomePage() {
                     <div className="text-4xl sm:text-5xl mb-2 sm:mb-3">
                       {activeView === "contacto" && "📞"}
                     </div>
-                    <p className="text-gray-700 font-medium text-base sm:text-lg">
+                    <p className="text-gray-900 font-medium text-base sm:text-lg">
                       {viewTitles[activeView]}
                     </p>
                   </div>
@@ -1001,7 +1001,7 @@ export default function HomePage() {
                 <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
                   {b.title}
                 </h3>
-                <p className="text-gray-600 text-sm sm:text-base">{b.desc}</p>
+                <p className="text-gray-900 text-sm sm:text-base">{b.desc}</p>
               </div>
             ))}
           </div>
@@ -1062,7 +1062,7 @@ export default function HomePage() {
                   </span>
                 </button>
                 {openFaqs.has(i) && (
-                  <div className="mt-3 sm:mt-4 text-gray-600 text-sm sm:text-base">
+                  <div className="mt-3 sm:mt-4 text-gray-900 text-sm sm:text-base">
                     {faq.a}
                   </div>
                 )}
@@ -1076,7 +1076,7 @@ export default function HomePage() {
       <section id="contacto" className="relative overflow-hidden py-16 sm:py-20 lg:py-24 text-white">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-4 inset-y-5 rounded-[28px] border border-white/10 bg-slate-950/76 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.6)] backdrop-blur-xl sm:inset-x-6 sm:inset-y-6 lg:inset-x-8"
+          className="pointer-events-none absolute inset-x-4 inset-y-5 rounded-[28px] bg-[#111111] shadow-[0_8px_40px_rgba(0,0,0,0.25)] sm:inset-x-6 sm:inset-y-6 lg:inset-x-8"
         />
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
@@ -1278,7 +1278,7 @@ export default function HomePage() {
                   className="h-[6.4rem] sm:h-32 w-auto"
                 />
               </div>
-              <p className="text-gray-600 text-xs sm:text-sm">
+              <p className="text-gray-900 text-xs sm:text-sm">
                 Plataforma de franquicias para inversionistas en
                 Latinoam&eacute;rica.
               </p>
@@ -1287,7 +1287,7 @@ export default function HomePage() {
               <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
                 Producto
               </h4>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600">
+              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-900">
                 <li>
                   <a href="#proceso" className="hover:text-black">
                     Proceso
@@ -1309,7 +1309,7 @@ export default function HomePage() {
               <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
                 Empresa
               </h4>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600">
+              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-900">
                 <li>
                   <a href="#contacto" className="hover:text-black">
                     Contacto
@@ -1326,7 +1326,7 @@ export default function HomePage() {
               <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
                 Legal
               </h4>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600">
+              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-900">
                 <li>
                   <a href="#" className="hover:text-black">
                     T&eacute;rminos
@@ -1340,7 +1340,7 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-100 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-500">
+          <div className="border-t border-gray-100 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-900">
             &copy; 2026 Franquicias LATAM. Todos los derechos reservados.
           </div>
         </div>
