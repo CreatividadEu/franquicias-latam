@@ -38,7 +38,7 @@ export function FranchiseLandingNavbar({
           : "border-b border-black/5 bg-white/55 backdrop-blur-[10px]"
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 sm:px-6 sm:py-2">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-[0.3rem] sm:px-6 sm:py-[0.4rem]">
         {/* FL logo */}
         <Link href="/">
           <Image
@@ -46,7 +46,7 @@ export function FranchiseLandingNavbar({
             alt="Franquicias LATAM"
             width={640}
             height={160}
-            className="h-[6.4rem] w-auto sm:h-32"
+            className="h-[5.12rem] w-auto sm:h-[6.4rem]"
             priority
           />
         </Link>

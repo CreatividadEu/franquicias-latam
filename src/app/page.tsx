@@ -285,14 +285,14 @@ export default function HomePage() {
     <div className="min-h-screen text-[#171717]">
       {/* ─── Navigation ─── */}
       <nav className="sticky top-0 z-50 border-b border-black/8 bg-white/92 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 sm:py-2">
+        <div className="mx-auto max-w-7xl px-4 py-[0.3rem] sm:px-6 sm:py-[0.4rem]">
           <div className="flex items-center justify-between">
             <Image
               src="/logo_latam/franquicias_latam_logo.png"
               alt="Franquicias LATAM"
               width={640}
               height={160}
-              className="h-[6.4rem] sm:h-32 w-auto"
+              className="h-[5.12rem] w-auto sm:h-[6.4rem]"
               priority
             />
 
