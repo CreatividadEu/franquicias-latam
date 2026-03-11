@@ -436,13 +436,13 @@ export function HeroFranchise({
   const calendlyHref = `https://calendly.com/franquicias-latam/${slug}`;
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[#060912]">
+    <section className="section-grid-bg relative isolate min-h-screen overflow-hidden">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(900px 520px at 10% 16%, rgba(37,99,235,0.18), transparent 60%), radial-gradient(980px 620px at 92% 12%, rgba(15,23,42,0.45), transparent 65%), linear-gradient(180deg, rgba(2,6,23,0.15), rgba(2,6,23,0.65))",
+            "radial-gradient(900px 520px at 10% 16%, rgba(37,99,235,0.15), transparent 60%), radial-gradient(980px 620px at 92% 12%, rgba(148,163,184,0.22), transparent 65%), linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,255,255,0.92))",
         }}
       />
 
@@ -450,20 +450,20 @@ export function HeroFranchise({
         {/* Left content panel */}
         <div className="flex min-w-0 flex-col justify-center lg:pr-8">
           <div className="max-w-[680px] space-y-8">
-            <div className="inline-flex w-fit items-center gap-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[13px] font-medium text-slate-300">
-              <span className="inline-block size-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(52,211,153,0.18)]" />
+            <div className="inline-flex w-fit items-center gap-3 rounded-full border border-slate-200/80 bg-white/70 px-4 py-2 text-[13px] font-medium text-slate-600 shadow-[0_8px_20px_-16px_rgba(15,23,42,0.25)] backdrop-blur-md">
+              <span className="inline-block size-2 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.16)]" />
               Disponible para aplicar
             </div>
 
             <h1
-              className="text-[2.7rem] font-semibold leading-[1.03] tracking-tight text-white sm:text-[3.3rem] lg:text-[5.1rem] lg:leading-[0.98]"
+              className="text-[2.7rem] font-semibold leading-[1.03] tracking-tight text-slate-900 sm:text-[3.3rem] lg:text-[5.1rem] lg:leading-[0.98]"
               style={{ textWrap: "balance" } as React.CSSProperties}
             >
               {displayTitle}
             </h1>
 
             <p
-              className="max-w-[620px] text-base leading-relaxed text-slate-300 sm:text-xl sm:leading-relaxed"
+              className="max-w-[620px] text-base leading-relaxed text-slate-600 sm:text-xl sm:leading-relaxed"
               style={{ textWrap: "balance" } as React.CSSProperties}
             >
               {displaySubtitle}
@@ -473,7 +473,7 @@ export function HeroFranchise({
               <Button
                 asChild
                 size="lg"
-                className="h-auto rounded-full border border-white/20 bg-white/10 px-7 py-3 text-base font-medium text-white shadow-[0_18px_44px_-28px_rgba(15,23,42,0.9)] backdrop-blur-md transition-all duration-300 hover:bg-white/16"
+                className="h-auto rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-7 py-3 text-base font-medium text-white shadow-[0_18px_44px_-28px_rgba(37,99,235,0.62)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_24px_56px_-26px_rgba(37,99,235,0.82)]"
               >
                 <a
                   href={calendlyHref}
@@ -481,7 +481,7 @@ export function HeroFranchise({
                   rel="noopener noreferrer"
                 >
                   Reservar llamada
-                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-white text-slate-900">
+                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-white text-blue-700">
                     <ArrowRight className="size-4" />
                   </span>
                 </a>
@@ -491,20 +491,20 @@ export function HeroFranchise({
                 asChild
                 size="lg"
                 variant="outline"
-                className="h-auto rounded-full border-white/30 bg-transparent px-7 py-3 text-base font-medium text-white hover:bg-white/8"
+                className="h-auto rounded-full border-slate-300 bg-white/70 px-7 py-3 text-base font-medium text-slate-700 hover:bg-white"
               >
                 <a href="#apply">Chat Ahora</a>
               </Button>
             </div>
 
             {displayStats.length > 0 && (
-              <div className="grid grid-cols-1 gap-4 border-t border-white/12 pt-6 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 border-t border-black/10 pt-6 sm:grid-cols-3">
                 {displayStats.map((item) => (
                   <div key={item.label} className="space-y-1">
-                    <p className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                    <p className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
                       {item.value}
                     </p>
-                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-slate-400">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-slate-500">
                       {item.label}
                     </p>
                   </div>
@@ -516,8 +516,8 @@ export function HeroFranchise({
 
         {/* Right visual panel */}
         <div className="relative flex min-h-[62vh] items-stretch lg:ml-auto lg:mt-5 lg:min-h-[calc(100vh-14rem)] lg:w-[calc(100%+12rem)]">
-          <div className="relative w-full overflow-hidden rounded-[1.95rem] border border-white/12 bg-slate-900 shadow-[0_42px_96px_-36px_rgba(0,0,0,0.72)]">
-            <div className="absolute inset-x-0 top-0 z-10 hidden h-16 items-center justify-center gap-10 border-b border-white/10 bg-slate-950/40 px-6 backdrop-blur-sm lg:flex">
+          <div className="relative w-full overflow-hidden rounded-[1.95rem] border border-slate-200/80 bg-slate-900 shadow-[0_36px_90px_-42px_rgba(15,23,42,0.56)]">
+            <div className="absolute inset-x-0 top-0 z-10 hidden h-16 items-center justify-center gap-10 border-b border-slate-200/20 bg-slate-950/45 px-6 backdrop-blur-sm lg:flex">
               {["About", "Services", "Our work", "FAQs", "Contact"].map((item) => (
                 <span key={item} className="text-sm font-medium text-slate-200">
                   {item}
@@ -537,7 +537,7 @@ export function HeroFranchise({
             )}
 
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.02),rgba(2,6,23,0.28))]" />
-            <div className="pointer-events-none absolute inset-0 rounded-[1.95rem] ring-1 ring-inset ring-white/16" />
+            <div className="pointer-events-none absolute inset-0 rounded-[1.95rem] ring-1 ring-inset ring-slate-200/25" />
           </div>
         </div>
       </div>
@@ -755,24 +755,23 @@ export function Investment({ items }: { items: InvestmentItem[] }) {
         description="Una sola banda para leer el capital requerido, el rango total y la huella de expansión."
       />
 
-      {/* Dark investment card */}
-      <div className="overflow-hidden rounded-3xl bg-slate-950 shadow-[0_32px_80px_-40px_rgba(15,23,42,0.5)]">
+      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_28px_70px_-48px_rgba(15,23,42,0.24)]">
         <div className="p-8 sm:p-10">
           <div className="space-y-8">
             {/* Primary metric — big */}
             {primary && (
               <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {primary.label}
                 </p>
-                <p className="text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
+                <p className="text-5xl font-semibold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
                   {primary.value}
                 </p>
               </div>
             )}
 
             {/* Divider */}
-            <div className="h-px bg-slate-800" />
+            <div className="h-px bg-slate-200" />
 
             {/* Secondary metrics + CTA */}
             <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
@@ -782,7 +781,7 @@ export function Investment({ items }: { items: InvestmentItem[] }) {
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                       {item.label}
                     </p>
-                    <p className="text-xl font-semibold tracking-tight text-slate-200 sm:text-2xl">
+                    <p className="text-xl font-semibold tracking-tight text-slate-800 sm:text-2xl">
                       {item.value}
                     </p>
                   </div>
@@ -792,7 +791,7 @@ export function Investment({ items }: { items: InvestmentItem[] }) {
               <Button
                 asChild
                 size="lg"
-                className="h-auto shrink-0 bg-white text-slate-950 hover:bg-slate-100"
+                className="h-auto shrink-0 bg-slate-900 text-white hover:bg-slate-800"
               >
                 <Link href="/quiz">
                   Solicitar dossier
@@ -919,18 +918,18 @@ export function CTASection({
 }) {
   return (
     <section id="apply" className="flex justify-center">
-      <div className="w-full max-w-4xl overflow-hidden rounded-3xl bg-slate-950 shadow-[0_32px_80px_-40px_rgba(15,23,42,0.5)]">
+      <div className="w-full max-w-4xl overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_28px_70px_-48px_rgba(15,23,42,0.24)]">
         <div className="p-8 text-center sm:p-12">
           <div className="space-y-6">
             <div className="space-y-3">
-              <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                <span className="inline-block h-px w-4 bg-slate-600" />
+              <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <span className="inline-block h-px w-4 bg-slate-300" />
                 Aplicación
               </p>
-              <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
+              <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
                 {headline}
               </h2>
-              <p className="mx-auto max-w-[44ch] text-base leading-relaxed text-slate-400">
+              <p className="mx-auto max-w-[44ch] text-base leading-relaxed text-slate-600">
                 {description}
               </p>
             </div>
