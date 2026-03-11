@@ -250,6 +250,13 @@ body::after {
   background: #ffffff;
 }
 
+.section-grid-bg {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
 @keyframes soft-glow-drift {
   0% {
     background-position: 0% 0%, 100% 0%, 50% 50%, 0% 100%;

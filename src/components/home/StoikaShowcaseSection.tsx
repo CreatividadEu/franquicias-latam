@@ -63,12 +63,7 @@ export function StoikaShowcaseSection() {
 
   return (
     <section
-      className="stoika-showcase relative isolate overflow-hidden bg-transparent py-20 sm:py-24 lg:py-28"
-      style={{
-        backgroundImage:
-          "linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px)",
-        backgroundSize: "48px 48px",
-      }}
+      className="stoika-showcase section-grid-bg relative isolate overflow-hidden py-20 sm:py-24 lg:py-28"
     >
       <div
         aria-hidden="true"
