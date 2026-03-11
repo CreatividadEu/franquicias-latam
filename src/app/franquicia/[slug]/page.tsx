@@ -89,7 +89,7 @@ export default async function FranchiseLandingPage({
 
   if (!franchise) {
     return (
-      <main className="min-h-screen px-4 py-8 text-[#171717] sm:px-6 sm:py-10">
+      <main className="section-grid-bg relative isolate min-h-screen overflow-hidden px-4 py-8 text-[#171717] sm:px-6 sm:py-10">
         <div className="glass-card mx-auto max-w-3xl rounded-3xl border border-slate-200/60 bg-white/80 p-8 text-center shadow-[0_24px_60px_-40px_rgba(15,23,42,0.18)]">
           <div className="space-y-4">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
@@ -221,7 +221,7 @@ export default async function FranchiseLandingPage({
   );
 
   return (
-    <main className="min-h-screen overflow-x-clip text-[#171717]">
+    <main className="section-grid-bg relative isolate min-h-screen overflow-x-clip text-[#171717]">
       {/* Fixed navbar floats over hero */}
       <FranchiseLandingNavbar
         showFranchiseLogo={Boolean(profile?.showFranchiseLogo)}

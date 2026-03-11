@@ -1,21 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Script from "next/script";
 
-type CalendlyWindow = Window & {
-  Calendly?: {
-    initInlineWidgets?: () => void;
-  };
-};
-
-const initCalendly = () => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  (window as CalendlyWindow).Calendly?.initInlineWidgets?.();
-};
+const CALENDLY_URL =
+  "https://calendly.com/franquicias-latam/programa_aceleradora_franquicias";
 
 export function CalendlyCTASection() {
   const statsRef = useRef<HTMLDivElement | null>(null);
@@ -112,13 +100,6 @@ export function CalendlyCTASection() {
     <section
       className="relative overflow-hidden py-14 sm:py-16 lg:py-[4.5rem]"
     >
-      <Script
-        id="calendly-widget-script"
-        src="https://assets.calendly.com/assets/external/widget.js"
-        strategy="afterInteractive"
-        onReady={initCalendly}
-      />
-
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="relative overflow-hidden rounded-3xl border border-black/8 bg-white shadow-[0_2px_32px_rgba(0,0,0,0.08)]">
 
@@ -167,17 +148,19 @@ export function CalendlyCTASection() {
 
               <div
                 ref={statsRef}
-                className="grid max-w-[620px] grid-cols-1 justify-items-center gap-4 sm:grid-cols-3 sm:justify-items-stretch"
+                className="grid max-w-[700px] grid-cols-1 justify-items-center gap-5 sm:grid-cols-3 sm:gap-4"
               >
                 {stats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="calendly-cta__stat-disc flex aspect-square w-full max-w-[210px] flex-col items-center justify-center rounded-full border border-black/[0.03] px-5 text-center"
+                    className="flex w-full max-w-[210px] flex-col items-center text-center"
                   >
-                    <div className="bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#38BDF8] bg-clip-text text-[2rem] font-semibold leading-none tracking-[-0.02em] text-transparent sm:text-[2.2rem]">
-                      {stat.value}
+                    <div className="calendly-cta__stat-disc flex aspect-square w-full items-center justify-center rounded-full border border-black/[0.03] px-5">
+                      <div className="bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#38BDF8] bg-clip-text text-[2.35rem] font-semibold leading-none tracking-[-0.02em] text-transparent sm:text-[2.7rem]">
+                        {stat.value}
+                      </div>
                     </div>
-                    <div className="mt-3 text-[0.72rem] font-semibold uppercase leading-[1.25] tracking-[0.2em] text-[#14213D] sm:text-[0.76rem]">
+                    <div className="mt-3 max-w-[185px] text-[0.72rem] font-semibold uppercase leading-[1.3] tracking-[0.2em] text-[#14213D] [text-wrap:balance] sm:text-[0.76rem]">
                       {stat.label}
                     </div>
                   </div>
@@ -191,9 +174,11 @@ export function CalendlyCTASection() {
                 aria-label="Calendly para agendar una llamada del programa"
                 className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_40px_80px_-30px_rgba(15,23,42,0.25)] transition-all duration-500 hover:shadow-[0_50px_100px_-30px_rgba(15,23,42,0.35)]"
               >
-                <div
-                  className="calendly-inline-widget calendly-cta__widget rounded-[20px]"
-                  data-url="https://calendly.com/franquicias_latam/programa_aceleradora_franquicias"
+                <iframe
+                  title="Calendly para agendar llamada"
+                  src={`${CALENDLY_URL}?hide_event_type_details=1&hide_landing_page_details=1`}
+                  className="calendly-cta__widget w-full rounded-[20px] border-0"
+                  loading="lazy"
                   style={{ minWidth: "320px", height: "700px" }}
                 />
               </div>
@@ -215,63 +200,10 @@ export function CalendlyCTASection() {
             rgb(255, 255, 255) 0px 3px 1px 0px inset;
         }
 
-        .calendly-cta__noise {
-          background-image:
-            linear-gradient(
-              120deg,
-              rgba(37, 99, 235, 0.65),
-              rgba(255, 255, 255, 0) 48%,
-              rgba(99, 102, 241, 0.4)
-            ),
-            repeating-linear-gradient(
-              0deg,
-              rgba(15, 23, 42, 0.26) 0px,
-              rgba(15, 23, 42, 0.26) 1px,
-              transparent 1px,
-              transparent 3px
-            );
-          animation: calendlyCtaNoise 18s linear infinite;
-        }
-
-        .calendly-cta__ambient {
-          animation: calendlyCtaFloat 20s ease-in-out infinite;
-        }
-
-        @keyframes calendlyCtaFloat {
-          0% {
-            transform: translate3d(0, 0, 0);
-          }
-          50% {
-            transform: translate3d(0, -10px, 0);
-          }
-          100% {
-            transform: translate3d(0, 0, 0);
-          }
-        }
-
-        @keyframes calendlyCtaNoise {
-          0% {
-            transform: translate3d(0, 0, 0);
-          }
-          50% {
-            transform: translate3d(-1.5%, 1%, 0);
-          }
-          100% {
-            transform: translate3d(0, 0, 0);
-          }
-        }
-
         @media (max-width: 640px) {
           .calendly-cta__widget {
             min-width: 100% !important;
             height: 620px !important;
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .calendly-cta__ambient,
-          .calendly-cta__noise {
-            animation: none !important;
           }
         }
       `}</style>

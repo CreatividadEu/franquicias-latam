@@ -580,15 +580,7 @@ export function VideoSection({
   const canEmbed = showVideo && Boolean(videoUrl);
 
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{
-        backgroundColor: "#f2ece4",
-        backgroundImage:
-          "linear-gradient(rgba(140,128,115,0.13) 1px, transparent 1px), linear-gradient(90deg, rgba(140,128,115,0.13) 1px, transparent 1px)",
-        backgroundSize: "48px 48px",
-      }}
-    >
+    <section className="section-grid-bg relative isolate overflow-hidden">
       {/* Heading block */}
       <div className="mx-auto max-w-2xl px-6 pb-10 pt-14 text-center sm:px-10 sm:pt-16">
         <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500">
