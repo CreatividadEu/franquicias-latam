@@ -62,9 +62,20 @@ export function StoikaShowcaseSection() {
   }, []);
 
   return (
-    <section className="stoika-showcase relative overflow-hidden bg-transparent py-20 sm:py-24 lg:py-28">
+    <section
+      className="stoika-showcase relative isolate overflow-hidden bg-transparent py-20 sm:py-24 lg:py-28"
+      style={{
+        backgroundImage:
+          "linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px)",
+        backgroundSize: "48px 48px",
+      }}
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+      />
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-base font-bold uppercase tracking-[0.22em] text-[#B8953B] sm:text-lg">
             CONTROL FINANCIERO INTELIGENTE
