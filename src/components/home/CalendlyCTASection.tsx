@@ -102,6 +102,12 @@ export function CalendlyCTASection() {
     return () => window.cancelAnimationFrame(frame);
   }, [statsVisible]);
 
+  const stats = [
+    { value: `+${statValues.companies}`, label: "Empresas optimizadas" },
+    { value: `${statValues.ebitda}%+`, label: "EBITDA promedio" },
+    { value: `${statValues.headcount}+`, label: "Años de Experiencia" },
+  ];
+
   return (
     <section
       className="relative overflow-hidden py-14 sm:py-16 lg:py-[4.5rem]"
@@ -161,32 +167,21 @@ export function CalendlyCTASection() {
 
               <div
                 ref={statsRef}
-                className="grid gap-3 sm:grid-cols-3"
+                className="grid max-w-[620px] grid-cols-1 justify-items-center gap-4 sm:grid-cols-3 sm:justify-items-stretch"
               >
-                <div className="rounded-xl border border-black/8 bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-                  <div className="bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-3xl font-bold text-transparent">
-                    + {statValues.companies}
+                {stats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="calendly-cta__stat-disc flex aspect-square w-full max-w-[210px] flex-col items-center justify-center rounded-full border border-black/[0.03] px-5 text-center"
+                  >
+                    <div className="bg-gradient-to-r from-[#1D4ED8] via-[#2563EB] to-[#38BDF8] bg-clip-text text-[2rem] font-semibold leading-none tracking-[-0.02em] text-transparent sm:text-[2.2rem]">
+                      {stat.value}
+                    </div>
+                    <div className="mt-3 text-[0.72rem] font-semibold uppercase leading-[1.25] tracking-[0.2em] text-[#14213D] sm:text-[0.76rem]">
+                      {stat.label}
+                    </div>
                   </div>
-                  <div className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-900">
-                    Empresas optimizadas
-                  </div>
-                </div>
-                <div className="rounded-xl border border-black/8 bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-                  <div className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-3xl font-bold text-transparent">
-                    {statValues.ebitda}%+
-                  </div>
-                  <div className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-900">
-                    EBITDA promedio
-                  </div>
-                </div>
-                <div className="rounded-xl border border-black/8 bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-                  <div className="bg-gradient-to-r from-pink-500 via-orange-400 to-orange-500 bg-clip-text text-3xl font-bold text-transparent">
-                    {statValues.headcount} +
-                  </div>
-                  <div className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-900">
-                    Años de Experiencia
-                  </div>
-                </div>
+                ))}
               </div>
 
             </div>
@@ -208,6 +203,18 @@ export function CalendlyCTASection() {
       </div>
 
       <style jsx>{`
+        .calendly-cta__stat-disc {
+          background: #f5f5f5;
+          box-shadow:
+            rgba(0, 0, 0, 0.08) 0px 0.706592px 0.706592px -0.666667px,
+            rgba(0, 0, 0, 0.08) 0px 1.80656px 1.80656px -1.33333px,
+            rgba(0, 0, 0, 0.07) 0px 3.62176px 3.62176px -2px,
+            rgba(0, 0, 0, 0.07) 0px 6.8656px 6.8656px -2.66667px,
+            rgba(0, 0, 0, 0.05) 0px 13.6468px 13.6468px -3.33333px,
+            rgba(0, 0, 0, 0.02) 0px 30px 30px -4px,
+            rgb(255, 255, 255) 0px 3px 1px 0px inset;
+        }
+
         .calendly-cta__noise {
           background-image:
             linear-gradient(
