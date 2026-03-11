@@ -623,17 +623,17 @@ export default function HomePage() {
                   type="button"
                   aria-label="Reproducir video"
                   onClick={() => setIsVideoOpen(true)}
-                  className={`absolute bottom-4 left-1/2 z-30 inline-flex max-w-[calc(100%-2.5rem)] -translate-x-1/2 items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-4 py-2.5 text-[13px] font-semibold tracking-tight text-white shadow-[0_14px_30px_-18px_rgba(59,130,246,0.75)] ring-1 ring-white/20 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] md:bottom-10 md:max-w-[calc(100%-2rem)] md:gap-3 md:rounded-2xl md:px-8 md:py-4 md:text-base ${
+                  className={`absolute bottom-2 left-1/2 z-30 inline-flex max-w-[calc(100%-5rem)] -translate-x-1/2 scale-[0.8] items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-3 py-2 text-[11px] font-semibold tracking-tight text-white shadow-[0_12px_24px_-16px_rgba(59,130,246,0.75)] ring-1 ring-white/20 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] md:bottom-10 md:max-w-[calc(100%-2rem)] md:scale-[1.15] md:gap-3 md:rounded-2xl md:px-8 md:py-4 md:text-base ${
                     isVideoOpen
                       ? "pointer-events-none opacity-0"
                       : "opacity-100"
-                  } md:scale-[1.15]`}
+                  }`}
                 >
                   <span
-                    className="grid h-8 w-8 place-items-center rounded-full bg-white/12 ring-1 ring-white/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] md:h-10 md:w-10"
+                    className="grid h-7 w-7 place-items-center rounded-full bg-white/12 ring-1 ring-white/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] md:h-10 md:w-10"
                     aria-hidden="true"
                   >
-                    <span className="text-sm text-white/95 md:text-lg">→</span>
+                    <span className="text-xs text-white/95 md:text-lg">→</span>
                   </span>
                   <span className="whitespace-nowrap">Quiero escalar mi negocio</span>
                 </button>
