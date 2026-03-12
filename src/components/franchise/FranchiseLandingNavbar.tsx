@@ -34,8 +34,8 @@ export function FranchiseLandingNavbar({
     <nav
       className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-white/95 shadow-sm backdrop-blur-md"
-          : "border-b border-black/5 bg-white/55 backdrop-blur-[10px]"
+          ? "border-b border-black/8 bg-white/92 backdrop-blur-md"
+          : "border-b border-black/8 bg-white/86 backdrop-blur-md"
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-[0.3rem] sm:px-6 sm:py-[0.4rem]">
@@ -57,12 +57,19 @@ export function FranchiseLandingNavbar({
             <a
               key={link.href}
               href={link.href}
-              className="text-[19px] font-bold text-stone-800 transition-colors hover:text-stone-950"
+              className="nav-link text-[19px] font-bold"
             >
               {link.label}
             </a>
           ))}
         </div>
+
+        <Link
+          href="/quiz"
+          className="hidden md:inline-flex md:items-center md:justify-center rounded-full bg-white px-7 py-3.5 text-[19px] font-bold text-gray-900 shadow-[0_6px_18px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.18)]"
+        >
+          Comenzar
+        </Link>
       </div>
     </nav>
   );

@@ -53,7 +53,7 @@ function SurfaceCard({
   return (
     <Card
       className={cn(
-        "glass-card gap-0 border border-slate-200/70 bg-white/80 py-0 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.18)]",
+        "glass-card gap-0 border border-black/8 bg-white py-0 shadow-[0_2px_16px_rgba(0,0,0,0.07)]",
         className,
       )}
     >
@@ -74,16 +74,16 @@ function SectionHeader({
   return (
     <div className="space-y-3">
       {badge ? (
-        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-          <span className="inline-block h-px w-4 bg-slate-300" />
+        <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-900">
+          <span className="inline-block h-px w-4 bg-slate-500" />
           {badge}
         </p>
       ) : null}
-      <h2 className="max-w-3xl text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.75rem] lg:leading-[1.04]">
+      <h2 className="max-w-3xl text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-[2.75rem] lg:leading-[1.04]">
         {title}
       </h2>
       {description ? (
-        <p className="max-w-2xl text-sm leading-relaxed text-slate-500 sm:text-base">
+        <p className="max-w-2xl text-sm leading-relaxed text-slate-700 sm:text-base">
           {description}
         </p>
       ) : null}
@@ -154,16 +154,16 @@ function buildEmbedUrl(url: string) {
 
 function FeatureCard({ item }: { item: FeatureItem }) {
   return (
-    <SurfaceCard className="rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-32px_rgba(15,23,42,0.22)]">
+    <SurfaceCard className="rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_24px_rgba(0,0,0,0.1)]">
       <CardContent className="space-y-5 p-6">
-        <div className="inline-flex size-11 items-center justify-center rounded-2xl border border-blue-100/90 bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-700 shadow-[0_10px_24px_-18px_rgba(59,130,246,0.45)]">
+        <div className="icon-badge-dark">
           {item.icon}
         </div>
         <div className="space-y-1.5">
           <h3 className="text-base font-semibold tracking-tight text-slate-900">
             {item.title}
           </h3>
-          <p className="text-sm leading-relaxed text-slate-500">
+          <p className="text-sm leading-relaxed text-slate-700">
             {item.description}
           </p>
         </div>
@@ -176,19 +176,19 @@ function FeatureCard({ item }: { item: FeatureItem }) {
 
 function StepCard({ item }: { item: StepItem }) {
   return (
-    <SurfaceCard className="rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-32px_rgba(15,23,42,0.22)]">
+    <SurfaceCard className="rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_24px_rgba(0,0,0,0.1)]">
       <CardContent className="relative overflow-hidden p-6">
         <span className="pointer-events-none absolute right-5 top-3 text-7xl font-bold leading-none tracking-tighter text-slate-100 select-none">
           {item.step}
         </span>
         <div className="relative space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-600">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#2860E7]">
             Paso {item.step}
           </p>
           <h3 className="text-lg font-semibold tracking-tight text-slate-900">
             {item.title}
           </h3>
-          <p className="text-sm leading-relaxed text-slate-500">
+          <p className="text-sm leading-relaxed text-slate-700">
             {item.description}
           </p>
         </div>
@@ -201,16 +201,16 @@ function StepCard({ item }: { item: StepItem }) {
 
 function SupportCard({ item }: { item: SupportItem }) {
   return (
-    <SurfaceCard className="rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_56px_-32px_rgba(15,23,42,0.22)]">
+    <SurfaceCard className="rounded-2xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_24px_rgba(0,0,0,0.1)]">
       <CardContent className="flex items-start gap-4 p-5">
-        <div className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 text-slate-600 shadow-[0_8px_20px_-14px_rgba(15,23,42,0.2)]">
+        <div className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-black/8 bg-white text-slate-900 shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
           {item.icon}
         </div>
         <div className="space-y-1">
           <h3 className="text-sm font-semibold tracking-tight text-slate-900">
             {item.title}
           </h3>
-          <p className="text-sm leading-relaxed text-slate-500">
+          <p className="text-sm leading-relaxed text-slate-700">
             {item.description}
           </p>
         </div>
@@ -223,15 +223,15 @@ function SupportCard({ item }: { item: SupportItem }) {
 
 function QuoteCard({ item }: { item: QuoteItem }) {
   return (
-    <div className="space-y-4 rounded-2xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_12px_32px_-20px_rgba(15,23,42,0.14)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_50px_-28px_rgba(15,23,42,0.2)]">
-      <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600 border border-blue-100/80">
+    <div className="space-y-4 rounded-2xl border border-black/8 bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.07)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_24px_rgba(0,0,0,0.1)]">
+      <div className="flex size-9 items-center justify-center rounded-xl border border-orange-500/30 bg-orange-500/10 text-orange-600">
         <Quote className="size-4" />
       </div>
       <div className="space-y-2">
         <h3 className="text-base font-semibold tracking-tight text-slate-900">
           {item.title}
         </h3>
-        <p className="text-sm leading-relaxed text-slate-500">{item.body}</p>
+        <p className="text-sm leading-relaxed text-slate-700">{item.body}</p>
       </div>
     </div>
   );
@@ -260,7 +260,7 @@ function ValuePointCard({ item }: { item: ValuePointItem }) {
         <p className="text-sm font-semibold tracking-tight text-slate-900">
           {item.title}
         </p>
-        <p className="text-xs leading-relaxed text-slate-500 sm:text-sm">
+        <p className="text-xs leading-relaxed text-slate-700 sm:text-sm">
           {item.description}
         </p>
       </div>
@@ -284,7 +284,7 @@ function VideoPlayer({
   const canEmbed = showVideo && Boolean(videoUrl);
 
   return (
-    <div className="group relative aspect-video overflow-hidden rounded-[24px] border border-slate-200/70 bg-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)]">
+    <div className="group relative aspect-video overflow-hidden rounded-[24px] border border-black/8 bg-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)]">
       {canEmbed && videoUrl ? (
         videoUrl.endsWith(".mp4") ? (
           <video
@@ -310,10 +310,10 @@ function VideoPlayer({
             sizes="(min-width: 1024px) 44vw, 100vw"
             className="h-full w-full object-cover"
           />
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.06),rgba(2,6,23,0.4))]" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(15,23,42,0.06),rgba(15,23,42,0.34))]" />
         </>
       ) : (
-        <div className="flex h-full items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-100">
+        <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-100 via-white to-slate-200">
           <Play className="size-10 text-slate-400" />
         </div>
       )}
@@ -348,15 +348,15 @@ function ChatbotPanel({
     <SurfaceCard className="h-full rounded-3xl">
       <CardContent className="flex min-h-[380px] flex-col justify-between p-6">
         <div className="space-y-5">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500">
-            <Circle className="size-2 fill-current text-slate-300" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+            <Circle className="size-2 fill-current text-[#2860E7]" />
             Asistente disponible
           </div>
           <div className="space-y-2">
             <h3 className="text-xl font-semibold tracking-tight text-slate-900">
               Consultivo guiado para esta franquicia.
             </h3>
-            <p className="text-sm leading-relaxed text-slate-500">
+            <p className="text-sm leading-relaxed text-slate-700">
               Cuando el proceso consultivo está habilitado, el asistente responde
               preguntas sobre inversión, territorios y modelo.
             </p>
@@ -368,7 +368,7 @@ function ChatbotPanel({
             <a href={`mailto:${contactEmail}`}>Hablar con el equipo</a>
           </Button>
         ) : (
-          <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4 text-sm text-slate-500">
+          <div className="rounded-2xl border border-black/8 bg-white p-4 text-sm text-slate-700">
             Solicita el dossier para continuar con soporte consultivo.
           </div>
         )}
@@ -436,66 +436,57 @@ export function HeroFranchise({
   const calendlyHref = `https://calendly.com/franquicias-latam/${slug}`;
 
   return (
-    <section className="relative isolate min-h-screen overflow-hidden bg-white">
-      <div className="relative mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 gap-8 px-4 pb-12 pt-28 sm:px-6 sm:pb-16 sm:pt-32 lg:grid-cols-[0.92fr_1.08fr] lg:items-stretch lg:gap-10 lg:pb-10 lg:pt-44">
-        {/* Left content panel */}
-        <div className="flex min-w-0 flex-col justify-center lg:pr-8">
-          <div className="max-w-[680px] space-y-8">
-            <div className="inline-flex w-fit items-center gap-3 rounded-full border border-slate-200/80 bg-white/70 px-4 py-2 text-[13px] font-medium text-slate-600 shadow-[0_8px_20px_-16px_rgba(15,23,42,0.25)] backdrop-blur-md">
-              <span className="inline-block size-2 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.16)]" />
-              Disponible para aplicar
-            </div>
+    <section className="section-grid-bg relative isolate overflow-hidden">
+      <div className="relative mx-auto grid min-h-[80vh] w-full max-w-7xl grid-cols-1 gap-10 px-4 pb-12 pt-28 sm:px-6 sm:pb-16 sm:pt-32 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-14 lg:pb-20 lg:pt-44">
+        <div className="min-w-0">
+          <div className="max-w-2xl">
+            <span className="section-pill">Crece con Nosotros</span>
 
             <h1
-              className="text-[2.7rem] font-semibold leading-[1.03] tracking-tight text-slate-900 sm:text-[3.3rem] lg:text-[5.1rem] lg:leading-[0.98]"
+              className="mt-5 text-4xl font-bold leading-[0.95] tracking-tight text-slate-900 sm:text-5xl lg:text-7xl"
               style={{ textWrap: "balance" } as React.CSSProperties}
             >
               {displayTitle}
             </h1>
 
             <p
-              className="max-w-[620px] text-base leading-relaxed text-slate-600 sm:text-xl sm:leading-relaxed"
+              className="mt-5 text-lg leading-relaxed text-slate-900 sm:text-2xl"
               style={{ textWrap: "balance" } as React.CSSProperties}
             >
               {displaySubtitle}
             </p>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Button
                 asChild
                 size="lg"
-                className="h-auto rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-7 py-3 text-base font-medium text-white shadow-[0_18px_44px_-28px_rgba(37,99,235,0.62)] transition-all duration-300 hover:-translate-y-[1px] hover:shadow-[0_24px_56px_-26px_rgba(37,99,235,0.82)]"
+                className="h-auto rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-7 py-4 text-[17px] font-bold tracking-tight text-white shadow-[0_18px_40px_-18px_rgba(59,130,246,0.75)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] sm:px-8 sm:text-[18px]"
               >
-                <a
-                  href={calendlyHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={calendlyHref} target="_blank" rel="noopener noreferrer">
                   Reservar llamada
-                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-white text-blue-700">
-                    <ArrowRight className="size-4" />
-                  </span>
                 </a>
               </Button>
 
               <Button
                 asChild
                 size="lg"
-                variant="outline"
-                className="h-auto rounded-full border-slate-300 bg-white/70 px-7 py-3 text-base font-medium text-slate-700 hover:bg-white"
+                className="h-auto rounded-2xl border border-orange-500 bg-orange-500 px-7 py-4 text-[17px] font-bold tracking-tight text-white shadow-[0_12px_30px_-22px_rgba(249,115,22,0.42)] transition-all duration-200 hover:-translate-y-[1px] hover:border-orange-600 hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(249,115,22,0.2)] sm:px-8 sm:text-[18px]"
               >
-                <a href="#apply">Chat Ahora</a>
+                <a href="#apply">Aplicar Ahora</a>
               </Button>
             </div>
 
             {displayStats.length > 0 && (
-              <div className="grid grid-cols-1 gap-4 border-t border-black/10 pt-6 sm:grid-cols-3">
+              <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {displayStats.map((item) => (
-                  <div key={item.label} className="space-y-1">
-                    <p className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+                  <div
+                    key={item.label}
+                    className="rounded-2xl border border-black/8 bg-white px-4 py-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+                  >
+                    <p className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
                       {item.value}
                     </p>
-                    <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-slate-500">
+                    <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
                       {item.label}
                     </p>
                   </div>
@@ -505,30 +496,24 @@ export function HeroFranchise({
           </div>
         </div>
 
-        {/* Right visual panel */}
-        <div className="relative flex min-h-[62vh] items-stretch lg:ml-auto lg:mt-5 lg:min-h-[calc(100vh-14rem)] lg:w-[calc(100%+12rem)]">
-          <div className="relative w-full overflow-hidden rounded-[1.95rem] border border-slate-200/80 bg-slate-900 shadow-[0_36px_90px_-42px_rgba(15,23,42,0.56)]">
-            <div className="absolute inset-x-0 top-0 z-10 hidden h-16 items-center justify-center gap-10 border-b border-slate-200/20 bg-slate-950/45 px-6 backdrop-blur-sm lg:flex">
-              {["About", "Services", "Our work", "FAQs", "Contact"].map((item) => (
-                <span key={item} className="text-sm font-medium text-slate-200">
-                  {item}
-                </span>
-              ))}
-            </div>
+        <div className="relative min-h-[320px] overflow-hidden rounded-2xl border border-black/8 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.1)] sm:min-h-[420px] lg:min-h-[520px]">
+          {imageUrl ? (
+            <MediaAsset
+              src={imageUrl}
+              alt={name}
+              sizes="(max-width: 1024px) 100vw, 48vw"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-to-br from-slate-100 to-slate-200" />
+          )}
 
-            {imageUrl ? (
-              <MediaAsset
-                src={imageUrl}
-                alt={name}
-                sizes="(max-width: 1024px) 100vw, 52vw"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full bg-gradient-to-br from-slate-700 to-slate-900" />
-            )}
-
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.02),rgba(2,6,23,0.28))]" />
-            <div className="pointer-events-none absolute inset-0 rounded-[1.95rem] ring-1 ring-inset ring-slate-200/25" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10" />
+          <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md sm:text-sm">
+            Franquicia validada
+          </div>
+          <div className="pointer-events-none absolute bottom-4 left-4 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-md sm:text-sm">
+            Aplicación abierta
           </div>
         </div>
       </div>
@@ -574,16 +559,16 @@ export function VideoSection({
     <section className="section-grid-bg relative isolate overflow-hidden">
       {/* Heading block */}
       <div className="mx-auto max-w-2xl px-6 pb-10 pt-14 text-center sm:px-10 sm:pt-16">
-        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500">
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-900">
           Video · Tour
         </p>
         <h2
-          className="text-3xl font-bold tracking-tight text-stone-950 sm:text-[2.5rem]"
+          className="text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.5rem]"
           style={{ textWrap: "balance" } as React.CSSProperties}
         >
           Descubre cómo funciona.
         </h2>
-        <p className="mt-4 text-base font-medium leading-relaxed text-stone-700 sm:text-lg">
+        <p className="mt-4 text-base font-medium leading-relaxed text-slate-700 sm:text-lg">
           Una lectura visual rápida para entender el modelo, la experiencia y la
           lógica de expansión.
         </p>
@@ -591,7 +576,7 @@ export function VideoSection({
 
       {/* Player stage */}
       <div className="px-4 pb-12 sm:px-8 lg:px-12">
-        <div className="mx-auto max-w-5xl overflow-hidden rounded-[1.5rem] border border-stone-300/50 bg-stone-950 shadow-[0_40px_100px_-30px_rgba(80,60,40,0.38)]">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-[1.5rem] border border-black/8 bg-slate-950 shadow-[0_24px_80px_rgba(15,23,42,0.18)]">
           <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
             {canEmbed && videoUrl ? (
               videoUrl.endsWith(".mp4") ? (
@@ -616,8 +601,8 @@ export function VideoSection({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex h-full items-center justify-center bg-gradient-to-br from-stone-800 to-stone-950">
-                <Play className="size-14 text-stone-600" />
+              <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950">
+                <Play className="size-14 text-slate-500" />
               </div>
             )}
           </div>
@@ -746,13 +731,13 @@ export function Investment({ items }: { items: InvestmentItem[] }) {
         description="Una sola banda para leer el capital requerido, el rango total y la huella de expansión."
       />
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_28px_70px_-48px_rgba(15,23,42,0.24)]">
+      <div className="overflow-hidden rounded-3xl border border-black/8 bg-white shadow-[0_2px_16px_rgba(0,0,0,0.07)]">
         <div className="p-8 sm:p-10">
           <div className="space-y-8">
             {/* Primary metric — big */}
             {primary && (
               <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
                   {primary.label}
                 </p>
                 <p className="text-5xl font-semibold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
@@ -762,17 +747,17 @@ export function Investment({ items }: { items: InvestmentItem[] }) {
             )}
 
             {/* Divider */}
-            <div className="h-px bg-slate-200" />
+            <div className="h-px bg-black/10" />
 
             {/* Secondary metrics + CTA */}
             <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex flex-wrap gap-6">
                 {secondaryItems.map((item) => (
                   <div key={item.label} className="space-y-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-700">
                       {item.label}
                     </p>
-                    <p className="text-xl font-semibold tracking-tight text-slate-800 sm:text-2xl">
+                    <p className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
                       {item.value}
                     </p>
                   </div>
@@ -782,7 +767,7 @@ export function Investment({ items }: { items: InvestmentItem[] }) {
               <Button
                 asChild
                 size="lg"
-                className="h-auto shrink-0 bg-slate-900 text-white hover:bg-slate-800"
+                className="h-auto shrink-0 border border-orange-500 bg-orange-500 font-bold text-white shadow-[0_12px_30px_-22px_rgba(249,115,22,0.42)] hover:bg-orange-600"
               >
                 <Link href="/quiz">
                   Solicitar dossier
@@ -854,8 +839,8 @@ export function ChatbotSection({
     >
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/80 px-3 py-1.5 text-xs font-semibold text-emerald-700">
-            <Circle className="size-2 fill-current" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+            <Circle className="size-2 fill-current text-[#2860E7]" />
             Asistente activo
           </div>
           <div className="space-y-2.5">
@@ -863,18 +848,18 @@ export function ChatbotSection({
               <div
                 key={item.label}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl border px-4 py-3 text-sm text-slate-700 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md",
+                  "flex items-center gap-3 rounded-xl border px-4 py-3 text-sm text-slate-900 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
                   index % 2 === 0
-                    ? "border-blue-200/70 bg-blue-500/5"
-                    : "border-emerald-200/70 bg-emerald-500/5",
+                    ? "border-[#2860E7]/25 bg-[#2860E7]/5"
+                    : "border-orange-500/25 bg-orange-500/5",
                 )}
               >
                 <span
                   className={cn(
                     "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-white shadow-[0_8px_18px_-12px_rgba(15,23,42,0.28)]",
                     index % 2 === 0
-                      ? "bg-gradient-to-br from-blue-600 to-cyan-500"
-                      : "bg-gradient-to-br from-emerald-500 to-teal-500",
+                      ? "bg-[#2860E7]"
+                      : "bg-orange-500",
                   )}
                 >
                   {item.icon}
@@ -909,18 +894,18 @@ export function CTASection({
 }) {
   return (
     <section id="apply" className="flex justify-center">
-      <div className="w-full max-w-4xl overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_28px_70px_-48px_rgba(15,23,42,0.24)]">
+      <div className="w-full max-w-4xl overflow-hidden rounded-3xl border border-black/8 bg-white shadow-[0_2px_16px_rgba(0,0,0,0.07)]">
         <div className="p-8 text-center sm:p-12">
           <div className="space-y-6">
             <div className="space-y-3">
-              <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                <span className="inline-block h-px w-4 bg-slate-300" />
+              <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-900">
+                <span className="inline-block h-px w-4 bg-slate-500" />
                 Aplicación
               </p>
               <h2 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
                 {headline}
               </h2>
-              <p className="mx-auto max-w-[44ch] text-base leading-relaxed text-slate-600">
+              <p className="mx-auto max-w-[44ch] text-base leading-relaxed text-slate-700">
                 {description}
               </p>
             </div>
