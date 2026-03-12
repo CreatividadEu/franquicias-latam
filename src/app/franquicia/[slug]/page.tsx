@@ -6,6 +6,7 @@ import { ensureFranchiseLandingConfig } from "@/lib/franchiseLanding";
 import { formatCurrency } from "@/lib/utils";
 import { FranchiseAssist } from "@/components/franchise/FranchiseAssist";
 import { FranchiseLandingNavbar } from "@/components/franchise/FranchiseLandingNavbar";
+import { LatamDepthBackground } from "@/components/LatamDepthBackground";
 import {
   CTASection,
   ChatbotSection,
@@ -221,7 +222,7 @@ export default async function FranchiseLandingPage({
   );
 
   return (
-    <main className="section-grid-bg relative isolate min-h-screen overflow-x-clip text-[#171717]">
+    <main className="relative isolate min-h-screen overflow-x-clip text-[#171717]">
       {/* Fixed navbar floats over hero */}
       <FranchiseLandingNavbar
         showFranchiseLogo={Boolean(profile?.showFranchiseLogo)}
@@ -229,48 +230,50 @@ export default async function FranchiseLandingPage({
         franchiseName={franchise.name}
       />
 
-      {/* Full-bleed hero — no container, no padding */}
-      <HeroFranchise
-        title={headline}
-        description={subheadline}
-        stats={stats}
-        slug={slug}
-        primaryHref="/quiz"
-        secondaryHref={
-          featureFlags?.showDownloads && profile?.brochureUrl
-            ? profile.brochureUrl
-            : "#support"
-        }
-        secondaryLabel={
-          featureFlags?.showDownloads && profile?.brochureUrl
-            ? "Ver dossier"
-            : "Ver sistema"
-        }
-        secondaryExternal={Boolean(
-          featureFlags?.showDownloads && profile?.brochureUrl,
-        )}
-        imageUrl={heroImageUrl}
-        videoUrl={heroVideoUrl}
-        showVideo={Boolean(featureFlags?.showVideo)}
-        name={franchise.name}
-        galleryUrls={featureFlags?.showGallery ? galleryUrls : []}
-        heroTitle={profile?.heroTitle}
-        heroSubtitle={profile?.heroSubtitle}
-        heroCtaLabel={profile?.heroCtaLabel}
-        heroStats={
-          Array.isArray(profile?.heroStats)
-            ? (profile.heroStats as { value: string; label: string }[])
-            : null
-        }
-        showReviewsBadge={Boolean(profile?.showReviewsBadge)}
-        reviewRating={profile?.reviewRating}
-        reviewBadgeLabel={profile?.reviewBadgeLabel}
-        reviewAvatarUrls={
-          Array.isArray(profile?.reviewAvatarUrls)
-            ? (profile.reviewAvatarUrls as string[])
-            : []
-        }
-      />
+      <LatamDepthBackground className="min-h-[70vh] pt-4 sm:pt-6 lg:pt-8">
+        {/* Full-bleed hero — no container, no padding */}
+        <HeroFranchise
+          title={headline}
+          description={subheadline}
+          stats={stats}
+          slug={slug}
+          primaryHref="/quiz"
+          secondaryHref={
+            featureFlags?.showDownloads && profile?.brochureUrl
+              ? profile.brochureUrl
+              : "#support"
+          }
+          secondaryLabel={
+            featureFlags?.showDownloads && profile?.brochureUrl
+              ? "Ver dossier"
+              : "Ver sistema"
+          }
+          secondaryExternal={Boolean(
+            featureFlags?.showDownloads && profile?.brochureUrl,
+          )}
+          imageUrl={heroImageUrl}
+          videoUrl={heroVideoUrl}
+          showVideo={Boolean(featureFlags?.showVideo)}
+          name={franchise.name}
+          galleryUrls={featureFlags?.showGallery ? galleryUrls : []}
+          heroTitle={profile?.heroTitle}
+          heroSubtitle={profile?.heroSubtitle}
+          heroCtaLabel={profile?.heroCtaLabel}
+          heroStats={
+            Array.isArray(profile?.heroStats)
+              ? (profile.heroStats as { value: string; label: string }[])
+              : null
+          }
+          showReviewsBadge={Boolean(profile?.showReviewsBadge)}
+          reviewRating={profile?.reviewRating}
+          reviewBadgeLabel={profile?.reviewBadgeLabel}
+          reviewAvatarUrls={
+            Array.isArray(profile?.reviewAvatarUrls)
+              ? (profile.reviewAvatarUrls as string[])
+              : []
+          }
+        />
+      </LatamDepthBackground>
 
       {/* Standalone full-width video section — sibling to hero */}
       <VideoSection

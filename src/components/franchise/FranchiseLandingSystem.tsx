@@ -436,7 +436,7 @@ export function HeroFranchise({
   const calendlyHref = `https://calendly.com/franquicias-latam/${slug}`;
 
   return (
-    <section className="section-grid-bg relative isolate overflow-hidden">
+    <section className="relative isolate overflow-hidden bg-transparent">
       <div className="relative mx-auto grid min-h-[80vh] w-full max-w-7xl grid-cols-1 gap-10 px-4 pb-12 pt-28 sm:px-6 sm:pb-16 sm:pt-32 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-14 lg:pb-20 lg:pt-44">
         <div className="min-w-0">
           <div className="max-w-2xl">
