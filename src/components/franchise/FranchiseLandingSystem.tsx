@@ -463,7 +463,7 @@ export function HeroFranchise({
                 className="h-auto rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-7 py-4 text-[17px] font-bold tracking-tight text-white shadow-[0_18px_40px_-18px_rgba(59,130,246,0.75)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] sm:px-8 sm:text-[18px]"
               >
                 <a href={calendlyHref} target="_blank" rel="noopener noreferrer">
-                  Reservar llamada
+                  Invertir en Franquicias
                 </a>
               </Button>
 
@@ -472,9 +472,13 @@ export function HeroFranchise({
                 size="lg"
                 className="h-auto rounded-2xl border border-orange-500 bg-orange-500 px-7 py-4 text-[17px] font-bold tracking-tight text-white shadow-[0_12px_30px_-22px_rgba(249,115,22,0.42)] transition-all duration-200 hover:-translate-y-[1px] hover:border-orange-600 hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(249,115,22,0.2)] sm:px-8 sm:text-[18px]"
               >
-                <a href="#apply">Aplicar Ahora</a>
+                <a href="#apply">Franquiciar mi Negocio</a>
               </Button>
             </div>
+
+            <p className="mt-7 text-base font-extrabold text-slate-900 sm:text-lg">
+              Más de 750 franquicias líderes desarrolladas.
+            </p>
 
             {displayStats.length > 0 && (
               <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
