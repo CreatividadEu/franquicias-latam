@@ -2,6 +2,23 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* ── Franchise Landing System design tokens ──────────────────────────── */
+@theme inline {
+  --color-fl-base: #0A0F1E;
+  --color-fl-surface: rgba(255,255,255,0.03);
+  --color-fl-border: rgba(255,255,255,0.06);
+  --color-fl-teal: #00F0FF;
+  --color-fl-purple: #7B61FF;
+  --color-fl-text: #F0F0F5;
+  --color-fl-muted: #8A8F9E;
+}
+
+/* ── Franchise Landing — font inheritance ───────────────────────────── */
+[class*="fl-heading"],
+.fl-page h1, .fl-page h2, .fl-page h3 {
+  font-family: var(--font-heading, system-ui, sans-serif);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

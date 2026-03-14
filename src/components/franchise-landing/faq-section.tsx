@@ -1,0 +1,91 @@
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Minus } from "lucide-react";
+import type { FaqData } from "@/lib/franchise-mapper";
+
+const cardStyle: React.CSSProperties = {
+  background: "rgba(255,255,255,0.02)",
+  border: "1px solid rgba(255,255,255,0.06)",
+  borderRadius: "12px",
+  overflow: "hidden",
+};
+
+function FaqItem({ faq, index }: { faq: FaqData; index: number }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, delay: index * 0.07 }}
+      style={cardStyle}
+    >
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors"
+        style={{ minHeight: "44px" }}
+        aria-expanded={open}
+      >
+        <span className="text-sm font-semibold text-[#F0F0F5] sm:text-base">
+          {faq.question}
+        </span>
+        <span className="flex-shrink-0 text-[#00F0FF]">
+          {open ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+        </span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div
+              className="px-6 pb-5 pt-4"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+            >
+              <p className="text-sm leading-relaxed text-[#8A8F9E]">{faq.answer}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+export function FaqSection({ data }: { data: FaqData[] }) {
+  return (
+    <section className="bg-[#0A0F1E] py-20 md:py-28" aria-label="Preguntas frecuentes">
+      <div className="mx-auto max-w-3xl px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 space-y-2 text-center"
+        >
+          <p className="text-xs font-medium uppercase tracking-widest text-[#00F0FF]">
+            FAQ
+          </p>
+          <h2
+            className="text-3xl font-bold text-[#F0F0F5] sm:text-4xl"
+            style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
+          >
+            Preguntas frecuentes
+          </h2>
+        </motion.div>
+
+        <div className="space-y-3">
+          {data.map((faq, i) => (
+            <FaqItem key={faq.id} faq={faq} index={i} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -1,15 +1,35 @@
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { matchesFranchiseSlug } from "@/lib/franchiseSlug";
 import { ensureFranchiseLandingConfig } from "@/lib/franchiseLanding";
+import {
+  franchiseLandingInclude,
+  mapFranchiseToLandingPageData,
+} from "@/lib/franchise-mapper";
+
+// ── New landing system components ─────────────────────────────────────────────
+import { HeroSection } from "@/components/franchise-landing/hero-section";
+import { VideoSection } from "@/components/franchise-landing/video-section";
+import { BusinessModelsSection } from "@/components/franchise-landing/business-models-section";
+import { GallerySection } from "@/components/franchise-landing/gallery-section";
+import { FinancialsSection } from "@/components/franchise-landing/financials-section";
+import { FaqSection } from "@/components/franchise-landing/faq-section";
+import { BrochureSection } from "@/components/franchise-landing/brochure-section";
+import { BookingSection } from "@/components/franchise-landing/booking-section";
+import { ChatbotSection } from "@/components/franchise-landing/chatbot-section";
+import { CtaFooterSection } from "@/components/franchise-landing/cta-footer-section";
+
+// ── Legacy renderer imports ────────────────────────────────────────────────────
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { FranchiseAssist } from "@/components/franchise/FranchiseAssist";
 import { FranchiseLandingNavbar } from "@/components/franchise/FranchiseLandingNavbar";
 import { LatamDepthBackground } from "@/components/LatamDepthBackground";
 import {
   CTASection,
-  ChatbotSection,
+  ChatbotSection as LegacyChatbotSection,
   CoverageMarkets,
   HeroFranchise,
   HowItWorks3Steps,
@@ -17,39 +37,56 @@ import {
   SupportSystem,
   TrustSignals,
   ValueProposition,
-  VideoSection,
+  VideoSection as LegacyVideoSection,
   franchiseFeatureCardIcons,
 } from "@/components/franchise/FranchiseLandingSystem";
 import { Button } from "@/components/ui/button";
 
-async function getFranchiseBySlug(slug: string) {
+// ── Data fetching ─────────────────────────────────────────────────────────────
+
+const legacyInclude = {
+  sector: true,
+  coverageCountries: { include: { country: true } },
+  profile: true,
+  featureFlags: true,
+  botConfig: true,
+  botFaqs: {
+    where: { enabled: true },
+    orderBy: [{ priority: "desc" as const }, { createdAt: "asc" as const }],
+  },
+};
+
+async function getFranchise(slug: string, preview: boolean) {
+  // Find by matching slug helper (works with name-based or id-suffixed slugs)
   const candidates = await prisma.franchise.findMany({
     where: { active: true },
+    select: { id: true, name: true, published: true },
+  });
+
+  const matched = candidates.find((c) => matchesFranchiseSlug(c, slug));
+  if (!matched) return null;
+
+  // For new system: check published gate (bypass with ?preview=true)
+  // We still need to fetch the full record — we'll branch on `published` after.
+  const franchise = await prisma.franchise.findUnique({
+    where: { id: matched.id },
     include: {
-      sector: true,
-      coverageCountries: {
-        include: {
-          country: true,
-        },
-      },
-      profile: true,
-      featureFlags: true,
-      botConfig: true,
-      botFaqs: {
-        where: { enabled: true },
-        orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
-      },
+      ...legacyInclude,
+      ...franchiseLandingInclude,
     },
   });
 
-  const franchise = candidates.find((candidate) =>
-    matchesFranchiseSlug(candidate, slug),
-  );
+  if (!franchise) return null;
 
-  if (!franchise) {
-    return null;
+  // New system: only render if published OR preview mode
+  if (franchise.published) {
+    return { franchise, engine: "new" as const };
   }
 
+  // Legacy system: active franchises always render
+  if (!franchise.active && !preview) return null;
+
+  // Ensure legacy configs exist
   await ensureFranchiseLandingConfig({
     id: franchise.id,
     name: franchise.name,
@@ -60,35 +97,65 @@ async function getFranchiseBySlug(slug: string) {
     investmentMax: franchise.investmentMax,
   });
 
-  return prisma.franchise.findUnique({
+  // Re-fetch with up-to-date legacy configs
+  const full = await prisma.franchise.findUnique({
     where: { id: franchise.id },
     include: {
-      sector: true,
-      coverageCountries: {
-        include: {
-          country: true,
-        },
-      },
-      profile: true,
-      featureFlags: true,
-      botConfig: true,
-      botFaqs: {
-        where: { enabled: true },
-        orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
-      },
+      ...legacyInclude,
+      ...franchiseLandingInclude,
     },
   });
+
+  return full ? { franchise: full, engine: "legacy" as const } : null;
 }
 
-export default async function FranchiseLandingPage({
+// ── Metadata ──────────────────────────────────────────────────────────────────
+
+export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const result = await getFranchise(slug.toLowerCase(), false);
+
+  if (!result) {
+    return { title: "Franquicia no encontrada" };
+  }
+
+  const { franchise } = result;
+  const title = franchise.headline ?? franchise.name;
+  const description =
+    franchise.subheadline ?? franchise.shortDescription ?? franchise.description;
+  const imageUrl = franchise.heroImageUrl ?? franchise.logo ?? undefined;
+
+  return {
+    title: `${title} | Franquicias LATAM`,
+    description,
+    openGraph: {
+      title,
+      description: description ?? undefined,
+      images: imageUrl ? [{ url: imageUrl }] : [],
+    },
+  };
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default async function FranchiseLandingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { slug } = await params;
-  const franchise = await getFranchiseBySlug(slug.toLowerCase());
+  const { preview } = await searchParams;
+  const isPreview = preview === "true";
 
-  if (!franchise) {
+  const result = await getFranchise(slug.toLowerCase(), isPreview);
+
+  if (!result) {
     return (
       <main className="section-grid-bg relative isolate min-h-screen overflow-hidden px-4 py-8 text-[#171717] sm:px-6 sm:py-10">
         <div className="glass-card mx-auto max-w-3xl rounded-3xl border border-slate-200/60 bg-white/80 p-8 text-center shadow-[0_24px_60px_-40px_rgba(15,23,42,0.18)]">
@@ -99,11 +166,7 @@ export default async function FranchiseLandingPage({
             <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
               No encontramos información para la franquicia solicitada.
             </p>
-            <Button
-              asChild
-              size="lg"
-              className="h-auto"
-            >
+            <Button asChild size="lg" className="h-auto">
               <Link href="/quiz">Volver al quiz</Link>
             </Button>
           </div>
@@ -112,6 +175,39 @@ export default async function FranchiseLandingPage({
     );
   }
 
+  const { franchise, engine } = result;
+
+  // ── NEW ENGINE ─────────────────────────────────────────────────────────────
+  if (engine === "new") {
+    const pageData = mapFranchiseToLandingPageData(franchise);
+
+    return (
+      <main
+        className="bg-[#0A0F1E] min-h-screen text-[#F0F0F5]"
+        style={{ fontFamily: "var(--font-body, Inter, system-ui, sans-serif)" }}
+      >
+        {isPreview && (
+          <div className="fixed top-0 z-50 w-full bg-[#7B61FF]/90 py-2 text-center text-xs font-medium text-white backdrop-blur-sm">
+            Modo preview — esta página no es pública todavía
+          </div>
+        )}
+        {pageData.hero && <HeroSection data={pageData.hero} />}
+        {pageData.video && <VideoSection data={pageData.video} />}
+        {pageData.businessModels && (
+          <BusinessModelsSection data={pageData.businessModels} />
+        )}
+        {pageData.gallery && <GallerySection data={pageData.gallery} />}
+        {pageData.financials && <FinancialsSection data={pageData.financials} />}
+        {pageData.faq && <FaqSection data={pageData.faq} />}
+        {pageData.brochure && <BrochureSection data={pageData.brochure} />}
+        {pageData.booking && <BookingSection data={pageData.booking} />}
+        {pageData.chatbot && <ChatbotSection data={pageData.chatbot} />}
+        <CtaFooterSection franchise={pageData.hero} />
+      </main>
+    );
+  }
+
+  // ── LEGACY ENGINE (unchanged) ──────────────────────────────────────────────
   const profile = franchise.profile;
   const featureFlags = franchise.featureFlags;
   const botConfig = franchise.botConfig;
@@ -136,10 +232,7 @@ export default async function FranchiseLandingPage({
       label: "Inversión",
       value: `${formatCurrency(investmentMin)} - ${formatCurrency(investmentMax)}`,
     },
-    {
-      label: "Cobertura",
-      value: coverageSummary,
-    },
+    { label: "Cobertura", value: coverageSummary },
     {
       label: "Sector",
       value: `${franchise.sector.emoji} ${franchise.sector.name}`,
@@ -185,18 +278,12 @@ export default async function FranchiseLandingPage({
   ];
 
   const investmentItems = [
-    {
-      label: "CAPEX",
-      value: formatCurrency(investmentMin),
-    },
+    { label: "CAPEX", value: formatCurrency(investmentMin) },
     {
       label: "RANGO",
       value: `${formatCurrency(investmentMin)} - ${formatCurrency(investmentMax)}`,
     },
-    {
-      label: "EXPANSIÓN",
-      value: coverageSummary,
-    },
+    { label: "EXPANSIÓN", value: coverageSummary },
   ];
 
   const trustItems = franchise.botFaqs.slice(0, 3).map((faq) => ({
@@ -223,7 +310,6 @@ export default async function FranchiseLandingPage({
 
   return (
     <main className="relative isolate min-h-screen overflow-x-clip text-[#171717]">
-      {/* Fixed navbar floats over hero */}
       <FranchiseLandingNavbar
         showFranchiseLogo={Boolean(profile?.showFranchiseLogo)}
         franchiseLogoUrl={profile?.franchiseLogoUrl}
@@ -231,7 +317,6 @@ export default async function FranchiseLandingPage({
       />
 
       <LatamDepthBackground className="min-h-[70vh] pt-4 sm:pt-6 lg:pt-8">
-        {/* Full-bleed hero — no container, no padding */}
         <HeroFranchise
           title={headline}
           description={subheadline}
@@ -275,17 +360,14 @@ export default async function FranchiseLandingPage({
         />
       </LatamDepthBackground>
 
-      {/* Standalone full-width video section — sibling to hero */}
-      <VideoSection
+      <LegacyVideoSection
         imageUrl={heroImageUrl}
         videoUrl={heroVideoUrl}
         showVideo={Boolean(featureFlags?.showVideo)}
         title={franchise.name}
       />
 
-      {/* Rest of sections in padded container */}
       <div className="mx-auto w-full max-w-6xl space-y-16 px-4 py-14 sm:px-6 sm:space-y-20">
-        {/* Back navigation */}
         <div className="-mb-8">
           <Link
             href="/"
@@ -296,22 +378,17 @@ export default async function FranchiseLandingPage({
           </Link>
         </div>
 
-        <ChatbotSection
+        <LegacyChatbotSection
           assistant={chatbotPanel}
           enabled={chatbotEnabled}
           contactEmail={franchise.contactEmail}
         />
 
         <ValueProposition items={valueItems} />
-
         <CoverageMarkets items={coverageItems} />
-
         <HowItWorks3Steps items={stepItems} />
-
         <SupportSystem />
-
         <Investment items={investmentItems} />
-
         <TrustSignals items={trustItems} />
 
         <CTASection

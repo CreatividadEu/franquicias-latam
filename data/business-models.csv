@@ -1,0 +1,3 @@
+franchiseSlug,name,size,investmentMin,investmentMax,ebitda,paybackMonths,roiAnnual,description,order
+ejemplo-franquicia,Kiosco,8-15 m²,80000,120000,25%,24,28,Formato compacto para centros comerciales,0
+ejemplo-franquicia,Tienda Completa,50-80 m²,150000,200000,22%,32,24,Formato premium con salón,1

@@ -34,6 +34,13 @@ enum FranchisePlanTier {
   PRO
 }
 
+// ── Landing Page System ─────────────────────────────
+enum PlanTier {
+  BASIC
+  GROWTH
+  ALL_IN
+}
+
 // ── Lookup Tables ──────────────────────────────────
 
 model Sector {
@@ -85,6 +92,7 @@ model Franchise {
   investmentMax     Float
   sectorId          String
   sector            Sector              @relation(fields: [sectorId], references: [id])
+  slug              String?             @unique
   contactEmail      String?
   featured          Boolean             @default(false)
   active            Boolean             @default(true)
@@ -97,7 +105,115 @@ model Franchise {
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
+  // ── Landing Page System (additive) ────────────────
+  planTier          PlanTier            @default(BASIC)
+  published         Boolean             @default(false)
+  headline          String?
+  subheadline       String?
+  shortDescription  String?
+  longDescription   String?
+  logoUrl           String?
+  heroImageUrl      String?
+  youtubeUrl        String?
+  brochureUrl       String?
+  bookingUrl        String?
+  credibilityLine   String?
+  cta1Label         String?
+  cta1Url           String?
+  cta2Label         String?
+  cta2Url           String?
+  ebitdaReference   String?
+  paybackMonths     Int?
+  royaltyInfo       String?
+  operatorProfile   String?
+
+  businessModels    FranchiseBusinessModel[]
+  media             FranchiseMedia[]
+  faqs              FranchiseFaq[]
+  moduleConfig      FranchiseModuleConfig?
+  automationConfig  FranchiseAutomationConfig?
+
   @@map("franchises")
+}
+
+model FranchiseBusinessModel {
+  id            String    @id @default(cuid())
+  franchiseId   String
+  franchise     Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  name          String
+  size          String?
+  investmentMin Float?
+  investmentMax Float?
+  ebitda        String?
+  paybackMonths Int?
+  roiAnnual     Float?
+  imageUrl      String?
+  description   String?
+  order         Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([franchiseId])
+  @@map("franchise_business_models")
+}
+
+model FranchiseMedia {
+  id          String    @id @default(cuid())
+  franchiseId String
+  franchise   Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  type        String
+  url         String
+  label       String?
+  altText     String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([franchiseId])
+  @@map("franchise_media")
+}
+
+model FranchiseFaq {
+  id          String    @id @default(cuid())
+  franchiseId String
+  franchise   Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  question    String
+  answer      String
+  order       Int       @default(0)
+
+  @@index([franchiseId])
+  @@map("franchise_faqs")
+}
+
+model FranchiseModuleConfig {
+  id                    String    @id @default(cuid())
+  franchiseId           String    @unique
+  franchise             Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  heroEnabled           Boolean   @default(true)
+  videoEnabled          Boolean   @default(false)
+  galleryEnabled        Boolean   @default(false)
+  businessModelsEnabled Boolean   @default(false)
+  financialsEnabled     Boolean   @default(true)
+  faqEnabled            Boolean   @default(false)
+  brochureEnabled       Boolean   @default(false)
+  bookingEnabled        Boolean   @default(false)
+  chatbotEnabled        Boolean   @default(false)
+  nurturingEnabled      Boolean   @default(false)
+
+  @@map("franchise_module_configs")
+}
+
+model FranchiseAutomationConfig {
+  id                  String    @id @default(cuid())
+  franchiseId         String    @unique
+  franchise           Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  enabled             Boolean   @default(false)
+  bookingUrl          String?
+  nurtureSequenceId   String?
+  webhookUrl          String?
+  crmDestination      String?
+  calendlyRoutingMode String?
+
+  @@map("franchise_automation_configs")
 }
 
 model FranchiseProfile {
