@@ -26,7 +26,7 @@ function Lightbox({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-      style={{ background: "rgba(0,0,0,0.9)" }}
+      style={{ background: "rgba(0,0,0,0.85)" }}
       onClick={onClose}
     >
       <motion.div
@@ -45,14 +45,14 @@ function Lightbox({
           />
         </div>
         {img.label && (
-          <p className="mt-3 text-center text-sm text-[#8A8F9E]">{img.label}</p>
+          <p className="mt-3 text-center text-sm text-slate-300">{img.label}</p>
         )}
       </motion.div>
 
       <button
         onClick={onClose}
         className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors"
-        style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+        style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)" }}
         aria-label="Cerrar"
       >
         <X className="h-5 w-5" />
@@ -62,7 +62,7 @@ function Lightbox({
         <button
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
           className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-white transition-colors"
-          style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+          style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)" }}
           aria-label="Anterior"
         >
           <ChevronLeft className="h-5 w-5" />
@@ -73,7 +73,7 @@ function Lightbox({
         <button
           onClick={(e) => { e.stopPropagation(); onNext(); }}
           className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-white transition-colors"
-          style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+          style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)" }}
           aria-label="Siguiente"
         >
           <ChevronRight className="h-5 w-5" />
@@ -87,7 +87,7 @@ export function GallerySection({ data }: { data: GalleryImageData[] }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   return (
-    <section className="bg-[#0A0F1E] py-20 md:py-28" aria-label="Galería">
+    <section className="bg-[#f8fafc] py-16 md:py-24" aria-label="Galería">
       <div className="mx-auto max-w-6xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -96,11 +96,11 @@ export function GallerySection({ data }: { data: GalleryImageData[] }) {
           transition={{ duration: 0.5 }}
           className="mb-12 space-y-2"
         >
-          <p className="text-xs font-medium uppercase tracking-widest text-[#00F0FF]">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
             Galería
           </p>
           <h2
-            className="text-3xl font-bold text-[#F0F0F5] sm:text-4xl"
+            className="text-3xl font-bold text-[#171717] sm:text-4xl"
             style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
           >
             Conoce el espacio
@@ -116,8 +116,8 @@ export function GallerySection({ data }: { data: GalleryImageData[] }) {
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.4, delay: i * 0.06 }}
               onClick={() => setLightboxIndex(i)}
-              className="group mb-4 block w-full overflow-hidden rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF]"
-              style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+              className="group mb-4 block w-full overflow-hidden rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb]"
+              style={{ border: "1px solid rgba(0,0,0,0.08)" }}
             >
               <div className="relative aspect-[4/3]">
                 <Image
@@ -126,7 +126,7 @@ export function GallerySection({ data }: { data: GalleryImageData[] }) {
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                 />
-                <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
+                <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
               </div>
             </motion.button>
           ))}

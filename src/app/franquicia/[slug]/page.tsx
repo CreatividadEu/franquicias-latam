@@ -182,12 +182,9 @@ export default async function FranchiseLandingPage({
     const pageData = mapFranchiseToLandingPageData(franchise);
 
     return (
-      <main
-        className="bg-[#0A0F1E] min-h-screen text-[#F0F0F5]"
-        style={{ fontFamily: "var(--font-body, Inter, system-ui, sans-serif)" }}
-      >
+      <main className="bg-white min-h-screen text-[#171717]">
         {isPreview && (
-          <div className="fixed top-0 z-50 w-full bg-[#7B61FF]/90 py-2 text-center text-xs font-medium text-white backdrop-blur-sm">
+          <div className="fixed top-0 z-50 w-full bg-indigo-600 py-2 text-center text-xs font-medium text-white backdrop-blur-sm">
             Modo preview — esta página no es pública todavía
           </div>
         )}

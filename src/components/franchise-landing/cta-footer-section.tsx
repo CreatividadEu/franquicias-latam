@@ -12,18 +12,13 @@ export function CtaFooterSection({ franchise }: { franchise: HeroData | null }) 
 
   return (
     <section
-      className="relative overflow-hidden bg-[#0A0F1E] py-24 md:py-32"
+      className="section-grid-bg relative overflow-hidden bg-white py-24 md:py-32"
       aria-label="CTA final"
     >
-      {/* Ambient glow */}
-      <div
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{ background: "rgba(0,240,255,0.05)", filter: "blur(140px)" }}
-      />
-      {/* Subtle top border gradient */}
+      {/* Subtle top border */}
       <div
         className="absolute left-0 right-0 top-0 h-px"
-        style={{ background: "linear-gradient(to right, transparent, rgba(0,240,255,0.2), transparent)" }}
+        style={{ background: "linear-gradient(to right, transparent, rgba(37,99,235,0.25), transparent)" }}
       />
 
       <div className="relative mx-auto max-w-3xl px-6 text-center">
@@ -35,16 +30,16 @@ export function CtaFooterSection({ franchise }: { franchise: HeroData | null }) 
           className="space-y-8"
         >
           <div className="space-y-4">
-            <p className="text-xs font-medium uppercase tracking-widest text-[#00F0FF]">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
               Próximo paso
             </p>
             <h2
-              className="text-3xl font-bold leading-tight text-[#F0F0F5] sm:text-4xl md:text-5xl"
+              className="text-3xl font-bold leading-tight text-[#171717] sm:text-4xl md:text-5xl"
               style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
             >
               ¿Listo para avanzar con {name}?
             </h2>
-            <p className="mx-auto max-w-xl text-sm leading-relaxed text-[#8A8F9E] sm:text-base">
+            <p className="mx-auto max-w-xl text-sm leading-relaxed text-slate-500 sm:text-base">
               Un solo paso para validar tu encaje, resolver tus dudas y activar el proceso con el equipo de franquicia.
             </p>
           </div>
@@ -52,14 +47,14 @@ export function CtaFooterSection({ franchise }: { franchise: HeroData | null }) 
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href={cta1Url}
-              className="inline-flex min-h-[52px] items-center gap-2 rounded-xl bg-[#00F0FF] px-8 py-4 text-sm font-semibold text-[#0A0F1E] transition-all hover:brightness-110 active:scale-95"
+              className="inline-flex min-h-[52px] items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-8 py-4 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)] transition-all hover:-translate-y-px hover:shadow-[0_12px_28px_-8px_rgba(37,99,235,0.6)] active:scale-95"
             >
               {cta1Label}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
-          <p className="text-xs text-[#8A8F9E]">
+          <p className="text-xs text-slate-400">
             Sin compromiso · Respuesta en 24–48 h
           </p>
         </motion.div>

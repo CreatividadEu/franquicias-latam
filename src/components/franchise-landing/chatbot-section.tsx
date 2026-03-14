@@ -113,24 +113,24 @@ const DECISION_TREE: TreeNode[] = [
 const SCORE_CONFIG = {
   alta: {
     label: "Perfil Alto",
-    color: "text-[#00F0FF]",
-    border: "border-[#00F0FF]/25",
-    bg: "bg-[#00F0FF]/8",
-    dot: "bg-[#00F0FF]",
+    color: "text-[#2563eb]",
+    border: "border-[#2563eb]/20",
+    bg: "bg-blue-50",
+    dot: "bg-[#2563eb]",
   },
   media: {
     label: "Perfil Medio",
-    color: "text-[#7B61FF]",
-    border: "border-[#7B61FF]/25",
-    bg: "bg-[#7B61FF]/8",
-    dot: "bg-[#7B61FF]",
+    color: "text-orange-600",
+    border: "border-orange-200",
+    bg: "bg-orange-50",
+    dot: "bg-orange-500",
   },
   baja: {
     label: "Perfil Bajo",
-    color: "text-[#8A8F9E]",
-    border: "border-white/10",
-    bg: "",
-    dot: "bg-[#8A8F9E]",
+    color: "text-slate-500",
+    border: "border-black/8",
+    bg: "bg-slate-50",
+    dot: "bg-slate-400",
   },
 };
 
@@ -145,12 +145,12 @@ function TypingIndicator() {
   return (
     <div
       className="flex items-center gap-1 rounded-2xl rounded-bl-sm px-4 py-3 w-fit"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+      style={{ background: "#f1f5f9", border: "1px solid rgba(0,0,0,0.06)" }}
     >
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="h-1.5 w-1.5 rounded-full bg-[#8A8F9E]"
+          className="h-1.5 w-1.5 rounded-full bg-slate-400"
           animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
           transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
         />
@@ -176,12 +176,12 @@ function ResultCard({ result, franchiseName }: { result: Result; franchiseName: 
         </span>
       </div>
 
-      <p className="text-sm leading-relaxed text-[#F0F0F5]">{result.message}</p>
+      <p className="text-sm leading-relaxed text-[#171717]">{result.message}</p>
 
       {result.ctaType === "book_call" && (
         <a
           href="/quiz"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#00F0FF] px-6 py-3 text-sm font-semibold text-[#0A0F1E] transition-all hover:brightness-110 active:scale-95"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_4px_16px_-4px_rgba(37,99,235,0.4)] transition-all hover:-translate-y-px active:scale-95"
         >
           <CalendarDays className="h-4 w-4" />
           Agendar llamada
@@ -190,7 +190,7 @@ function ResultCard({ result, franchiseName }: { result: Result; franchiseName: 
       {result.ctaType === "download_brochure" && (
         <a
           href="/quiz"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#7B61FF]/40 bg-[#7B61FF]/10 px-6 py-3 text-sm font-semibold text-[#7B61FF] transition-all hover:bg-[#7B61FF]/20 active:scale-95"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-6 py-3 text-sm font-semibold text-orange-600 transition-all hover:bg-orange-100 active:scale-95"
         >
           <FileText className="h-4 w-4" />
           Recibir dossier
@@ -199,7 +199,7 @@ function ResultCard({ result, franchiseName }: { result: Result; franchiseName: 
       {result.ctaType === "contact_form" && (
         <a
           href="/quiz"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-medium text-[#F0F0F5] transition-all hover:bg-white/10 active:scale-95"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-black/10 bg-white px-6 py-3 text-sm font-medium text-[#171717] shadow-sm transition-all hover:bg-slate-50 active:scale-95"
         >
           <Mail className="h-4 w-4" />
           Contactar asesor
@@ -266,7 +266,7 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
   }
 
   return (
-    <section className="bg-[#0A0F1E] py-20 md:py-28" aria-label="Calificación guiada">
+    <section className="bg-[#f8fafc] py-16 md:py-24" aria-label="Calificación guiada">
       <div className="mx-auto max-w-2xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -275,16 +275,16 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
           transition={{ duration: 0.5 }}
           className="mb-10 space-y-2 text-center"
         >
-          <p className="text-xs font-medium uppercase tracking-widest text-[#00F0FF]">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
             Calificación inteligente
           </p>
           <h2
-            className="text-3xl font-bold text-[#F0F0F5] sm:text-4xl"
+            className="text-3xl font-bold text-[#171717] sm:text-4xl"
             style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
           >
             ¿Eres el perfil ideal?
           </h2>
-          <p className="text-sm text-[#8A8F9E]">
+          <p className="text-sm text-slate-500">
             Responde 4 preguntas y obtén tu análisis de encaje con {data.franchiseName}.
           </p>
         </motion.div>
@@ -292,27 +292,29 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
         <div
           className="overflow-hidden rounded-2xl"
           style={{
-            background: "rgba(255,255,255,0.02)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
+            background: "#ffffff",
+            border: "1px solid rgba(0,0,0,0.08)",
+            boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
           }}
         >
           {/* Chat header */}
           <div
             className="flex items-center gap-3 px-5 py-4"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#00F0FF]/25 bg-[#00F0FF]/10">
-              <Bot className="h-4 w-4 text-[#00F0FF]" />
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full"
+              style={{ background: "rgba(37,99,235,0.08)", border: "1px solid rgba(37,99,235,0.2)" }}
+            >
+              <Bot className="h-4 w-4 text-[#2563eb]" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-[#F0F0F5]">Asesor {data.franchiseName}</p>
-              <p className="text-[10px] text-[#8A8F9E]">Motor de calificación</p>
+              <p className="text-xs font-semibold text-[#171717]">Asesor {data.franchiseName}</p>
+              <p className="text-[10px] text-slate-400">Motor de calificación</p>
             </div>
             <div className="ml-auto flex items-center gap-1.5">
-              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#00F0FF]" />
-              <span className="text-[10px] text-[#8A8F9E]">En línea</span>
+              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+              <span className="text-[10px] text-slate-400">En línea</span>
             </div>
           </div>
 
@@ -323,12 +325,12 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
           >
             {!started && (
               <div className="flex flex-1 flex-col items-center justify-center gap-4 py-6 text-center">
-                <p className="text-sm text-[#8A8F9E]">
+                <p className="text-sm text-slate-500">
                   Hola 👋 Voy a ayudarte a evaluar si {data.franchiseName} es el modelo adecuado para tu perfil.
                 </p>
                 <button
                   onClick={start}
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#00F0FF] px-6 py-3 text-sm font-semibold text-[#0A0F1E] transition-all hover:brightness-110 active:scale-95"
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_4px_16px_-4px_rgba(37,99,235,0.4)] transition-all hover:-translate-y-px active:scale-95"
                 >
                   Comenzar evaluación
                   <ArrowRight className="h-4 w-4" />
@@ -346,14 +348,14 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
                 >
                   {msg.role === "bot" && (
                     <div
-                      className="max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm text-[#F0F0F5]"
-                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+                      className="max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm text-[#171717]"
+                      style={{ background: "#f1f5f9", border: "1px solid rgba(0,0,0,0.06)" }}
                     >
                       {msg.text}
                     </div>
                   )}
                   {msg.role === "user" && (
-                    <div className="ml-auto max-w-[75%] rounded-2xl rounded-br-sm bg-[#00F0FF]/15 px-4 py-3 text-sm text-[#F0F0F5]">
+                    <div className="ml-auto max-w-[75%] rounded-2xl rounded-br-sm bg-[#eef3ff] px-4 py-3 text-sm text-[#171717]">
                       {msg.text}
                     </div>
                   )}
@@ -373,13 +375,13 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
 
           {/* Options */}
           {currentNode && !done && (
-            <div className="p-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="p-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
               <div className="flex flex-wrap gap-2">
                 {currentNode.options.map((opt) => (
                   <button
                     key={opt.label}
                     onClick={() => pickOption(opt)}
-                    className="min-h-[44px] rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-left text-xs font-medium text-[#F0F0F5] transition-all hover:border-[#00F0FF]/40 hover:bg-[#00F0FF]/8 hover:text-[#00F0FF] active:scale-95"
+                    className="min-h-[44px] rounded-full border border-black/10 bg-white px-4 py-2 text-left text-xs font-medium text-[#171717] shadow-sm transition-all hover:border-[#2563eb]/40 hover:bg-blue-50 hover:text-[#2563eb] active:scale-95"
                   >
                     {opt.label}
                   </button>

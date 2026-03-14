@@ -21,15 +21,19 @@ function MetricCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: delay ?? 0 }}
-      className="rounded-2xl p-6 backdrop-blur-md"
-      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+      className="rounded-2xl p-6"
+      style={{
+        background: "#ffffff",
+        border: "1px solid rgba(0,0,0,0.08)",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
+      }}
     >
-      <p className="text-[11px] font-medium uppercase tracking-widest text-[#8A8F9E]">
+      <p className="text-[11px] font-medium uppercase tracking-widest text-slate-500">
         {label}
       </p>
       <p
         className={`mt-2 text-2xl font-bold leading-tight sm:text-3xl ${
-          accent ? "text-[#00F0FF]" : "text-[#F0F0F5]"
+          accent ? "text-[#2563eb]" : "text-[#171717]"
         }`}
       >
         {value}
@@ -64,7 +68,7 @@ export function FinancialsSection({ data }: { data: FinancialsData }) {
   }
 
   return (
-    <section className="bg-[#0A0F1E] py-20 md:py-28" aria-label="Financieros">
+    <section className="bg-white py-16 md:py-24" aria-label="Financieros">
       <div className="mx-auto max-w-6xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -73,11 +77,11 @@ export function FinancialsSection({ data }: { data: FinancialsData }) {
           transition={{ duration: 0.5 }}
           className="mb-12 space-y-2"
         >
-          <p className="text-xs font-medium uppercase tracking-widest text-[#00F0FF]">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
             Modelo financiero
           </p>
           <h2
-            className="text-3xl font-bold text-[#F0F0F5] sm:text-4xl"
+            className="text-3xl font-bold text-[#171717] sm:text-4xl"
             style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
           >
             Números que hablan

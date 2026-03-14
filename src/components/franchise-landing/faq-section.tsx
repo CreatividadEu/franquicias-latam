@@ -6,10 +6,11 @@ import { Plus, Minus } from "lucide-react";
 import type { FaqData } from "@/lib/franchise-mapper";
 
 const cardStyle: React.CSSProperties = {
-  background: "rgba(255,255,255,0.02)",
-  border: "1px solid rgba(255,255,255,0.06)",
+  background: "#ffffff",
+  border: "1px solid rgba(0,0,0,0.08)",
   borderRadius: "12px",
   overflow: "hidden",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
 };
 
 function FaqItem({ faq, index }: { faq: FaqData; index: number }) {
@@ -25,14 +26,14 @@ function FaqItem({ faq, index }: { faq: FaqData; index: number }) {
     >
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors"
+        className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors hover:bg-slate-50"
         style={{ minHeight: "44px" }}
         aria-expanded={open}
       >
-        <span className="text-sm font-semibold text-[#F0F0F5] sm:text-base">
+        <span className="text-sm font-semibold text-[#171717] sm:text-base">
           {faq.question}
         </span>
-        <span className="flex-shrink-0 text-[#00F0FF]">
+        <span className="flex-shrink-0 text-[#2563eb]">
           {open ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
         </span>
       </button>
@@ -47,9 +48,9 @@ function FaqItem({ faq, index }: { faq: FaqData; index: number }) {
           >
             <div
               className="px-6 pb-5 pt-4"
-              style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+              style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
             >
-              <p className="text-sm leading-relaxed text-[#8A8F9E]">{faq.answer}</p>
+              <p className="text-sm leading-relaxed text-slate-500">{faq.answer}</p>
             </div>
           </motion.div>
         )}
@@ -60,7 +61,7 @@ function FaqItem({ faq, index }: { faq: FaqData; index: number }) {
 
 export function FaqSection({ data }: { data: FaqData[] }) {
   return (
-    <section className="bg-[#0A0F1E] py-20 md:py-28" aria-label="Preguntas frecuentes">
+    <section className="bg-white py-16 md:py-24" aria-label="Preguntas frecuentes">
       <div className="mx-auto max-w-3xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -69,11 +70,11 @@ export function FaqSection({ data }: { data: FaqData[] }) {
           transition={{ duration: 0.5 }}
           className="mb-12 space-y-2 text-center"
         >
-          <p className="text-xs font-medium uppercase tracking-widest text-[#00F0FF]">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
             FAQ
           </p>
           <h2
-            className="text-3xl font-bold text-[#F0F0F5] sm:text-4xl"
+            className="text-3xl font-bold text-[#171717] sm:text-4xl"
             style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
           >
             Preguntas frecuentes

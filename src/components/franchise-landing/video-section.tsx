@@ -21,7 +21,7 @@ export function VideoSection({ data }: { data: VideoData }) {
   const thumbUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
   return (
-    <section className="bg-[#0A0F1E] py-20 md:py-28" aria-label="Video">
+    <section className="bg-white py-16 md:py-24" aria-label="Video">
       <div className="mx-auto max-w-6xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -30,9 +30,9 @@ export function VideoSection({ data }: { data: VideoData }) {
           transition={{ duration: 0.6 }}
           className="overflow-hidden rounded-2xl"
           style={{
-            background: "rgba(255,255,255,0.02)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            boxShadow: "0 0 60px rgba(0,240,255,0.04)",
+            background: "#ffffff",
+            border: "1px solid rgba(0,0,0,0.08)",
+            boxShadow: "0 4px 40px rgba(0,0,0,0.10)",
           }}
         >
           <div className="relative aspect-video w-full">
@@ -49,16 +49,17 @@ export function VideoSection({ data }: { data: VideoData }) {
                 />
                 <div
                   className="absolute inset-0 transition-opacity group-hover:opacity-80"
-                  style={{ background: "rgba(10,15,30,0.5)" }}
+                  style={{ background: "rgba(0,0,0,0.35)" }}
                 />
                 <div
                   className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full backdrop-blur-sm transition-all group-hover:scale-110"
                   style={{
-                    background: "rgba(0,240,255,0.1)",
-                    border: "1px solid rgba(0,240,255,0.4)",
+                    background: "rgba(255,255,255,0.92)",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
                   }}
                 >
-                  <Play className="h-6 w-6 fill-[#00F0FF] text-[#00F0FF]" />
+                  <Play className="h-6 w-6 fill-[#2563eb] text-[#2563eb]" />
                 </div>
               </button>
             ) : (
