@@ -1,6 +1,4 @@
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { verifyToken } from "@/lib/auth";
+import { headers } from "next/headers";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 export default async function AdminLayout({
@@ -9,26 +7,13 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "";
+  const pathname = headersList.get("x-pathname") ?? "";
 
-  // Skip auth check for login page
-  const isLoginPage = pathname === "/admin/login" || pathname.startsWith("/admin/login");
+  // Middleware sets x-pathname and guards all /admin routes except login.
+  // The layout only needs to decide whether to wrap with the sidebar.
+  const isLoginPage =
+    pathname === "/admin/login" || pathname.startsWith("/admin/login/");
 
-  if (!isLoginPage) {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("admin_token")?.value;
-
-    if (!token) {
-      redirect("/admin/login");
-    }
-
-    const payload = verifyToken(token);
-    if (!payload || payload.role !== "ADMIN") {
-      redirect("/admin/login");
-    }
-  }
-
-  // Login page gets simple wrapper, other pages get full admin layout
   if (isLoginPage) {
     return <>{children}</>;
   }
