@@ -74,8 +74,7 @@ const TABS = [
   { id: "faq", label: "FAQ" },
   { id: "booking", label: "Reservas" },
   { id: "brochure", label: "Descargas" },
-  { id: "chatbot", label: "Chatbot" },
-  { id: "botlegacy", label: "Bot Legacy" },
+  { id: "bot", label: "Bot" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -107,8 +106,7 @@ const TAB_MODULE: Partial<Record<TabId, string>> = {
   faq: "faq",
   booking: "booking",
   brochure: "brochure",
-  chatbot: "chatbot",
-  botlegacy: "chatbot",
+  bot: "chatbot",
 };
 
 // Module name → moduleConfig key
@@ -582,10 +580,8 @@ export function FranchiseLandingEditor({
         return <>{moduleHeader}<BookingTab data={data} set={set} /></>;
       case "brochure":
         return <>{moduleHeader}<BrochureTab data={data} set={set} /></>;
-      case "chatbot":
-        return <>{moduleHeader}<ChatbotTab /></>;
-      case "botlegacy":
-        return <BotLegacyTab franchiseId={data.id} />;
+      case "bot":
+        return <BotTab franchiseId={data.id} />;
       default:
         return null;
     }
@@ -1180,18 +1176,7 @@ function BookingTab({
   );
 }
 
-// ── Chatbot tab ───────────────────────────────────────────────────────────────
-
-function ChatbotTab() {
-  return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 text-center space-y-2">
-      <p className="text-sm font-medium text-gray-700">Chatbot de calificación activo</p>
-      <p className="text-xs text-gray-500 max-w-sm mx-auto">
-        El chatbot guía al visitante con preguntas sobre su perfil de inversión y le muestra un resultado personalizado. La lógica está preconfigurada.
-      </p>
-    </div>
-  );
-}
+// ── Bot tab (merged Chatbot + BotLegacy) ──────────────────────────────────────
 
 // ── Models tab ────────────────────────────────────────────────────────────────
 
@@ -1489,25 +1474,37 @@ function FaqForm({
   );
 }
 
-// ── Bot Legacy tab ─────────────────────────────────────────────────────────────
+type ExtendedBotConfig = BotConfig & {
+  botMode?: string;
+  aiProvider?: string;
+  aiModel?: string;
+  maxMessagesPerConvo?: number;
+  maxConvosPerMonth?: number;
+};
 
-function BotLegacyTab({ franchiseId }: { franchiseId: string }) {
+function BotTab({ franchiseId }: { franchiseId: string }) {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
     showBot: false, showVideo: false, showGallery: true,
     showTestimonials: false, showKpis: true, showDownloads: false, showContactForm: true,
   });
-  const [botConfig, setBotConfig] = useState<BotConfig>({
+  const [botConfig, setBotConfig] = useState<ExtendedBotConfig>({
     enabled: false, fallbackMessage: "", systemInstructions: "", tone: null,
+    botMode: "guided", aiProvider: "claude", aiModel: undefined,
+    maxMessagesPerConvo: 20, maxConvosPerMonth: 500,
   });
   const [botFaqs, setBotFaqs] = useState<BotFaq[]>([]);
+  const [selectedMode, setSelectedMode] = useState<"guided" | "ai_assistant">("guided");
+  const [showLegacy, setShowLegacy] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [addingFaq, setAddingFaq] = useState(false);
   const [editingFaqId, setEditingFaqId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/legacy`);
       if (res.ok) {
         const d = await res.json();
@@ -1523,17 +1520,25 @@ function BotLegacyTab({ franchiseId }: { franchiseId: string }) {
           });
         }
         if (d.botConfig) {
+          const mode = (d.botConfig.botMode ?? "guided") as "guided" | "ai_assistant";
           setBotConfig({
             enabled: d.botConfig.enabled ?? false,
             fallbackMessage: d.botConfig.fallbackMessage ?? "",
             systemInstructions: d.botConfig.systemInstructions ?? "",
             tone: d.botConfig.tone ?? null,
+            botMode: mode,
+            aiProvider: d.botConfig.aiProvider ?? "claude",
+            aiModel: d.botConfig.aiModel ?? undefined,
+            maxMessagesPerConvo: d.botConfig.maxMessagesPerConvo ?? 20,
+            maxConvosPerMonth: d.botConfig.maxConvosPerMonth ?? 500,
           });
+          setSelectedMode(mode);
         }
         if (Array.isArray(d.botFaqs)) {
           setBotFaqs(d.botFaqs);
         }
       }
+      setLoading(false);
     }
     load();
   }, [franchiseId]);
@@ -1543,7 +1548,7 @@ function BotLegacyTab({ franchiseId }: { franchiseId: string }) {
     setSaved(false);
   }
 
-  function setBot(key: keyof BotConfig, val: unknown) {
+  function setBot(key: keyof ExtendedBotConfig, val: unknown) {
     setBotConfig((p) => ({ ...p, [key]: val }));
     setSaved(false);
   }
@@ -1555,9 +1560,12 @@ function BotLegacyTab({ franchiseId }: { franchiseId: string }) {
       const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/legacy`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ featureFlags, botConfig }),
+        body: JSON.stringify({
+          featureFlags,
+          botConfig: { ...botConfig, botMode: selectedMode },
+        }),
       });
-      if (!res.ok) throw new Error("Error guardando configuración bot legacy");
+      if (!res.ok) throw new Error("Error guardando configuración bot");
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {
@@ -1593,134 +1601,306 @@ function BotLegacyTab({ franchiseId }: { franchiseId: string }) {
     { key: "showContactForm", label: "Mostrar formulario de contacto" },
   ];
 
+  const claudeModels = ["claude-opus-4-6", "claude-sonnet-4-6", "claude-haiku-4-5-20251001"];
+  const openaiModels = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"];
+  const modelOptions = botConfig.aiProvider === "openai" ? openaiModels : claudeModels;
+
+  if (loading) {
+    return <p className="text-sm text-gray-400">Cargando...</p>;
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {/* Feature Flags */}
-      <div>
-        <h3 className="mb-3 text-sm font-semibold text-gray-900 uppercase tracking-wide">
-          Feature Flags (legado)
-        </h3>
-        <div className="space-y-3 rounded-xl border border-gray-200 p-4">
-          {FLAG_LABELS.map(({ key, label }) => (
-            <Toggle
-              key={key}
-              checked={featureFlags[key]}
-              onChange={(v) => setFlag(key, v)}
-              label={label}
+      {/* Header: title + enabled toggle */}
+      <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+        <span className="text-sm font-semibold text-gray-800">Bot</span>
+        <label className="flex cursor-pointer items-center gap-2">
+          <span className="text-xs text-gray-500">{botConfig.enabled ? "Activado" : "Desactivado"}</span>
+          <div className="relative">
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={botConfig.enabled}
+              onChange={(e) => setBot("enabled", e.target.checked)}
             />
-          ))}
-        </div>
-      </div>
-
-      {/* Bot Config */}
-      <div>
-        <h3 className="mb-3 text-sm font-semibold text-gray-900 uppercase tracking-wide">
-          Configuración del Bot
-        </h3>
-        <div className="space-y-4 rounded-xl border border-gray-200 p-4">
-          <Toggle
-            checked={botConfig.enabled}
-            onChange={(v) => setBot("enabled", v)}
-            label="Bot habilitado"
-          />
-          <Field label="Tono">
-            <Input
-              value={botConfig.tone ?? ""}
-              onChange={(v) => setBot("tone", v || null)}
-              placeholder="amigable, profesional..."
-            />
-          </Field>
-          <Field label="Mensaje de fallback">
-            <Textarea
-              value={botConfig.fallbackMessage}
-              onChange={(v) => setBot("fallbackMessage", v)}
-              rows={3}
-              placeholder="Gracias por tu consulta, te contactaremos pronto..."
-            />
-          </Field>
-          <Field label="Instrucciones del sistema">
-            <Textarea
-              value={botConfig.systemInstructions}
-              onChange={(v) => setBot("systemInstructions", v)}
-              rows={5}
-              placeholder="Eres un asistente de franquicias..."
-            />
-          </Field>
-        </div>
-      </div>
-
-      <div>
-        <SaveButton saving={saving} saved={saved} onClick={saveAll} />
-      </div>
-
-      {/* Bot FAQs */}
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-            FAQs del Bot
-          </h3>
-          <button
-            onClick={() => setAddingFaq(true)}
-            className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
-          >
-            + Agregar FAQ
-          </button>
-        </div>
-
-        {addingFaq && (
-          <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
-            <BotFaqForm
-              franchiseId={franchiseId}
-              onSave={async () => { setAddingFaq(false); await refetchFaqs(); }}
-              onCancel={() => setAddingFaq(false)}
-            />
+            <div className={cn("h-5 w-9 rounded-full transition-colors", botConfig.enabled ? "bg-blue-600" : "bg-gray-300")} />
+            <div className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform", botConfig.enabled ? "translate-x-4" : "translate-x-0.5")} />
           </div>
-        )}
+        </label>
+      </div>
 
-        <div className="space-y-3">
-          {botFaqs.length === 0 && !addingFaq && (
-            <p className="text-sm text-gray-400">No hay FAQs del bot todavía.</p>
+      {/* Mode selector */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => { setSelectedMode("guided"); setSaved(false); }}
+          className={cn(
+            "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+            selectedMode === "guided"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "border border-gray-300 text-gray-600 hover:bg-gray-50"
           )}
-          {botFaqs.map((faq) => (
-            <div key={faq.id} className="rounded-lg border border-gray-200 p-4">
-              {editingFaqId === faq.id ? (
+        >
+          Calificacion Guiada
+        </button>
+        <button
+          onClick={() => { setSelectedMode("ai_assistant"); setSaved(false); }}
+          className={cn(
+            "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+            selectedMode === "ai_assistant"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "border border-gray-300 text-gray-600 hover:bg-gray-50"
+          )}
+        >
+          Asistente IA
+        </button>
+      </div>
+
+      <div className="border-t border-gray-100" />
+
+      {selectedMode === "guided" && (
+        <div className="space-y-5">
+          {/* Guided mode description */}
+          <div>
+            <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-700">
+              CALIFICACION GUIADA
+            </h3>
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2">
+              <p className="text-sm text-gray-700">
+                El chatbot guia al visitante con preguntas predefinidas sobre su perfil de inversion y le muestra un resultado personalizado.
+              </p>
+              <p className="text-xs text-gray-500">
+                La logica esta preconfigurada con 5 preguntas de calificacion. No consume tokens de IA.
+              </p>
+            </div>
+          </div>
+
+          {/* Collapsible legacy config */}
+          <div className="rounded-xl border border-gray-200">
+            <button
+              onClick={() => setShowLegacy((v) => !v)}
+              className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-xl"
+            >
+              <span>Configuracion legacy (sistema anterior)</span>
+              <span className="text-gray-400">{showLegacy ? "▲" : "▼"}</span>
+            </button>
+            {showLegacy && (
+              <div className="border-t border-gray-200 p-4 space-y-3">
+                {FLAG_LABELS.map(({ key, label }) => (
+                  <Toggle
+                    key={key}
+                    checked={featureFlags[key]}
+                    onChange={(v) => setFlag(key, v)}
+                    label={label}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {selectedMode === "ai_assistant" && (
+        <div className="space-y-6">
+          {/* Premium badge */}
+          <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-violet-800">ASISTENTE IA — Plan Super Plus</span>
+              <span className="rounded-full bg-violet-600 px-2.5 py-0.5 text-xs font-medium text-white">
+                Premium
+              </span>
+            </div>
+            <p className="text-sm text-violet-700">
+              Un asistente conversacional entrenado con la informacion de tu marca. Usa IA (Claude / OpenAI) para mantener conversaciones naturales y extendidas con los visitantes.
+            </p>
+            <p className="text-xs text-violet-600">
+              Responde preguntas complejas, califica leads con mas profundidad, y representa la voz de tu marca 24/7.
+            </p>
+          </div>
+
+          <div className="border-t border-gray-100" />
+
+          {/* AI Config section */}
+          <div>
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">
+              CONFIGURACION DEL ASISTENTE
+            </h3>
+            <div className="space-y-5">
+              <Field label="Proveedor de IA" hint="Motor de IA que potencia las conversaciones.">
+                <select
+                  value={botConfig.aiProvider ?? "claude"}
+                  onChange={(e) => {
+                    setBot("aiProvider", e.target.value);
+                    setBot("aiModel", undefined);
+                    setSaved(false);
+                  }}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="claude">Claude (Anthropic)</option>
+                  <option value="openai">OpenAI</option>
+                </select>
+              </Field>
+
+              <Field label="Modelo" hint="Modelos mas avanzados = respuestas mas inteligentes, mayor costo.">
+                <select
+                  value={botConfig.aiModel ?? ""}
+                  onChange={(e) => { setBot("aiModel", e.target.value || undefined); setSaved(false); }}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">— Seleccionar modelo —</option>
+                  {modelOptions.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="Tono" hint="Define la personalidad del asistente.">
+                <select
+                  value={botConfig.tone ?? ""}
+                  onChange={(e) => { setBot("tone", e.target.value || null); setSaved(false); }}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">— Seleccionar tono —</option>
+                  <option value="consultivo">Consultivo</option>
+                  <option value="amigable">Amigable</option>
+                  <option value="profesional">Profesional</option>
+                  <option value="tecnico">Tecnico</option>
+                </select>
+              </Field>
+
+              <Field label="Instrucciones del sistema" hint="Define como se comporta el asistente.">
+                <Textarea
+                  value={botConfig.systemInstructions}
+                  onChange={(v) => { setBot("systemInstructions", v); setSaved(false); }}
+                  rows={5}
+                  placeholder="Eres un asistente de franquicias..."
+                />
+              </Field>
+
+              <Field label="Mensaje de fallback" hint="Se muestra cuando el asistente no puede responder.">
+                <Textarea
+                  value={botConfig.fallbackMessage}
+                  onChange={(v) => { setBot("fallbackMessage", v); setSaved(false); }}
+                  rows={3}
+                  placeholder="Gracias por tu consulta, te contactaremos pronto..."
+                />
+              </Field>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100" />
+
+          {/* Knowledge base FAQs */}
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                  KNOWLEDGE BASE (FAQs del asistente)
+                </h3>
+                <p className="text-xs text-gray-400 mt-0.5">El asistente usa estas respuestas como base de conocimiento.</p>
+              </div>
+              <button
+                onClick={() => setAddingFaq(true)}
+                className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+              >
+                + Agregar FAQ
+              </button>
+            </div>
+
+            {addingFaq && (
+              <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
                 <BotFaqForm
                   franchiseId={franchiseId}
-                  faqId={faq.id}
-                  initial={faq}
-                  onSave={async () => { setEditingFaqId(null); await refetchFaqs(); }}
-                  onCancel={() => setEditingFaqId(null)}
+                  onSave={async () => { setAddingFaq(false); await refetchFaqs(); }}
+                  onCancel={() => setAddingFaq(false)}
                 />
-              ) : (
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900 text-sm">{faq.question}</p>
-                      <span className={cn(
-                        "flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
-                        faq.enabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-                      )}>
-                        {faq.enabled ? "Activa" : "Inactiva"}
-                      </span>
-                      <span className="flex-shrink-0 text-xs text-gray-400">P: {faq.priority}</span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{faq.answer}</p>
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button onClick={() => setEditingFaqId(faq.id)} className="text-xs text-blue-600 hover:underline">Editar</button>
-                    <button onClick={() => deleteFaq(faq.id)} className="text-xs text-red-500 hover:underline">Eliminar</button>
-                  </div>
-                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {botFaqs.length === 0 && !addingFaq && (
+                <p className="text-sm text-gray-400">No hay FAQs todavia.</p>
               )}
+              {botFaqs.map((faq) => (
+                <div key={faq.id} className="rounded-lg border border-gray-200 p-4">
+                  {editingFaqId === faq.id ? (
+                    <BotFaqForm
+                      franchiseId={franchiseId}
+                      faqId={faq.id}
+                      initial={faq}
+                      onSave={async () => { setEditingFaqId(null); await refetchFaqs(); }}
+                      onCancel={() => setEditingFaqId(null)}
+                    />
+                  ) : (
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-gray-900 text-sm">{faq.question}</p>
+                          <span className={cn(
+                            "flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
+                            faq.enabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                          )}>
+                            {faq.enabled ? "Activa" : "Inactiva"}
+                          </span>
+                          <span className="flex-shrink-0 text-xs text-gray-400">P: {faq.priority}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{faq.answer}</p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button onClick={() => setEditingFaqId(faq.id)} className="text-xs text-blue-600 hover:underline">Editar</button>
+                        <button onClick={() => deleteFaq(faq.id)} className="text-xs text-red-500 hover:underline">Eliminar</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          <div className="border-t border-gray-100" />
+
+          {/* Usage limits */}
+          <div>
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">
+              LIMITES DE USO
+            </h3>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field
+                label="Maximo mensajes por conversacion"
+                hint="Limita la longitud de cada conversacion para controlar costos."
+              >
+                <input
+                  type="number"
+                  value={botConfig.maxMessagesPerConvo ?? 20}
+                  onChange={(e) => { setBot("maxMessagesPerConvo", Number(e.target.value)); setSaved(false); }}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  min={1}
+                />
+              </Field>
+              <Field
+                label="Maximo conversaciones por mes"
+                hint="Limite mensual."
+              >
+                <input
+                  type="number"
+                  value={botConfig.maxConvosPerMonth ?? 500}
+                  onChange={(e) => { setBot("maxConvosPerMonth", Number(e.target.value)); setSaved(false); }}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  min={1}
+                />
+              </Field>
+            </div>
+          </div>
         </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        <SaveButton saving={saving} saved={saved} onClick={saveAll} />
       </div>
     </div>
   );

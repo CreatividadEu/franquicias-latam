@@ -149,12 +149,22 @@ export async function PUT(
         systemInstructions: String(botConfig.systemInstructions ?? ""),
         fallbackMessage: String(botConfig.fallbackMessage ?? ""),
         tone: (botConfig.tone as string | null) ?? null,
+        botMode: (botConfig.botMode as string | null) ?? "guided",
+        aiProvider: (botConfig.aiProvider as string | null) ?? "claude",
+        aiModel: (botConfig.aiModel as string | null) ?? null,
+        maxMessagesPerConvo: botConfig.maxMessagesPerConvo != null ? Number(botConfig.maxMessagesPerConvo) : 20,
+        maxConvosPerMonth: botConfig.maxConvosPerMonth != null ? Number(botConfig.maxConvosPerMonth) : 500,
       },
       update: {
         ...(botConfig.enabled !== undefined && { enabled: Boolean(botConfig.enabled) }),
         ...(botConfig.systemInstructions !== undefined && { systemInstructions: String(botConfig.systemInstructions) }),
         ...(botConfig.fallbackMessage !== undefined && { fallbackMessage: String(botConfig.fallbackMessage) }),
         ...(botConfig.tone !== undefined && { tone: (botConfig.tone as string | null) || null }),
+        ...(botConfig.botMode !== undefined && { botMode: (botConfig.botMode as string | null) || "guided" }),
+        ...(botConfig.aiProvider !== undefined && { aiProvider: (botConfig.aiProvider as string | null) || "claude" }),
+        ...(botConfig.aiModel !== undefined && { aiModel: (botConfig.aiModel as string | null) || null }),
+        ...(botConfig.maxMessagesPerConvo !== undefined && { maxMessagesPerConvo: Number(botConfig.maxMessagesPerConvo) }),
+        ...(botConfig.maxConvosPerMonth !== undefined && { maxConvosPerMonth: Number(botConfig.maxConvosPerMonth) }),
       },
     });
   }
