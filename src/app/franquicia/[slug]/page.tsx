@@ -18,6 +18,7 @@ import { FaqSection } from "@/components/franchise-landing/faq-section";
 import { BrochureSection } from "@/components/franchise-landing/brochure-section";
 import { BookingSection } from "@/components/franchise-landing/booking-section";
 import { ChatbotSection } from "@/components/franchise-landing/chatbot-section";
+import { AiAssistantSection } from "@/components/franchise-landing/ai-assistant-section";
 import { CtaFooterSection } from "@/components/franchise-landing/cta-footer-section";
 
 // ── Legacy renderer imports ────────────────────────────────────────────────────
@@ -193,7 +194,11 @@ export default async function FranchiseLandingPage({
         {pageData.businessModels && (
           <BusinessModelsSection data={pageData.businessModels} />
         )}
-        {pageData.chatbot && <ChatbotSection data={pageData.chatbot} />}
+        {pageData.chatbot && (
+          franchise.botConfig?.botMode === "ai_assistant"
+            ? <AiAssistantSection />
+            : <ChatbotSection data={pageData.chatbot} />
+        )}
         {pageData.gallery && <GallerySection data={pageData.gallery} />}
         {pageData.financials && <FinancialsSection data={pageData.financials} />}
         {pageData.faq && <FaqSection data={pageData.faq} />}
