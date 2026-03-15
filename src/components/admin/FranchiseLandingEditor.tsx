@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PLAN_ENTITLEMENTS, isModuleAllowed } from "@/lib/plan-entitlements";
 import type { PlanTier } from "@/lib/plan-entitlements";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -65,7 +66,6 @@ type Franchise = {
 
 const TABS = [
   { id: "general", label: "General" },
-  { id: "hero", label: "Hero" },
   { id: "financials", label: "Financieros" },
   { id: "ctas", label: "CTAs" },
   { id: "video", label: "Video" },
@@ -75,7 +75,6 @@ const TABS = [
   { id: "booking", label: "Reservas" },
   { id: "brochure", label: "Descargas" },
   { id: "chatbot", label: "Chatbot" },
-  { id: "base", label: "Config Base" },
   { id: "botlegacy", label: "Bot Legacy" },
 ] as const;
 
@@ -85,7 +84,6 @@ type TabId = (typeof TABS)[number]["id"];
 
 const PLAN_LEVEL: Record<PlanTier, number> = { BASIC: 0, GROWTH: 1, ALL_IN: 2 };
 
-// Plan selector pill styles
 const PLAN_STYLES: Record<PlanTier, { active: string; inactive: string }> = {
   BASIC: {
     active: "bg-gray-700 text-white shadow-sm",
@@ -102,7 +100,6 @@ const PLAN_STYLES: Record<PlanTier, { active: string; inactive: string }> = {
 };
 
 // Which module name (from plan-entitlements) each tab maps to
-// Tabs not in this map are always available
 const TAB_MODULE: Partial<Record<TabId, string>> = {
   video: "video",
   models: "businessModels",
@@ -111,6 +108,7 @@ const TAB_MODULE: Partial<Record<TabId, string>> = {
   booking: "booking",
   brochure: "brochure",
   chatbot: "chatbot",
+  botlegacy: "chatbot",
 };
 
 // Module name → moduleConfig key
@@ -137,7 +135,8 @@ const MODULE_DISPLAY_NAMES: Record<string, string> = {
   nurturing: "Nurturing",
 };
 
-// Compute full moduleConfig from a plan (plan defines what's enabled)
+const DEFAULT_CALENDLY_URL = "https://calendly.com/franquiciaslatam/programa-acelerado";
+
 function planToModuleConfig(plan: PlanTier): NonNullable<ModuleConfig> {
   const modules = PLAN_ENTITLEMENTS[plan].modules as readonly string[];
   return {
@@ -152,6 +151,35 @@ function planToModuleConfig(plan: PlanTier): NonNullable<ModuleConfig> {
     chatbotEnabled: modules.includes("chatbot"),
     nurturingEnabled: modules.includes("nurturing"),
   };
+}
+
+// ── Parse / format helpers for financials ────────────────────────────────────
+
+function parseEbitdaString(s: string | null): { min: string; max: string } {
+  if (!s) return { min: "", max: "" };
+  const m = s.match(/(\d+(?:\.\d+)?)\s*[%–-]+\s*(\d+(?:\.\d+)?)/);
+  if (m) return { min: m[1], max: m[2] };
+  const single = s.match(/(\d+(?:\.\d+)?)/);
+  return single ? { min: single[1], max: "" } : { min: "", max: "" };
+}
+
+function formatEbitdaString(min: string, max: string): string | null {
+  if (!min && !max) return null;
+  if (!max) return `${min}%`;
+  return `${min}%-${max}%`;
+}
+
+function parseRoyaltyString(s: string | null): { royalty: string; adFund: string } {
+  if (!s) return { royalty: "", adFund: "" };
+  const nums = s.match(/(\d+(?:\.\d+)?)/g);
+  if (!nums) return { royalty: "", adFund: "" };
+  return { royalty: nums[0] ?? "", adFund: nums[1] ?? "" };
+}
+
+function formatRoyaltyString(royalty: string, adFund: string): string | null {
+  if (!royalty && !adFund) return null;
+  if (!adFund) return `${royalty}% sobre ventas`;
+  return `${royalty}% sobre ventas, ${adFund}% fondo de publicidad`;
 }
 
 // ── Field helpers ─────────────────────────────────────────────────────────────
@@ -305,6 +333,26 @@ export function FranchiseLandingEditor({
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Base config state (lifted from old BaseConfigTab)
+  const [allSectors, setAllSectors] = useState<Sector[]>(sectors);
+  const [allCountries, setAllCountries] = useState<Country[]>([]);
+  const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([]);
+  const [baseForm, setBaseForm] = useState({
+    sectorId: "",
+    active: true,
+    featured: false,
+    contactEmail: "",
+    logo: "",
+    video: "",
+  });
+  const [automation, setAutomation] = useState({
+    enabled: false,
+    webhookUrl: "",
+    crmDestination: "",
+    nurtureSequenceId: "",
+    calendlyRoutingMode: "",
+  });
+
   const plan = data.planTier as PlanTier;
 
   // Generic field setter
@@ -320,6 +368,57 @@ export function FranchiseLandingEditor({
     }));
     setSaved(false);
   }
+
+  function setBaseFormField<K extends keyof typeof baseForm>(key: K, value: (typeof baseForm)[K]) {
+    setBaseForm((prev) => ({ ...prev, [key]: value }));
+    setSaved(false);
+  }
+
+  function setAutomationField<K extends keyof typeof automation>(key: K, value: (typeof automation)[K]) {
+    setAutomation((prev) => ({ ...prev, [key]: value }));
+    setSaved(false);
+  }
+
+  // Load base config, sectors, countries
+  useEffect(() => {
+    async function loadBase() {
+      const [secRes, countryRes, fRes] = await Promise.all([
+        fetch("/api/sectors"),
+        fetch("/api/countries"),
+        fetch(`/api/admin/landing/franchises/${initial.id}`),
+      ]);
+      if (secRes.ok) {
+        const d = await secRes.json();
+        setAllSectors(d.sectors ?? d);
+      }
+      if (countryRes.ok) {
+        const d = await countryRes.json();
+        setAllCountries(d.countries ?? d);
+      }
+      if (fRes.ok) {
+        const f = await fRes.json();
+        setBaseForm({
+          sectorId: f.sectorId ?? "",
+          active: f.active ?? true,
+          featured: f.featured ?? false,
+          contactEmail: f.contactEmail ?? "",
+          logo: f.logo ?? "",
+          video: f.video ?? "",
+        });
+        setSelectedCountryIds((f.coverageCountries ?? []).map((c: { countryId: string }) => c.countryId));
+        if (f.automationConfig) {
+          setAutomation({
+            enabled: f.automationConfig.enabled ?? false,
+            webhookUrl: f.automationConfig.webhookUrl ?? "",
+            crmDestination: f.automationConfig.crmDestination ?? "",
+            nurtureSequenceId: f.automationConfig.nurtureSequenceId ?? "",
+            calendlyRoutingMode: f.automationConfig.calendlyRoutingMode ?? "",
+          });
+        }
+      }
+    }
+    loadBase();
+  }, [initial.id]);
 
   function handlePlanChange(newPlan: PlanTier) {
     const currentLevel = PLAN_LEVEL[plan];
@@ -343,7 +442,6 @@ export function FranchiseLandingEditor({
     setData((prev) => ({ ...prev, planTier: newPlan, moduleConfig: newModuleConfig }));
     setSaved(false);
 
-    // If the active tab will be locked in new plan, go back to general
     const moduleName = TAB_MODULE[activeTab];
     if (moduleName && !isModuleAllowed(newPlan, moduleName)) {
       setActiveTab("general");
@@ -371,12 +469,31 @@ export function FranchiseLandingEditor({
             paybackMonths: data.paybackMonths, royaltyInfo: data.royaltyInfo,
             operatorProfile: data.operatorProfile,
             investmentMin: data.investmentMin, investmentMax: data.investmentMax,
+            // base config fields
+            sectorId: baseForm.sectorId || undefined,
+            active: baseForm.active,
+            featured: baseForm.featured,
+            contactEmail: baseForm.contactEmail || null,
+            logo: baseForm.logo || null,
+            video: baseForm.video || null,
+            coverageCountryIds: selectedCountryIds,
           }),
         }).then((r) => { if (!r.ok) throw new Error("Error guardando datos principales"); }),
 
         data.moduleConfig && fetch(`${base}/modules`, {
           method: "PUT", headers, body: JSON.stringify(data.moduleConfig),
         }).then((r) => { if (!r.ok) throw new Error("Error guardando módulos"); }),
+
+        fetch(`${base}/automation`, {
+          method: "PUT", headers,
+          body: JSON.stringify({
+            enabled: automation.enabled,
+            webhookUrl: automation.webhookUrl || null,
+            crmDestination: automation.crmDestination || null,
+            nurtureSequenceId: automation.nurtureSequenceId || null,
+            calendlyRoutingMode: automation.calendlyRoutingMode || null,
+          }),
+        }).then((r) => { if (!r.ok) console.warn("Error guardando automatización"); }),
       ].filter(Boolean));
 
       setSaved(true);
@@ -386,24 +503,21 @@ export function FranchiseLandingEditor({
     } finally {
       setSaving(false);
     }
-  }, [data]);
+  }, [data, baseForm, selectedCountryIds, automation]);
 
   const slugForPreview = data.slug ?? data.name.toLowerCase().replace(/\s+/g, "-");
 
   function renderTabContent() {
     const moduleName = TAB_MODULE[activeTab];
 
-    // Check plan lock
     if (moduleName && !isModuleAllowed(plan, moduleName)) {
-      // Find which plan first enables this module
       const minPlan = (["BASIC", "GROWTH", "ALL_IN"] as PlanTier[]).find((p) =>
         isModuleAllowed(p, moduleName)
       ) ?? "GROWTH";
       return <LockedMessage planRequired={minPlan} />;
     }
 
-    // Module tab header (toggle to disable the module within plan)
-    const moduleHeader = moduleName ? (
+    const moduleHeader = moduleName && MODULE_CONFIG_KEY[moduleName] ? (
       <ModuleTabHeader
         moduleKey={MODULE_CONFIG_KEY[moduleName]}
         label={MODULE_DISPLAY_NAMES[moduleName] ?? moduleName}
@@ -414,9 +528,20 @@ export function FranchiseLandingEditor({
 
     switch (activeTab) {
       case "general":
-        return <GeneralTab data={data} set={set} sectors={sectors} />;
-      case "hero":
-        return <HeroTab data={data} set={set} />;
+        return (
+          <GeneralTab
+            data={data}
+            set={set}
+            allSectors={allSectors}
+            allCountries={allCountries}
+            selectedCountryIds={selectedCountryIds}
+            setSelectedCountryIds={(ids) => { setSelectedCountryIds(ids); setSaved(false); }}
+            baseForm={baseForm}
+            setBaseFormField={setBaseFormField}
+            automation={automation}
+            setAutomationField={setAutomationField}
+          />
+        );
       case "financials":
         return <FinancialsTab data={data} set={set} />;
       case "ctas":
@@ -459,8 +584,6 @@ export function FranchiseLandingEditor({
         return <>{moduleHeader}<BrochureTab data={data} set={set} /></>;
       case "chatbot":
         return <>{moduleHeader}<ChatbotTab /></>;
-      case "base":
-        return <BaseConfigTab franchiseId={data.id} franchise={data} />;
       case "botlegacy":
         return <BotLegacyTab franchiseId={data.id} />;
       default:
@@ -580,96 +703,432 @@ function PlanBadge({ plan }: { plan: PlanTier }) {
   );
 }
 
-// ── Tab components ────────────────────────────────────────────────────────────
+// ── General Tab ───────────────────────────────────────────────────────────────
 
 function GeneralTab({
-  data, set, sectors,
-}: { data: Franchise; set: <K extends keyof Franchise>(k: K, v: Franchise[K]) => void; sectors: Sector[] }) {
+  data,
+  set,
+  allSectors,
+  allCountries,
+  selectedCountryIds,
+  setSelectedCountryIds,
+  baseForm,
+  setBaseFormField,
+  automation,
+  setAutomationField,
+}: {
+  data: Franchise;
+  set: <K extends keyof Franchise>(k: K, v: Franchise[K]) => void;
+  allSectors: Sector[];
+  allCountries: Country[];
+  selectedCountryIds: string[];
+  setSelectedCountryIds: (ids: string[]) => void;
+  baseForm: { sectorId: string; active: boolean; featured: boolean; contactEmail: string; logo: string; video: string };
+  setBaseFormField: <K extends keyof typeof baseForm>(k: K, v: (typeof baseForm)[K]) => void;
+  automation: { enabled: boolean; webhookUrl: string; crmDestination: string; nurtureSequenceId: string; calendlyRoutingMode: string };
+  setAutomationField: <K extends keyof typeof automation>(k: K, v: (typeof automation)[K]) => void;
+}) {
+  function toggleCountry(id: string) {
+    setSelectedCountryIds(
+      selectedCountryIds.includes(id)
+        ? selectedCountryIds.filter((x) => x !== id)
+        : [...selectedCountryIds, id]
+    );
+  }
+
+  const shortDescLen = (data.shortDescription ?? "").length;
+
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      <Field label="Nombre">
-        <Input value={data.name} onChange={(v) => set("name", v)} placeholder="Nombre de la franquicia" />
-      </Field>
-      <Field label="Slug (URL)" hint="Solo letras, números y guiones. Ej: crem-helado">
-        <Input value={data.slug ?? ""} onChange={(v) => set("slug", v || null)} placeholder="crem-helado" />
-      </Field>
-      <div className="sm:col-span-2">
-        <Field label="Descripción corta">
-          <Input value={data.shortDescription ?? ""} onChange={(v) => set("shortDescription", v || null)} />
+    <div className="space-y-8">
+      {/* SECTION: Identidad */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Identidad</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <Field label="Nombre *">
+              <Input value={data.name} onChange={(v) => set("name", v)} placeholder="Nombre de la franquicia" />
+            </Field>
+          </div>
+          <Field label="Slug (URL)" hint="Solo letras, números y guiones. Ej: crem-helado">
+            <Input value={data.slug ?? ""} onChange={(v) => set("slug", v || null)} placeholder="crem-helado" />
+          </Field>
+          <Field label="Email de contacto" hint="Email interno para notificaciones de leads.">
+            <Input
+              value={baseForm.contactEmail}
+              onChange={(v) => setBaseFormField("contactEmail", v)}
+              placeholder="contacto@franquicia.com"
+            />
+          </Field>
+          <Field label="Sector" hint="Categoría principal de la franquicia.">
+            <select
+              value={baseForm.sectorId}
+              onChange={(e) => setBaseFormField("sectorId", e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">— Seleccionar sector —</option>
+              {allSectors.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.emoji} {s.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+      </section>
+
+      {/* Countries */}
+      <section>
+        <label className="mb-2 block text-sm font-medium text-gray-700">Países de cobertura</label>
+        {allCountries.length === 0 ? (
+          <p className="text-sm text-gray-400">Cargando países...</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 rounded-lg border border-gray-200 p-3 max-h-64 overflow-y-auto">
+            {allCountries.map((c) => (
+              <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={selectedCountryIds.includes(c.id)}
+                  onChange={() => toggleCountry(c.id)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                />
+                <span className="text-sm text-gray-700">{c.flag} {c.name}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: Contenido del Hero */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Contenido del Hero</h3>
+        <p className="mb-4 text-xs text-gray-400">Esto es lo que el visitante ve primero en la landing page.</p>
+        <div className="space-y-5">
+          <Field label="Titular (headline) *" hint="Frase principal. Máx 2 líneas. Ej: 'Tu franquicia ideal en minutos.'">
+            <Input value={data.headline ?? ""} onChange={(v) => set("headline", v || null)} placeholder="La franquicia más..." />
+          </Field>
+          <Field label="Subtitular (subheadline)" hint="Complementa el titular. Máx 3 líneas.">
+            <Textarea value={data.subheadline ?? ""} onChange={(v) => set("subheadline", v || null)} />
+          </Field>
+          <Field label="Línea de credibilidad" hint="Aparece como badge bajo el logo. Ej: '45 países · +US$200M/año'">
+            <Input value={data.credibilityLine ?? ""} onChange={(v) => set("credibilityLine", v || null)} />
+          </Field>
+          <Field
+            label="Descripción corta"
+            hint="Para tarjetas y Google. No aparece en el hero."
+          >
+            <div className="space-y-1">
+              <Textarea
+                value={data.shortDescription ?? ""}
+                onChange={(v) => set("shortDescription", v || null)}
+                rows={2}
+                placeholder="Descripción breve para SEO y tarjetas..."
+              />
+              <p className={cn("text-xs", shortDescLen > 160 ? "text-red-500" : "text-gray-400")}>
+                {shortDescLen}/160 caracteres
+              </p>
+            </div>
+          </Field>
+          <Field label="Descripción larga" hint="Texto expandido para secciones internas de la landing.">
+            <Textarea value={data.longDescription ?? ""} onChange={(v) => set("longDescription", v || null)} rows={5} />
+          </Field>
+        </div>
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: Imágenes */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Imágenes</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <div className="grid gap-6 sm:grid-cols-2">
+          <Field label="Logo">
+            <ImageUpload
+              value={data.logoUrl ?? ""}
+              onChange={(url) => set("logoUrl", url || null)}
+              storagePath={`franchise-assets/${data.slug ?? data.id}/logo`}
+              hint="PNG o SVG. Se muestra en el hero y tarjetas."
+              previewHeight="h-16"
+            />
+          </Field>
+          <Field label="Imagen Hero">
+            <ImageUpload
+              value={data.heroImageUrl ?? ""}
+              onChange={(url) => set("heroImageUrl", url || null)}
+              storagePath={`franchise-assets/${data.slug ?? data.id}/hero`}
+              hint="Imagen de fondo del hero. Mín 1200px ancho. JPG o WebP."
+              previewHeight="h-24"
+            />
+          </Field>
+        </div>
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: Video */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Video</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <Field label="URL de YouTube" hint="Aparece en la sección de video (plan Conversión+).">
+          <Input
+            value={data.youtubeUrl ?? ""}
+            onChange={(v) => set("youtubeUrl", v || null)}
+            placeholder="https://youtube.com/watch?v=..."
+          />
         </Field>
-      </div>
-      <div className="sm:col-span-2">
-        <Field label="Descripción larga">
-          <Textarea value={data.longDescription ?? ""} onChange={(v) => set("longDescription", v || null)} rows={5} />
-        </Field>
-      </div>
-      <Field label="Inversión mínima (USD)">
-        <Input type="number" value={String(data.investmentMin)} onChange={(v) => set("investmentMin", Number(v))} />
-      </Field>
-      <Field label="Inversión máxima (USD)">
-        <Input type="number" value={String(data.investmentMax)} onChange={(v) => set("investmentMax", Number(v))} />
-      </Field>
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: Inversión */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Inversión</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Inversión mínima (USD) *">
+            <Input type="number" value={String(data.investmentMin)} onChange={(v) => set("investmentMin", Number(v))} placeholder="50000" />
+          </Field>
+          <Field label="Inversión máxima (USD) *">
+            <Input type="number" value={String(data.investmentMax)} onChange={(v) => set("investmentMax", Number(v))} placeholder="120000" />
+          </Field>
+        </div>
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: Estado y visibilidad */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Estado y visibilidad</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <div className="flex flex-wrap gap-6">
+          <Toggle
+            checked={baseForm.active}
+            onChange={(v) => setBaseFormField("active", v)}
+            label="Activa"
+          />
+          <Toggle
+            checked={baseForm.featured}
+            onChange={(v) => setBaseFormField("featured", v)}
+            label="Destacada"
+          />
+          <Toggle
+            checked={data.published}
+            onChange={(v) => set("published", v)}
+            label="Publicada (landing visible)"
+          />
+        </div>
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: Sistema anterior (collapsible) */}
+      <section>
+        <details>
+          <summary className="cursor-pointer text-sm font-semibold uppercase tracking-wide text-gray-500 hover:text-gray-700">
+            Sistema anterior
+          </summary>
+          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+            <Field label="Logo URL (legado)" hint="Campo heredado. Usa el upload de arriba.">
+              <Input
+                value={baseForm.logo}
+                onChange={(v) => setBaseFormField("logo", v)}
+                placeholder="https://..."
+              />
+            </Field>
+            <Field label="Video URL (legado)" hint="Campo heredado. Usa YouTube URL arriba.">
+              <Input
+                value={baseForm.video}
+                onChange={(v) => setBaseFormField("video", v)}
+                placeholder="https://..."
+              />
+            </Field>
+          </div>
+        </details>
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: Automatización (collapsible) */}
+      <section>
+        <details>
+          <summary className="cursor-pointer text-sm font-semibold uppercase tracking-wide text-gray-500 hover:text-gray-700">
+            Automatización
+          </summary>
+          <div className="mt-4 space-y-4 rounded-xl border border-gray-200 p-4">
+            <Toggle
+              checked={automation.enabled}
+              onChange={(v) => setAutomationField("enabled", v)}
+              label="Automatización habilitada"
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Webhook URL" hint="Endpoint donde se envían los leads capturados.">
+                <Input
+                  value={automation.webhookUrl}
+                  onChange={(v) => setAutomationField("webhookUrl", v)}
+                  placeholder="https://..."
+                />
+              </Field>
+              <Field label="CRM destino" hint="Nombre o ID del CRM de destino.">
+                <Input
+                  value={automation.crmDestination}
+                  onChange={(v) => setAutomationField("crmDestination", v)}
+                  placeholder="HubSpot, Pipedrive..."
+                />
+              </Field>
+              <Field label="ID secuencia nurturing" hint="ID de la secuencia de emails automática.">
+                <Input
+                  value={automation.nurtureSequenceId}
+                  onChange={(v) => setAutomationField("nurtureSequenceId", v)}
+                />
+              </Field>
+              <Field label="Modo routing Calendly" hint="Configuración de routing para Calendly.">
+                <Input
+                  value={automation.calendlyRoutingMode}
+                  onChange={(v) => setAutomationField("calendlyRoutingMode", v)}
+                />
+              </Field>
+            </div>
+          </div>
+        </details>
+      </section>
     </div>
   );
 }
 
-function HeroTab({
+// ── Financials Tab ────────────────────────────────────────────────────────────
+
+const OPERATOR_PROFILES = [
+  { value: "INVERSOR", label: "Inversor — Busco oportunidades de inversión" },
+  { value: "OPERACIONES", label: "Operaciones — Experiencia en gestión operativa" },
+  { value: "VENTAS", label: "Ventas — Enfocado en ventas y marketing" },
+  { value: "OTRO", label: "Otro" },
+];
+
+function FinancialsTab({
   data, set,
 }: { data: Franchise; set: <K extends keyof Franchise>(k: K, v: Franchise[K]) => void }) {
+  const [ebitda, setEbitda] = useState(() => parseEbitdaString(data.ebitdaReference));
+  const [royalty, setRoyalty] = useState(() => parseRoyaltyString(data.royaltyInfo));
+
+  function updateEbitda(field: "min" | "max", val: string) {
+    const next = { ...ebitda, [field]: val };
+    setEbitda(next);
+    set("ebitdaReference", formatEbitdaString(next.min, next.max));
+  }
+
+  function updateRoyalty(field: "royalty" | "adFund", val: string) {
+    const next = { ...royalty, [field]: val };
+    setRoyalty(next);
+    set("royaltyInfo", formatRoyaltyString(next.royalty, next.adFund));
+  }
+
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      <div className="sm:col-span-2">
-        <Field label="Titular (headline)">
-          <Input value={data.headline ?? ""} onChange={(v) => set("headline", v || null)} placeholder="La franquicia más..." />
-        </Field>
-      </div>
-      <div className="sm:col-span-2">
-        <Field label="Subtitular (subheadline)">
-          <Textarea value={data.subheadline ?? ""} onChange={(v) => set("subheadline", v || null)} />
-        </Field>
-      </div>
-      <div className="sm:col-span-2">
-        <Field label="Línea de credibilidad" hint="Se muestra como badge bajo el logo. Ej: +200 puntos · 8 países">
-          <Input value={data.credibilityLine ?? ""} onChange={(v) => set("credibilityLine", v || null)} />
-        </Field>
-      </div>
-      <Field label="URL del logo">
-        <Input value={data.logoUrl ?? ""} onChange={(v) => set("logoUrl", v || null)} placeholder="https://..." />
-      </Field>
-      <Field label="URL imagen hero">
-        <Input value={data.heroImageUrl ?? ""} onChange={(v) => set("heroImageUrl", v || null)} placeholder="https://..." />
-      </Field>
-      {data.logoUrl && (
-        <div className="sm:col-span-2">
-          <p className="mb-2 text-xs text-gray-500">Preview logo:</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={data.logoUrl} alt="Logo preview" className="h-16 rounded border border-gray-200 object-contain" />
+    <div className="space-y-8">
+      {/* SECTION: Márgenes */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Márgenes</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="EBITDA mínimo (%)" hint="Rango de EBITDA esperado. Mínimo aceptable.">
+            <Input type="number" value={ebitda.min} onChange={(v) => updateEbitda("min", v)} placeholder="17" />
+          </Field>
+          <Field label="EBITDA máximo (%)" hint="Rango de EBITDA esperado. Máximo proyectado.">
+            <Input type="number" value={ebitda.max} onChange={(v) => updateEbitda("max", v)} placeholder="23" />
+          </Field>
+          <Field label="Retorno estimado (meses)" hint="Payback estimado en meses.">
+            <Input type="number" value={String(data.paybackMonths ?? "")} onChange={(v) => set("paybackMonths", v ? Number(v) : null)} placeholder="12" />
+          </Field>
         </div>
-      )}
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: Regalías */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Regalías</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Regalía sobre ventas (%)" hint="% mensual sobre ventas brutas.">
+            <Input type="number" value={royalty.royalty} onChange={(v) => updateRoyalty("royalty", v)} placeholder="5" />
+          </Field>
+          <Field label="Fondo de publicidad (%)" hint="% mensual sobre ventas destinado a publicidad.">
+            <Input type="number" value={royalty.adFund} onChange={(v) => updateRoyalty("adFund", v)} placeholder="2" />
+          </Field>
+        </div>
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: Perfil */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Perfil</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <Field label="Perfil del operador" hint="Debe coincidir con las opciones del quiz de matching.">
+          <select
+            value={data.operatorProfile ?? ""}
+            onChange={(e) => set("operatorProfile", e.target.value || null)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">— Sin especificar —</option>
+            {OPERATOR_PROFILES.map((p) => (
+              <option key={p.value} value={p.value}>{p.label}</option>
+            ))}
+          </select>
+        </Field>
+      </section>
     </div>
   );
 }
+
+// ── CTAs Tab ──────────────────────────────────────────────────────────────────
 
 function CtasTab({
   data, set,
 }: { data: Franchise; set: <K extends keyof Franchise>(k: K, v: Franchise[K]) => void }) {
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      <Field label="CTA Principal — Texto">
-        <Input value={data.cta1Label ?? ""} onChange={(v) => set("cta1Label", v || null)} placeholder="Quiero saber más" />
-      </Field>
-      <Field label="CTA Principal — URL">
-        <Input value={data.cta1Url ?? ""} onChange={(v) => set("cta1Url", v || null)} placeholder="/quiz" />
-      </Field>
-      <Field label="CTA Secundario — Texto">
-        <Input value={data.cta2Label ?? ""} onChange={(v) => set("cta2Label", v || null)} placeholder="Descargar dossier" />
-      </Field>
-      <Field label="CTA Secundario — URL">
-        <Input value={data.cta2Url ?? ""} onChange={(v) => set("cta2Url", v || null)} placeholder="https://..." />
-      </Field>
+    <div className="space-y-8">
+      {/* SECTION: CTA Principal */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">CTA Principal (Hero)</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Texto del botón" hint="Aparece en el hero como botón primario.">
+            <Input value={data.cta1Label ?? ""} onChange={(v) => set("cta1Label", v || null)} placeholder="Agendar Llamada" />
+          </Field>
+          <Field label="URL destino" hint="Destino del botón principal.">
+            <Input value={data.cta1Url ?? ""} onChange={(v) => set("cta1Url", v || null)} placeholder={DEFAULT_CALENDLY_URL} />
+          </Field>
+        </div>
+        <button
+          onClick={() => { set("cta1Label", "Agendar Llamada"); set("cta1Url", DEFAULT_CALENDLY_URL); }}
+          className="mt-2 text-xs text-blue-600 hover:underline"
+        >
+          Restaurar default (Agendar Llamada + Calendly)
+        </button>
+      </section>
+
+      <div className="border-t border-gray-100" />
+
+      {/* SECTION: CTA Secundario */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">CTA Secundario (Hero)</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Texto del botón" hint="Aparece solo si hay brochure configurado.">
+            <Input value={data.cta2Label ?? ""} onChange={(v) => set("cta2Label", v || null)} placeholder="Descargar Dossier" />
+          </Field>
+          <Field label="URL destino" hint="Enlace al dossier o sección interna.">
+            <Input value={data.cta2Url ?? ""} onChange={(v) => set("cta2Url", v || null)} placeholder="https://..." />
+          </Field>
+        </div>
+      </section>
     </div>
   );
 }
+
+// ── Video Tab ─────────────────────────────────────────────────────────────────
 
 function VideoTab({
   data, set,
@@ -683,46 +1142,39 @@ function VideoTab({
   );
 }
 
-function FinancialsTab({
-  data, set,
-}: { data: Franchise; set: <K extends keyof Franchise>(k: K, v: Franchise[K]) => void }) {
-  return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      <Field label="EBITDA de referencia">
-        <Input value={data.ebitdaReference ?? ""} onChange={(v) => set("ebitdaReference", v || null)} placeholder="28–35%" />
-      </Field>
-      <Field label="Retorno estimado (meses)">
-        <Input type="number" value={String(data.paybackMonths ?? "")} onChange={(v) => set("paybackMonths", v ? Number(v) : null)} />
-      </Field>
-      <Field label="Información de royalty">
-        <Input value={data.royaltyInfo ?? ""} onChange={(v) => set("royaltyInfo", v || null)} placeholder="6% sobre ventas brutas" />
-      </Field>
-      <Field label="Perfil del operador">
-        <Input value={data.operatorProfile ?? ""} onChange={(v) => set("operatorProfile", v || null)} placeholder="Emprendedor con capital propio..." />
-      </Field>
-    </div>
-  );
-}
+// ── Brochure Tab ──────────────────────────────────────────────────────────────
 
 function BrochureTab({
   data, set,
 }: { data: Franchise; set: <K extends keyof Franchise>(k: K, v: Franchise[K]) => void }) {
   return (
     <div className="space-y-5">
-      <Field label="URL del dossier / brochure" hint="PDF u otro archivo descargable">
-        <Input value={data.brochureUrl ?? ""} onChange={(v) => set("brochureUrl", v || null)} placeholder="https://..." />
+      <Field label="Dossier / Brochure" hint="PDF descargable. Sube un archivo o pega una URL directamente.">
+        <ImageUpload
+          value={data.brochureUrl ?? ""}
+          onChange={(url) => set("brochureUrl", url || null)}
+          storagePath={`franchise-assets/${data.slug ?? data.id}/brochure`}
+          accept=".pdf,application/pdf"
+          hint="PDF u otro archivo descargable."
+          previewHeight="h-8"
+        />
       </Field>
     </div>
   );
 }
+
+// ── Booking Tab ───────────────────────────────────────────────────────────────
 
 function BookingTab({
   data, set,
 }: { data: Franchise; set: <K extends keyof Franchise>(k: K, v: Franchise[K]) => void }) {
   return (
     <div className="space-y-5">
-      <Field label="URL de reserva de llamada" hint="Calendly, Cal.com u otro agendador">
-        <Input value={data.bookingUrl ?? ""} onChange={(v) => set("bookingUrl", v || null)} placeholder="https://calendly.com/..." />
+      <Field
+        label="URL de reserva de llamada"
+        hint={`Calendly, Cal.com u otro agendador. Default: ${DEFAULT_CALENDLY_URL}`}
+      >
+        <Input value={data.bookingUrl ?? ""} onChange={(v) => set("bookingUrl", v || null)} placeholder={DEFAULT_CALENDLY_URL} />
       </Field>
     </div>
   );
@@ -954,7 +1406,6 @@ function FaqTab({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
-  // plan is kept for future per-plan FAQ limits; not used for locking (handled at tab level)
   void plan;
 
   async function refetch() {
@@ -1033,268 +1484,6 @@ function FaqForm({
           {saving ? "Guardando..." : faqId ? "Actualizar" : "Agregar"}
         </button>
         <button onClick={onCancel} className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">Cancelar</button>
-      </div>
-    </div>
-  );
-}
-
-// ── Base Config tab ───────────────────────────────────────────────────────────
-
-function BaseConfigTab({
-  franchiseId,
-  franchise,
-}: {
-  franchiseId: string;
-  franchise: Franchise;
-}) {
-  // franchise prop available for future use / initial data
-  void franchise;
-
-  const [sectors, setSectors] = useState<Sector[]>([]);
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([]);
-  const [form, setForm] = useState({
-    sectorId: "",
-    active: true,
-    featured: false,
-    contactEmail: "",
-    logo: "",
-    video: "",
-  });
-  const [automation, setAutomationState] = useState({
-    enabled: false,
-    webhookUrl: "",
-    crmDestination: "",
-    nurtureSequenceId: "",
-    calendlyRoutingMode: "",
-  });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function load() {
-      const [secRes, countryRes, fRes] = await Promise.all([
-        fetch("/api/sectors"),
-        fetch("/api/countries"),
-        fetch(`/api/admin/landing/franchises/${franchiseId}`),
-      ]);
-      if (secRes.ok) {
-        const d = await secRes.json();
-        setSectors(d.sectors ?? d);
-      }
-      if (countryRes.ok) {
-        const d = await countryRes.json();
-        setCountries(d.countries ?? d);
-      }
-      if (fRes.ok) {
-        const f = await fRes.json();
-        setForm({
-          sectorId: f.sectorId ?? "",
-          active: f.active ?? true,
-          featured: f.featured ?? false,
-          contactEmail: f.contactEmail ?? "",
-          logo: f.logo ?? "",
-          video: f.video ?? "",
-        });
-        const ids = (f.coverageCountries ?? []).map(
-          (c: { countryId: string }) => c.countryId
-        );
-        setSelectedCountryIds(ids);
-        if (f.automationConfig) {
-          setAutomationState({
-            enabled: f.automationConfig.enabled ?? false,
-            webhookUrl: f.automationConfig.webhookUrl ?? "",
-            crmDestination: f.automationConfig.crmDestination ?? "",
-            nurtureSequenceId: f.automationConfig.nurtureSequenceId ?? "",
-            calendlyRoutingMode: f.automationConfig.calendlyRoutingMode ?? "",
-          });
-        }
-      }
-    }
-    load();
-  }, [franchiseId]);
-
-  function toggleCountry(id: string) {
-    setSelectedCountryIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-    setSaved(false);
-  }
-
-  async function save() {
-    setSaving(true);
-    setError(null);
-    try {
-      const headers = { "Content-Type": "application/json" };
-      const base = `/api/admin/landing/franchises/${franchiseId}`;
-
-      await Promise.all([
-        fetch(base, {
-          method: "PUT",
-          headers,
-          body: JSON.stringify({
-            sectorId: form.sectorId || undefined,
-            active: form.active,
-            featured: form.featured,
-            contactEmail: form.contactEmail || null,
-            logo: form.logo || null,
-            video: form.video || null,
-            coverageCountryIds: selectedCountryIds,
-          }),
-        }).then((r) => { if (!r.ok) throw new Error("Error guardando configuración base"); }),
-
-        fetch(`${base}/automation`, {
-          method: "PUT",
-          headers,
-          body: JSON.stringify({
-            enabled: automation.enabled,
-            webhookUrl: automation.webhookUrl || null,
-            crmDestination: automation.crmDestination || null,
-            nurtureSequenceId: automation.nurtureSequenceId || null,
-            calendlyRoutingMode: automation.calendlyRoutingMode || null,
-          }),
-        }).then((r) => { if (!r.ok) console.warn("Error guardando automatización"); }),
-      ]);
-
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Error desconocido");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="space-y-6">
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Sector">
-          <select
-            value={form.sectorId}
-            onChange={(e) => { setForm((p) => ({ ...p, sectorId: e.target.value })); setSaved(false); }}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="">— Seleccionar sector —</option>
-            {sectors.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.emoji} {s.name}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label="Email de contacto">
-          <Input
-            value={form.contactEmail}
-            onChange={(v) => { setForm((p) => ({ ...p, contactEmail: v })); setSaved(false); }}
-            placeholder="contacto@franquicia.com"
-          />
-        </Field>
-
-        <Field label="Logo URL (legado)" hint="Campo logo heredado del sistema anterior">
-          <Input
-            value={form.logo}
-            onChange={(v) => { setForm((p) => ({ ...p, logo: v })); setSaved(false); }}
-            placeholder="https://..."
-          />
-        </Field>
-
-        <Field label="Video URL (legado)" hint="Campo video heredado del sistema anterior">
-          <Input
-            value={form.video}
-            onChange={(v) => { setForm((p) => ({ ...p, video: v })); setSaved(false); }}
-            placeholder="https://..."
-          />
-        </Field>
-
-        <div className="flex flex-col gap-3">
-          <Toggle
-            checked={form.active}
-            onChange={(v) => { setForm((p) => ({ ...p, active: v })); setSaved(false); }}
-            label="Activa"
-          />
-          <Toggle
-            checked={form.featured}
-            onChange={(v) => { setForm((p) => ({ ...p, featured: v })); setSaved(false); }}
-            label="Destacada"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Países de cobertura
-        </label>
-        {countries.length === 0 ? (
-          <p className="text-sm text-gray-400">Cargando países...</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 rounded-lg border border-gray-200 p-3 max-h-64 overflow-y-auto">
-            {countries.map((c) => (
-              <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50">
-                <input
-                  type="checkbox"
-                  checked={selectedCountryIds.includes(c.id)}
-                  onChange={() => toggleCountry(c.id)}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600"
-                />
-                <span className="text-sm text-gray-700">{c.flag} {c.name}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Automatización */}
-      <div>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-700">
-          Automatización
-        </h3>
-        <div className="space-y-4 rounded-xl border border-gray-200 p-4">
-          <Toggle
-            checked={automation.enabled}
-            onChange={(v) => setAutomationState((p) => ({ ...p, enabled: v }))}
-            label="Automatización habilitada"
-          />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Webhook URL">
-              <Input
-                value={automation.webhookUrl}
-                onChange={(v) => setAutomationState((p) => ({ ...p, webhookUrl: v }))}
-                placeholder="https://..."
-              />
-            </Field>
-            <Field label="CRM destino">
-              <Input
-                value={automation.crmDestination}
-                onChange={(v) => setAutomationState((p) => ({ ...p, crmDestination: v }))}
-                placeholder="HubSpot, Pipedrive..."
-              />
-            </Field>
-            <Field label="ID secuencia nurturing">
-              <Input
-                value={automation.nurtureSequenceId}
-                onChange={(v) => setAutomationState((p) => ({ ...p, nurtureSequenceId: v }))}
-              />
-            </Field>
-            <Field label="Modo routing Calendly">
-              <Input
-                value={automation.calendlyRoutingMode}
-                onChange={(v) => setAutomationState((p) => ({ ...p, calendlyRoutingMode: v }))}
-              />
-            </Field>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <SaveButton saving={saving} saved={saved} onClick={save} />
       </div>
     </div>
   );
@@ -1613,3 +1802,6 @@ function defaultAutomationConfig(c: AutomationConfig): NonNullable<AutomationCon
     ...c,
   };
 }
+
+// Suppress unused warning — kept for external callers
+void defaultAutomationConfig;
