@@ -66,21 +66,93 @@ type Franchise = {
 const TABS = [
   { id: "general", label: "General" },
   { id: "hero", label: "Hero" },
+  { id: "financials", label: "Financieros" },
   { id: "ctas", label: "CTAs" },
   { id: "video", label: "Video" },
   { id: "models", label: "Modelos" },
   { id: "gallery", label: "Galería" },
-  { id: "financials", label: "Financieros" },
   { id: "faq", label: "FAQ" },
-  { id: "brochure", label: "Descargas" },
   { id: "booking", label: "Reservas" },
-  { id: "modules", label: "Módulos" },
-  { id: "automation", label: "Automatización" },
+  { id: "brochure", label: "Descargas" },
+  { id: "chatbot", label: "Chatbot" },
   { id: "base", label: "Config Base" },
   { id: "botlegacy", label: "Bot Legacy" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+// ── Plan-aware constants ───────────────────────────────────────────────────────
+
+const PLAN_LEVEL: Record<PlanTier, number> = { BASIC: 0, GROWTH: 1, ALL_IN: 2 };
+
+// Plan selector pill styles
+const PLAN_STYLES: Record<PlanTier, { active: string; inactive: string }> = {
+  BASIC: {
+    active: "bg-gray-700 text-white shadow-sm",
+    inactive: "border border-gray-300 text-gray-600 hover:bg-gray-50",
+  },
+  GROWTH: {
+    active: "bg-blue-600 text-white shadow-sm",
+    inactive: "border border-blue-200 text-blue-600 hover:bg-blue-50",
+  },
+  ALL_IN: {
+    active: "bg-purple-600 text-white shadow-sm",
+    inactive: "border border-purple-200 text-purple-600 hover:bg-purple-50",
+  },
+};
+
+// Which module name (from plan-entitlements) each tab maps to
+// Tabs not in this map are always available
+const TAB_MODULE: Partial<Record<TabId, string>> = {
+  video: "video",
+  models: "businessModels",
+  gallery: "gallery",
+  faq: "faq",
+  booking: "booking",
+  brochure: "brochure",
+  chatbot: "chatbot",
+};
+
+// Module name → moduleConfig key
+const MODULE_CONFIG_KEY: Record<string, keyof NonNullable<ModuleConfig>> = {
+  video: "videoEnabled",
+  gallery: "galleryEnabled",
+  businessModels: "businessModelsEnabled",
+  faq: "faqEnabled",
+  booking: "bookingEnabled",
+  brochure: "brochureEnabled",
+  chatbot: "chatbotEnabled",
+};
+
+const MODULE_DISPLAY_NAMES: Record<string, string> = {
+  video: "Video",
+  gallery: "Galería",
+  businessModels: "Modelos",
+  faq: "FAQ",
+  booking: "Reservas",
+  brochure: "Descargas",
+  chatbot: "Chatbot",
+  hero: "Hero",
+  financials: "Financieros",
+  nurturing: "Nurturing",
+};
+
+// Compute full moduleConfig from a plan (plan defines what's enabled)
+function planToModuleConfig(plan: PlanTier): NonNullable<ModuleConfig> {
+  const modules = PLAN_ENTITLEMENTS[plan].modules as readonly string[];
+  return {
+    heroEnabled: modules.includes("hero"),
+    videoEnabled: modules.includes("video"),
+    galleryEnabled: modules.includes("gallery"),
+    businessModelsEnabled: modules.includes("businessModels"),
+    financialsEnabled: modules.includes("financials"),
+    faqEnabled: modules.includes("faq"),
+    brochureEnabled: modules.includes("brochure"),
+    bookingEnabled: modules.includes("booking"),
+    chatbotEnabled: modules.includes("chatbot"),
+    nurturingEnabled: modules.includes("nurturing"),
+  };
+}
 
 // ── Field helpers ─────────────────────────────────────────────────────────────
 
@@ -162,6 +234,62 @@ function SaveButton({
   );
 }
 
+// ── ModuleTabHeader ────────────────────────────────────────────────────────────
+
+function ModuleTabHeader({
+  moduleKey, label, moduleConfig, setModule,
+}: {
+  moduleKey: keyof NonNullable<ModuleConfig>;
+  label: string;
+  moduleConfig: ModuleConfig;
+  setModule: (k: keyof NonNullable<ModuleConfig>, v: boolean) => void;
+}) {
+  const cfg = defaultModuleConfig(moduleConfig);
+  const isOn = cfg[moduleKey] as boolean;
+
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+      <span className="text-sm font-semibold text-gray-800">{label}</span>
+      <label className="flex cursor-pointer items-center gap-2">
+        <span className="text-xs text-gray-500">{isOn ? "Activado" : "Desactivado"}</span>
+        <div className="relative">
+          <input
+            type="checkbox"
+            className="sr-only"
+            checked={isOn}
+            onChange={(e) => setModule(moduleKey, e.target.checked)}
+          />
+          <div className={cn("h-5 w-9 rounded-full transition-colors", isOn ? "bg-blue-600" : "bg-gray-300")} />
+          <div className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform", isOn ? "translate-x-4" : "translate-x-0.5")} />
+        </div>
+      </label>
+    </div>
+  );
+}
+
+// ── Locked message ────────────────────────────────────────────────────────────
+
+function LockedMessage({ planRequired }: { planRequired: PlanTier }) {
+  const planLabel = PLAN_ENTITLEMENTS[planRequired].label;
+  const planStyles: Record<PlanTier, string> = {
+    BASIC: "text-gray-700",
+    GROWTH: "text-blue-700",
+    ALL_IN: "text-purple-700",
+  };
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-gray-200 bg-gray-50 py-16 text-center">
+      <span className="text-3xl">🔒</span>
+      <p className="text-sm font-semibold text-gray-700">
+        Disponible en plan{" "}
+        <span className={planStyles[planRequired]}>{planLabel}</span>
+      </p>
+      <p className="text-xs text-gray-400">
+        Cambia el plan en la barra superior para activar este módulo.
+      </p>
+    </div>
+  );
+}
+
 // ── Main editor ───────────────────────────────────────────────────────────────
 
 export function FranchiseLandingEditor({
@@ -193,12 +321,33 @@ export function FranchiseLandingEditor({
     setSaved(false);
   }
 
-  function setAutomation(key: keyof NonNullable<AutomationConfig>, value: unknown) {
-    setData((prev) => ({
-      ...prev,
-      automationConfig: { ...defaultAutomationConfig(prev.automationConfig), [key]: value },
-    }));
+  function handlePlanChange(newPlan: PlanTier) {
+    const currentLevel = PLAN_LEVEL[plan];
+    const newLevel = PLAN_LEVEL[newPlan];
+
+    if (newLevel < currentLevel) {
+      const currentModules = PLAN_ENTITLEMENTS[plan].modules as readonly string[];
+      const newModules = PLAN_ENTITLEMENTS[newPlan].modules as readonly string[];
+      const lostModules = currentModules.filter((m) => !newModules.includes(m));
+
+      if (lostModules.length > 0) {
+        const lostNames = lostModules.map((m) => MODULE_DISPLAY_NAMES[m] ?? m).join(", ");
+        const ok = window.confirm(
+          `Cambiar a ${PLAN_ENTITLEMENTS[newPlan].label} desactivará: ${lostNames}.\nLos datos no se eliminan, solo se ocultan de la landing page.\n¿Confirmar?`
+        );
+        if (!ok) return;
+      }
+    }
+
+    const newModuleConfig = planToModuleConfig(newPlan);
+    setData((prev) => ({ ...prev, planTier: newPlan, moduleConfig: newModuleConfig }));
     setSaved(false);
+
+    // If the active tab will be locked in new plan, go back to general
+    const moduleName = TAB_MODULE[activeTab];
+    if (moduleName && !isModuleAllowed(newPlan, moduleName)) {
+      setActiveTab("general");
+    }
   }
 
   const saveAll = useCallback(async () => {
@@ -228,10 +377,6 @@ export function FranchiseLandingEditor({
         data.moduleConfig && fetch(`${base}/modules`, {
           method: "PUT", headers, body: JSON.stringify(data.moduleConfig),
         }).then((r) => { if (!r.ok) throw new Error("Error guardando módulos"); }),
-
-        data.automationConfig && fetch(`${base}/automation`, {
-          method: "PUT", headers, body: JSON.stringify(data.automationConfig),
-        }).then((r) => { if (!r.ok) throw new Error("Error guardando automatización"); }),
       ].filter(Boolean));
 
       setSaved(true);
@@ -244,6 +389,84 @@ export function FranchiseLandingEditor({
   }, [data]);
 
   const slugForPreview = data.slug ?? data.name.toLowerCase().replace(/\s+/g, "-");
+
+  function renderTabContent() {
+    const moduleName = TAB_MODULE[activeTab];
+
+    // Check plan lock
+    if (moduleName && !isModuleAllowed(plan, moduleName)) {
+      // Find which plan first enables this module
+      const minPlan = (["BASIC", "GROWTH", "ALL_IN"] as PlanTier[]).find((p) =>
+        isModuleAllowed(p, moduleName)
+      ) ?? "GROWTH";
+      return <LockedMessage planRequired={minPlan} />;
+    }
+
+    // Module tab header (toggle to disable the module within plan)
+    const moduleHeader = moduleName ? (
+      <ModuleTabHeader
+        moduleKey={MODULE_CONFIG_KEY[moduleName]}
+        label={MODULE_DISPLAY_NAMES[moduleName] ?? moduleName}
+        moduleConfig={data.moduleConfig}
+        setModule={setModule}
+      />
+    ) : null;
+
+    switch (activeTab) {
+      case "general":
+        return <GeneralTab data={data} set={set} sectors={sectors} />;
+      case "hero":
+        return <HeroTab data={data} set={set} />;
+      case "financials":
+        return <FinancialsTab data={data} set={set} />;
+      case "ctas":
+        return <CtasTab data={data} set={set} />;
+      case "video":
+        return <>{moduleHeader}<VideoTab data={data} set={set} /></>;
+      case "models":
+        return (
+          <>
+            {moduleHeader}
+            <ModelsTab
+              franchiseId={data.id} models={data.businessModels} plan={plan}
+              onRefresh={(models) => setData((p) => ({ ...p, businessModels: models }))}
+            />
+          </>
+        );
+      case "gallery":
+        return (
+          <>
+            {moduleHeader}
+            <GalleryTab
+              franchiseId={data.id} media={data.media} plan={plan}
+              onRefresh={(media) => setData((p) => ({ ...p, media }))}
+            />
+          </>
+        );
+      case "faq":
+        return (
+          <>
+            {moduleHeader}
+            <FaqTab
+              franchiseId={data.id} faqs={data.faqs} plan={plan}
+              onRefresh={(faqs) => setData((p) => ({ ...p, faqs }))}
+            />
+          </>
+        );
+      case "booking":
+        return <>{moduleHeader}<BookingTab data={data} set={set} /></>;
+      case "brochure":
+        return <>{moduleHeader}<BrochureTab data={data} set={set} /></>;
+      case "chatbot":
+        return <>{moduleHeader}<ChatbotTab /></>;
+      case "base":
+        return <BaseConfigTab franchiseId={data.id} franchise={data} />;
+      case "botlegacy":
+        return <BotLegacyTab franchiseId={data.id} />;
+      default:
+        return null;
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -282,81 +505,61 @@ export function FranchiseLandingEditor({
       )}
 
       {/* Plan selector */}
-      <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4">
-        <span className="text-sm font-medium text-gray-700">Plan:</span>
-        {(["BASIC", "GROWTH", "ALL_IN"] as PlanTier[]).map((p) => (
-          <button
-            key={p}
-            onClick={() => set("planTier", p)}
-            className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-              data.planTier === p
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            )}
-          >
-            {PLAN_ENTITLEMENTS[p].label}
-          </button>
-        ))}
-        <span className="ml-auto text-xs text-gray-400">
-          {PLAN_ENTITLEMENTS[plan].modules.join(" · ")}
-        </span>
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white p-4">
+        <span className="text-sm font-medium text-gray-700 mr-1">Plan:</span>
+        {(["BASIC", "GROWTH", "ALL_IN"] as PlanTier[]).map((p) => {
+          const styles = PLAN_STYLES[p];
+          return (
+            <button
+              key={p}
+              onClick={() => handlePlanChange(p)}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-xs font-semibold transition-all",
+                data.planTier === p ? styles.active : styles.inactive
+              )}
+            >
+              {PLAN_ENTITLEMENTS[p].label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Tabs */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         <div className="flex overflow-x-auto border-b border-gray-200">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap",
-                activeTab === tab.id
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const moduleName = TAB_MODULE[tab.id];
+            const planAllows = !moduleName || isModuleAllowed(plan, moduleName);
+            const cfgKey = moduleName ? MODULE_CONFIG_KEY[moduleName] : undefined;
+            const cfg = defaultModuleConfig(data.moduleConfig);
+            const isOn = cfgKey ? (cfg[cfgKey] as boolean) : true;
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex flex-shrink-0 items-center gap-1 whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors",
+                  activeTab === tab.id
+                    ? "border-b-2 border-blue-600 text-blue-600"
+                    : planAllows && isOn
+                    ? "text-gray-500 hover:text-gray-700"
+                    : planAllows && !isOn
+                    ? "text-gray-400 hover:text-gray-600"
+                    : "cursor-default text-gray-300"
+                )}
+              >
+                {!planAllows && <span className="text-[10px]">🔒</span>}
+                {tab.label}
+                {planAllows && !isOn && (
+                  <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-gray-300" />
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="p-6">
-          {activeTab === "general" && (
-            <GeneralTab data={data} set={set} sectors={sectors} />
-          )}
-          {activeTab === "hero" && <HeroTab data={data} set={set} />}
-          {activeTab === "ctas" && <CtasTab data={data} set={set} />}
-          {activeTab === "video" && <VideoTab data={data} set={set} />}
-          {activeTab === "models" && (
-            <ModelsTab franchiseId={data.id} models={data.businessModels} plan={plan}
-              onRefresh={(models) => setData((p) => ({ ...p, businessModels: models }))} />
-          )}
-          {activeTab === "gallery" && (
-            <GalleryTab franchiseId={data.id} media={data.media} plan={plan}
-              onRefresh={(media) => setData((p) => ({ ...p, media }))} />
-          )}
-          {activeTab === "financials" && <FinancialsTab data={data} set={set} />}
-          {activeTab === "faq" && (
-            <FaqTab franchiseId={data.id} faqs={data.faqs} plan={plan}
-              onRefresh={(faqs) => setData((p) => ({ ...p, faqs }))} />
-          )}
-          {activeTab === "brochure" && <BrochureTab data={data} set={set} />}
-          {activeTab === "booking" && <BookingTab data={data} set={set} />}
-          {activeTab === "modules" && (
-            <ModulesTab config={data.moduleConfig} plan={plan} setModule={setModule} />
-          )}
-          {activeTab === "automation" && (
-            <AutomationTab config={data.automationConfig} setAutomation={setAutomation} />
-          )}
-          {activeTab === "base" && (
-            <BaseConfigTab franchiseId={data.id} franchise={data} />
-          )}
-          {activeTab === "botlegacy" && (
-            <BotLegacyTab franchiseId={data.id} />
-          )}
-        </div>
+        <div className="p-6 space-y-5">{renderTabContent()}</div>
       </div>
     </div>
   );
@@ -439,6 +642,7 @@ function HeroTab({
       {data.logoUrl && (
         <div className="sm:col-span-2">
           <p className="mb-2 text-xs text-gray-500">Preview logo:</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={data.logoUrl} alt="Logo preview" className="h-16 rounded border border-gray-200 object-contain" />
         </div>
       )}
@@ -524,6 +728,19 @@ function BookingTab({
   );
 }
 
+// ── Chatbot tab ───────────────────────────────────────────────────────────────
+
+function ChatbotTab() {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 text-center space-y-2">
+      <p className="text-sm font-medium text-gray-700">Chatbot de calificación activo</p>
+      <p className="text-xs text-gray-500 max-w-sm mx-auto">
+        El chatbot guía al visitante con preguntas sobre su perfil de inversión y le muestra un resultado personalizado. La lógica está preconfigurada.
+      </p>
+    </div>
+  );
+}
+
 // ── Models tab ────────────────────────────────────────────────────────────────
 
 function ModelsTab({
@@ -532,7 +749,6 @@ function ModelsTab({
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const max = PLAN_ENTITLEMENTS[plan].maxBusinessModels;
-  const allowed = isModuleAllowed(plan, "businessModels");
 
   async function refetch() {
     const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/models`);
@@ -543,10 +759,6 @@ function ModelsTab({
     if (!confirm("¿Eliminar este modelo?")) return;
     await fetch(`/api/admin/landing/franchises/${franchiseId}/models/${id}`, { method: "DELETE" });
     await refetch();
-  }
-
-  if (!allowed) {
-    return <LockedMessage message={`Los modelos de negocio requieren plan GROWTH o ALL_IN.`} />;
   }
 
   return (
@@ -672,7 +884,6 @@ function GalleryTab({
   const [adding, setAdding] = useState(false);
   const images = media.filter((m) => m.type === "image");
   const max = PLAN_ENTITLEMENTS[plan].maxGalleryImages;
-  const allowed = isModuleAllowed(plan, "gallery");
 
   async function refetch() {
     const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/media`);
@@ -699,8 +910,6 @@ function GalleryTab({
     await refetch();
   }
 
-  if (!allowed) return <LockedMessage message="La galería requiere plan GROWTH o ALL_IN." />;
-
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-500">{images.length} / {max} imágenes</p>
@@ -708,6 +917,7 @@ function GalleryTab({
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
         {images.map((img) => (
           <div key={img.id} className="relative group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={img.url} alt={img.altText ?? ""} className="aspect-square w-full rounded-lg border border-gray-200 object-cover" />
             <button
               onClick={() => deleteMedia(img.id)}
@@ -743,7 +953,9 @@ function FaqTab({
 }: { franchiseId: string; faqs: FaqItem[]; plan: PlanTier; onRefresh: (f: FaqItem[]) => void }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const allowed = isModuleAllowed(plan, "faq");
+
+  // plan is kept for future per-plan FAQ limits; not used for locking (handled at tab level)
+  void plan;
 
   async function refetch() {
     const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/faqs`);
@@ -755,8 +967,6 @@ function FaqTab({
     await fetch(`/api/admin/landing/franchises/${franchiseId}/faqs/${id}`, { method: "DELETE" });
     await refetch();
   }
-
-  if (!allowed) return <LockedMessage message="El FAQ requiere plan GROWTH o ALL_IN." />;
 
   return (
     <div className="space-y-3">
@@ -828,86 +1038,6 @@ function FaqForm({
   );
 }
 
-// ── Modules tab ───────────────────────────────────────────────────────────────
-
-const MODULE_LABELS: { key: keyof NonNullable<ModuleConfig>; label: string; module: string }[] = [
-  { key: "heroEnabled", label: "Hero", module: "hero" },
-  { key: "videoEnabled", label: "Video", module: "video" },
-  { key: "galleryEnabled", label: "Galería", module: "gallery" },
-  { key: "businessModelsEnabled", label: "Modelos de negocio", module: "businessModels" },
-  { key: "financialsEnabled", label: "Financieros", module: "financials" },
-  { key: "faqEnabled", label: "FAQ", module: "faq" },
-  { key: "brochureEnabled", label: "Dossier/Brochure", module: "brochure" },
-  { key: "bookingEnabled", label: "Reserva de llamada", module: "booking" },
-  { key: "chatbotEnabled", label: "Chatbot de calificación", module: "chatbot" },
-  { key: "nurturingEnabled", label: "Nurturing automatizado", module: "nurturing" },
-];
-
-function ModulesTab({
-  config, plan, setModule,
-}: { config: ModuleConfig; plan: PlanTier; setModule: (k: keyof NonNullable<ModuleConfig>, v: boolean) => void }) {
-  const cfg = defaultModuleConfig(config);
-  return (
-    <div className="space-y-3">
-      <p className="text-xs text-gray-500">Los módulos bloqueados por el plan aparecen desactivados.</p>
-      {MODULE_LABELS.map(({ key, label, module }) => {
-        const planAllows = isModuleAllowed(plan, module);
-        return (
-          <div key={key} className={cn("flex items-center justify-between rounded-lg border p-3", !planAllows && "opacity-40")}>
-            <div>
-              <p className="text-sm font-medium text-gray-900">{label}</p>
-              {!planAllows && <p className="text-xs text-gray-400">No incluido en plan {PLAN_ENTITLEMENTS[plan].label}</p>}
-            </div>
-            <Toggle
-              checked={planAllows && (cfg[key] as boolean)}
-              onChange={(v) => planAllows && setModule(key, v)}
-              label=""
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── Automation tab ────────────────────────────────────────────────────────────
-
-function AutomationTab({
-  config, setAutomation,
-}: { config: AutomationConfig; setAutomation: (k: keyof NonNullable<AutomationConfig>, v: unknown) => void }) {
-  const cfg = defaultAutomationConfig(config);
-  return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      <div className="sm:col-span-2">
-        <Toggle checked={cfg.enabled} onChange={(v) => setAutomation("enabled", v)} label="Automatización habilitada" />
-      </div>
-      <Field label="Webhook URL">
-        <Input value={cfg.webhookUrl ?? ""} onChange={(v) => setAutomation("webhookUrl", v || null)} placeholder="https://..." />
-      </Field>
-      <Field label="CRM destino">
-        <Input value={cfg.crmDestination ?? ""} onChange={(v) => setAutomation("crmDestination", v || null)} placeholder="HubSpot, Pipedrive..." />
-      </Field>
-      <Field label="ID secuencia nurturing">
-        <Input value={cfg.nurtureSequenceId ?? ""} onChange={(v) => setAutomation("nurtureSequenceId", v || null)} />
-      </Field>
-      <Field label="Modo routing Calendly">
-        <Input value={cfg.calendlyRoutingMode ?? ""} onChange={(v) => setAutomation("calendlyRoutingMode", v || null)} />
-      </Field>
-    </div>
-  );
-}
-
-// ── Locked message ────────────────────────────────────────────────────────────
-
-function LockedMessage({ message }: { message: string }) {
-  return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center">
-      <p className="text-sm font-medium text-amber-700">🔒 {message}</p>
-      <p className="mt-1 text-xs text-amber-600">Cambia el plan en la barra superior para habilitar este módulo.</p>
-    </div>
-  );
-}
-
 // ── Base Config tab ───────────────────────────────────────────────────────────
 
 function BaseConfigTab({
@@ -917,6 +1047,9 @@ function BaseConfigTab({
   franchiseId: string;
   franchise: Franchise;
 }) {
+  // franchise prop available for future use / initial data
+  void franchise;
+
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([]);
@@ -927,6 +1060,13 @@ function BaseConfigTab({
     contactEmail: "",
     logo: "",
     video: "",
+  });
+  const [automation, setAutomationState] = useState({
+    enabled: false,
+    webhookUrl: "",
+    crmDestination: "",
+    nurtureSequenceId: "",
+    calendlyRoutingMode: "",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -961,6 +1101,15 @@ function BaseConfigTab({
           (c: { countryId: string }) => c.countryId
         );
         setSelectedCountryIds(ids);
+        if (f.automationConfig) {
+          setAutomationState({
+            enabled: f.automationConfig.enabled ?? false,
+            webhookUrl: f.automationConfig.webhookUrl ?? "",
+            crmDestination: f.automationConfig.crmDestination ?? "",
+            nurtureSequenceId: f.automationConfig.nurtureSequenceId ?? "",
+            calendlyRoutingMode: f.automationConfig.calendlyRoutingMode ?? "",
+          });
+        }
       }
     }
     load();
@@ -977,20 +1126,37 @@ function BaseConfigTab({
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/landing/franchises/${franchiseId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sectorId: form.sectorId || undefined,
-          active: form.active,
-          featured: form.featured,
-          contactEmail: form.contactEmail || null,
-          logo: form.logo || null,
-          video: form.video || null,
-          coverageCountryIds: selectedCountryIds,
-        }),
-      });
-      if (!res.ok) throw new Error("Error guardando configuración base");
+      const headers = { "Content-Type": "application/json" };
+      const base = `/api/admin/landing/franchises/${franchiseId}`;
+
+      await Promise.all([
+        fetch(base, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            sectorId: form.sectorId || undefined,
+            active: form.active,
+            featured: form.featured,
+            contactEmail: form.contactEmail || null,
+            logo: form.logo || null,
+            video: form.video || null,
+            coverageCountryIds: selectedCountryIds,
+          }),
+        }).then((r) => { if (!r.ok) throw new Error("Error guardando configuración base"); }),
+
+        fetch(`${base}/automation`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            enabled: automation.enabled,
+            webhookUrl: automation.webhookUrl || null,
+            crmDestination: automation.crmDestination || null,
+            nurtureSequenceId: automation.nurtureSequenceId || null,
+            calendlyRoutingMode: automation.calendlyRoutingMode || null,
+          }),
+        }).then((r) => { if (!r.ok) console.warn("Error guardando automatización"); }),
+      ]);
+
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {
@@ -1083,6 +1249,48 @@ function BaseConfigTab({
             ))}
           </div>
         )}
+      </div>
+
+      {/* Automatización */}
+      <div>
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-700">
+          Automatización
+        </h3>
+        <div className="space-y-4 rounded-xl border border-gray-200 p-4">
+          <Toggle
+            checked={automation.enabled}
+            onChange={(v) => setAutomationState((p) => ({ ...p, enabled: v }))}
+            label="Automatización habilitada"
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Webhook URL">
+              <Input
+                value={automation.webhookUrl}
+                onChange={(v) => setAutomationState((p) => ({ ...p, webhookUrl: v }))}
+                placeholder="https://..."
+              />
+            </Field>
+            <Field label="CRM destino">
+              <Input
+                value={automation.crmDestination}
+                onChange={(v) => setAutomationState((p) => ({ ...p, crmDestination: v }))}
+                placeholder="HubSpot, Pipedrive..."
+              />
+            </Field>
+            <Field label="ID secuencia nurturing">
+              <Input
+                value={automation.nurtureSequenceId}
+                onChange={(v) => setAutomationState((p) => ({ ...p, nurtureSequenceId: v }))}
+              />
+            </Field>
+            <Field label="Modo routing Calendly">
+              <Input
+                value={automation.calendlyRoutingMode}
+                onChange={(v) => setAutomationState((p) => ({ ...p, calendlyRoutingMode: v }))}
+              />
+            </Field>
+          </div>
+        </div>
       </div>
 
       <div>
