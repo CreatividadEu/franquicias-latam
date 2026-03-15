@@ -275,6 +275,11 @@ model FranchiseBotConfig {
   systemInstructions  String    @default("")
   fallbackMessage     String    @default("")
   tone                String?
+  botMode             String?   @default("guided")
+  aiProvider          String?   @default("claude")
+  aiModel             String?
+  maxMessagesPerConvo Int?      @default(20)
+  maxConvosPerMonth   Int?      @default(500)
   updatedAt           DateTime  @updatedAt
 
   @@map("franchise_bot_configs")
