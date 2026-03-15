@@ -34,7 +34,7 @@ export async function PUT(
       roiAnnual: body.roiAnnual ? Number(body.roiAnnual) : null,
       imageUrl: body.imageUrl || null,
       description: body.description || null,
-      order: body.order ?? 0,
+      order: body.order !== undefined ? Number(body.order) : 0,
     },
   });
   return NextResponse.json(model);

@@ -42,7 +42,7 @@ export async function POST(
       franchiseId,
       question: body.question || "",
       answer: body.answer || "",
-      order: body.order ?? 0,
+      order: body.order !== undefined ? Number(body.order) : 0,
     },
   });
   return NextResponse.json(faq, { status: 201 });
