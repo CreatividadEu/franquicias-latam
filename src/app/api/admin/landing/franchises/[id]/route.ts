@@ -60,6 +60,8 @@ export async function PUT(
     "bookingUrl", "credibilityLine", "cta1Label", "cta1Url", "cta2Label",
     "cta2Url", "ebitdaReference", "paybackMonths", "royaltyInfo",
     "operatorProfile", "name", "slug", "investmentMin", "investmentMax",
+    // Base config fields (legacy + new)
+    "sectorId", "active", "featured", "contactEmail", "logo", "video",
   ] as const;
 
   const data: Record<string, unknown> = {};
@@ -73,6 +75,21 @@ export async function PUT(
   if (data.investmentMax !== undefined) data.investmentMax = Number(data.investmentMax);
   if (data.paybackMonths !== undefined)
     data.paybackMonths = data.paybackMonths ? Number(data.paybackMonths) : null;
+  if (data.active !== undefined) data.active = Boolean(data.active);
+  if (data.featured !== undefined) data.featured = Boolean(data.featured);
+
+  // Handle coverageCountryIds: delete old and create new
+  if (Array.isArray(body.coverageCountryIds)) {
+    await prisma.franchiseCoverage.deleteMany({ where: { franchiseId: id } });
+    if (body.coverageCountryIds.length > 0) {
+      await prisma.franchiseCoverage.createMany({
+        data: (body.coverageCountryIds as string[]).map((countryId) => ({
+          franchiseId: id,
+          countryId,
+        })),
+      });
+    }
+  }
 
   const franchise = await prisma.franchise.update({ where: { id }, data });
   return NextResponse.json(franchise);

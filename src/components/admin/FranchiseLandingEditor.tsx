@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PLAN_ENTITLEMENTS, isModuleAllowed } from "@/lib/plan-entitlements";
@@ -33,6 +33,21 @@ type AutomationConfig = {
   webhookUrl: string | null; crmDestination: string | null; calendlyRoutingMode: string | null;
 } | null;
 
+type Country = { id: string; name: string; flag: string; code: string };
+
+type FeatureFlags = {
+  showBot: boolean; showVideo: boolean; showGallery: boolean;
+  showTestimonials: boolean; showKpis: boolean; showDownloads: boolean; showContactForm: boolean;
+};
+
+type BotConfig = {
+  enabled: boolean; fallbackMessage: string; systemInstructions: string; tone: string | null;
+};
+
+type BotFaq = {
+  id: string; question: string; answer: string; priority: number; enabled: boolean;
+};
+
 type Franchise = {
   id: string; name: string; slug: string | null; description: string;
   investmentMin: number; investmentMax: number; planTier: string; published: boolean;
@@ -61,6 +76,8 @@ const TABS = [
   { id: "booking", label: "Reservas" },
   { id: "modules", label: "Módulos" },
   { id: "automation", label: "Automatización" },
+  { id: "base", label: "Config Base" },
+  { id: "botlegacy", label: "Bot Legacy" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -332,6 +349,12 @@ export function FranchiseLandingEditor({
           )}
           {activeTab === "automation" && (
             <AutomationTab config={data.automationConfig} setAutomation={setAutomation} />
+          )}
+          {activeTab === "base" && (
+            <BaseConfigTab franchiseId={data.id} franchise={data} />
+          )}
+          {activeTab === "botlegacy" && (
+            <BotLegacyTab franchiseId={data.id} />
           )}
         </div>
       </div>
@@ -881,6 +904,485 @@ function LockedMessage({ message }: { message: string }) {
     <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center">
       <p className="text-sm font-medium text-amber-700">🔒 {message}</p>
       <p className="mt-1 text-xs text-amber-600">Cambia el plan en la barra superior para habilitar este módulo.</p>
+    </div>
+  );
+}
+
+// ── Base Config tab ───────────────────────────────────────────────────────────
+
+function BaseConfigTab({
+  franchiseId,
+  franchise,
+}: {
+  franchiseId: string;
+  franchise: Franchise;
+}) {
+  const [sectors, setSectors] = useState<Sector[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([]);
+  const [form, setForm] = useState({
+    sectorId: "",
+    active: true,
+    featured: false,
+    contactEmail: "",
+    logo: "",
+    video: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      const [secRes, countryRes, fRes] = await Promise.all([
+        fetch("/api/sectors"),
+        fetch("/api/countries"),
+        fetch(`/api/admin/landing/franchises/${franchiseId}`),
+      ]);
+      if (secRes.ok) {
+        const d = await secRes.json();
+        setSectors(d.sectors ?? d);
+      }
+      if (countryRes.ok) {
+        const d = await countryRes.json();
+        setCountries(d.countries ?? d);
+      }
+      if (fRes.ok) {
+        const f = await fRes.json();
+        setForm({
+          sectorId: f.sectorId ?? "",
+          active: f.active ?? true,
+          featured: f.featured ?? false,
+          contactEmail: f.contactEmail ?? "",
+          logo: f.logo ?? "",
+          video: f.video ?? "",
+        });
+        const ids = (f.coverageCountries ?? []).map(
+          (c: { countryId: string }) => c.countryId
+        );
+        setSelectedCountryIds(ids);
+      }
+    }
+    load();
+  }, [franchiseId]);
+
+  function toggleCountry(id: string) {
+    setSelectedCountryIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+    setSaved(false);
+  }
+
+  async function save() {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/landing/franchises/${franchiseId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sectorId: form.sectorId || undefined,
+          active: form.active,
+          featured: form.featured,
+          contactEmail: form.contactEmail || null,
+          logo: form.logo || null,
+          video: form.video || null,
+          coverageCountryIds: selectedCountryIds,
+        }),
+      });
+      if (!res.ok) throw new Error("Error guardando configuración base");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error desconocido");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field label="Sector">
+          <select
+            value={form.sectorId}
+            onChange={(e) => { setForm((p) => ({ ...p, sectorId: e.target.value })); setSaved(false); }}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">— Seleccionar sector —</option>
+            {sectors.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.emoji} {s.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Email de contacto">
+          <Input
+            value={form.contactEmail}
+            onChange={(v) => { setForm((p) => ({ ...p, contactEmail: v })); setSaved(false); }}
+            placeholder="contacto@franquicia.com"
+          />
+        </Field>
+
+        <Field label="Logo URL (legado)" hint="Campo logo heredado del sistema anterior">
+          <Input
+            value={form.logo}
+            onChange={(v) => { setForm((p) => ({ ...p, logo: v })); setSaved(false); }}
+            placeholder="https://..."
+          />
+        </Field>
+
+        <Field label="Video URL (legado)" hint="Campo video heredado del sistema anterior">
+          <Input
+            value={form.video}
+            onChange={(v) => { setForm((p) => ({ ...p, video: v })); setSaved(false); }}
+            placeholder="https://..."
+          />
+        </Field>
+
+        <div className="flex flex-col gap-3">
+          <Toggle
+            checked={form.active}
+            onChange={(v) => { setForm((p) => ({ ...p, active: v })); setSaved(false); }}
+            label="Activa"
+          />
+          <Toggle
+            checked={form.featured}
+            onChange={(v) => { setForm((p) => ({ ...p, featured: v })); setSaved(false); }}
+            label="Destacada"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Países de cobertura
+        </label>
+        {countries.length === 0 ? (
+          <p className="text-sm text-gray-400">Cargando países...</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 rounded-lg border border-gray-200 p-3 max-h-64 overflow-y-auto">
+            {countries.map((c) => (
+              <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={selectedCountryIds.includes(c.id)}
+                  onChange={() => toggleCountry(c.id)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                />
+                <span className="text-sm text-gray-700">{c.flag} {c.name}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <SaveButton saving={saving} saved={saved} onClick={save} />
+      </div>
+    </div>
+  );
+}
+
+// ── Bot Legacy tab ─────────────────────────────────────────────────────────────
+
+function BotLegacyTab({ franchiseId }: { franchiseId: string }) {
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
+    showBot: false, showVideo: false, showGallery: true,
+    showTestimonials: false, showKpis: true, showDownloads: false, showContactForm: true,
+  });
+  const [botConfig, setBotConfig] = useState<BotConfig>({
+    enabled: false, fallbackMessage: "", systemInstructions: "", tone: null,
+  });
+  const [botFaqs, setBotFaqs] = useState<BotFaq[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [addingFaq, setAddingFaq] = useState(false);
+  const [editingFaqId, setEditingFaqId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/legacy`);
+      if (res.ok) {
+        const d = await res.json();
+        if (d.featureFlags) {
+          setFeatureFlags({
+            showBot: d.featureFlags.showBot ?? false,
+            showVideo: d.featureFlags.showVideo ?? false,
+            showGallery: d.featureFlags.showGallery ?? true,
+            showTestimonials: d.featureFlags.showTestimonials ?? false,
+            showKpis: d.featureFlags.showKpis ?? true,
+            showDownloads: d.featureFlags.showDownloads ?? false,
+            showContactForm: d.featureFlags.showContactForm ?? true,
+          });
+        }
+        if (d.botConfig) {
+          setBotConfig({
+            enabled: d.botConfig.enabled ?? false,
+            fallbackMessage: d.botConfig.fallbackMessage ?? "",
+            systemInstructions: d.botConfig.systemInstructions ?? "",
+            tone: d.botConfig.tone ?? null,
+          });
+        }
+        if (Array.isArray(d.botFaqs)) {
+          setBotFaqs(d.botFaqs);
+        }
+      }
+    }
+    load();
+  }, [franchiseId]);
+
+  function setFlag(key: keyof FeatureFlags, val: boolean) {
+    setFeatureFlags((p) => ({ ...p, [key]: val }));
+    setSaved(false);
+  }
+
+  function setBot(key: keyof BotConfig, val: unknown) {
+    setBotConfig((p) => ({ ...p, [key]: val }));
+    setSaved(false);
+  }
+
+  async function saveAll() {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/legacy`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ featureFlags, botConfig }),
+      });
+      if (!res.ok) throw new Error("Error guardando configuración bot legacy");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error desconocido");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteFaq(id: string) {
+    if (!confirm("¿Eliminar esta FAQ del bot?")) return;
+    await fetch(`/api/admin/landing/franchises/${franchiseId}/legacy/bot-faqs/${id}`, {
+      method: "DELETE",
+    });
+    setBotFaqs((p) => p.filter((f) => f.id !== id));
+  }
+
+  async function refetchFaqs() {
+    const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/legacy`);
+    if (res.ok) {
+      const d = await res.json();
+      if (Array.isArray(d.botFaqs)) setBotFaqs(d.botFaqs);
+    }
+  }
+
+  const FLAG_LABELS: { key: keyof FeatureFlags; label: string }[] = [
+    { key: "showBot", label: "Mostrar bot" },
+    { key: "showVideo", label: "Mostrar video" },
+    { key: "showGallery", label: "Mostrar galería" },
+    { key: "showTestimonials", label: "Mostrar testimonios" },
+    { key: "showKpis", label: "Mostrar KPIs" },
+    { key: "showDownloads", label: "Mostrar descargas" },
+    { key: "showContactForm", label: "Mostrar formulario de contacto" },
+  ];
+
+  return (
+    <div className="space-y-8">
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {/* Feature Flags */}
+      <div>
+        <h3 className="mb-3 text-sm font-semibold text-gray-900 uppercase tracking-wide">
+          Feature Flags (legado)
+        </h3>
+        <div className="space-y-3 rounded-xl border border-gray-200 p-4">
+          {FLAG_LABELS.map(({ key, label }) => (
+            <Toggle
+              key={key}
+              checked={featureFlags[key]}
+              onChange={(v) => setFlag(key, v)}
+              label={label}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Bot Config */}
+      <div>
+        <h3 className="mb-3 text-sm font-semibold text-gray-900 uppercase tracking-wide">
+          Configuración del Bot
+        </h3>
+        <div className="space-y-4 rounded-xl border border-gray-200 p-4">
+          <Toggle
+            checked={botConfig.enabled}
+            onChange={(v) => setBot("enabled", v)}
+            label="Bot habilitado"
+          />
+          <Field label="Tono">
+            <Input
+              value={botConfig.tone ?? ""}
+              onChange={(v) => setBot("tone", v || null)}
+              placeholder="amigable, profesional..."
+            />
+          </Field>
+          <Field label="Mensaje de fallback">
+            <Textarea
+              value={botConfig.fallbackMessage}
+              onChange={(v) => setBot("fallbackMessage", v)}
+              rows={3}
+              placeholder="Gracias por tu consulta, te contactaremos pronto..."
+            />
+          </Field>
+          <Field label="Instrucciones del sistema">
+            <Textarea
+              value={botConfig.systemInstructions}
+              onChange={(v) => setBot("systemInstructions", v)}
+              rows={5}
+              placeholder="Eres un asistente de franquicias..."
+            />
+          </Field>
+        </div>
+      </div>
+
+      <div>
+        <SaveButton saving={saving} saved={saved} onClick={saveAll} />
+      </div>
+
+      {/* Bot FAQs */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+            FAQs del Bot
+          </h3>
+          <button
+            onClick={() => setAddingFaq(true)}
+            className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+          >
+            + Agregar FAQ
+          </button>
+        </div>
+
+        {addingFaq && (
+          <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <BotFaqForm
+              franchiseId={franchiseId}
+              onSave={async () => { setAddingFaq(false); await refetchFaqs(); }}
+              onCancel={() => setAddingFaq(false)}
+            />
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {botFaqs.length === 0 && !addingFaq && (
+            <p className="text-sm text-gray-400">No hay FAQs del bot todavía.</p>
+          )}
+          {botFaqs.map((faq) => (
+            <div key={faq.id} className="rounded-lg border border-gray-200 p-4">
+              {editingFaqId === faq.id ? (
+                <BotFaqForm
+                  franchiseId={franchiseId}
+                  faqId={faq.id}
+                  initial={faq}
+                  onSave={async () => { setEditingFaqId(null); await refetchFaqs(); }}
+                  onCancel={() => setEditingFaqId(null)}
+                />
+              ) : (
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900 text-sm">{faq.question}</p>
+                      <span className={cn(
+                        "flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
+                        faq.enabled ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                      )}>
+                        {faq.enabled ? "Activa" : "Inactiva"}
+                      </span>
+                      <span className="flex-shrink-0 text-xs text-gray-400">P: {faq.priority}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{faq.answer}</p>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button onClick={() => setEditingFaqId(faq.id)} className="text-xs text-blue-600 hover:underline">Editar</button>
+                    <button onClick={() => deleteFaq(faq.id)} className="text-xs text-red-500 hover:underline">Eliminar</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BotFaqForm({
+  franchiseId, faqId, initial, onSave, onCancel,
+}: {
+  franchiseId: string;
+  faqId?: string;
+  initial?: BotFaq;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const [question, setQuestion] = useState(initial?.question ?? "");
+  const [answer, setAnswer] = useState(initial?.answer ?? "");
+  const [priority, setPriority] = useState(String(initial?.priority ?? 0));
+  const [enabled, setEnabled] = useState(initial?.enabled ?? true);
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    if (!question.trim() || !answer.trim()) return;
+    setSaving(true);
+    const url = faqId
+      ? `/api/admin/landing/franchises/${franchiseId}/legacy/bot-faqs/${faqId}`
+      : `/api/admin/landing/franchises/${franchiseId}/legacy/bot-faqs`;
+    await fetch(url, {
+      method: faqId ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, answer, priority: Number(priority), enabled }),
+    });
+    setSaving(false);
+    onSave();
+  }
+
+  return (
+    <div className="space-y-3">
+      <Field label="Pregunta"><Input value={question} onChange={setQuestion} /></Field>
+      <Field label="Respuesta"><Textarea value={answer} onChange={setAnswer} rows={3} /></Field>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Prioridad (mayor = más importante)">
+          <Input type="number" value={priority} onChange={setPriority} />
+        </Field>
+        <div className="flex items-end pb-1">
+          <Toggle checked={enabled} onChange={setEnabled} label="Activa" />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={save}
+          disabled={saving || !question.trim() || !answer.trim()}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+        >
+          {saving ? "Guardando..." : faqId ? "Actualizar" : "Agregar"}
+        </button>
+        <button onClick={onCancel} className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">
+          Cancelar
+        </button>
+      </div>
     </div>
   );
 }

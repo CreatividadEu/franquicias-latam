@@ -1,3 +1,14 @@
+import { redirect } from "next/navigation";
+
+export default function FranchisesPage() {
+  redirect("/admin/franquicias");
+}
+
+// Legacy page preserved below — kept for reference, not rendered
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _LEGACY_UNUSED = () => null;
+
+/*
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -136,3 +147,4 @@ export default function FranchisesPage() {
     </div>
   );
 }
+*/

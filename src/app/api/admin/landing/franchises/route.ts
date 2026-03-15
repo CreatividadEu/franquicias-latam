@@ -66,6 +66,7 @@ export async function POST(req: Request) {
       sectorId: resolvedSectorId,
       planTier: planTier || "BASIC",
       published: false,
+      active: body.active !== false,
       moduleConfig: {
         create: {
           heroEnabled: true,
