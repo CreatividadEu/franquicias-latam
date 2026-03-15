@@ -494,6 +494,18 @@ export function FranchiseLandingEditor({
         }).then((r) => { if (!r.ok) console.warn("Error guardando automatización"); }),
       ].filter(Boolean));
 
+      // Re-fetch to sync collections (businessModels, media, faqs) after save
+      const freshRes = await fetch(`/api/admin/landing/franchises/${data.id}`);
+      if (freshRes.ok) {
+        const fresh = await freshRes.json();
+        setData((prev) => ({
+          ...prev,
+          businessModels: fresh.businessModels ?? prev.businessModels,
+          media: fresh.media ?? prev.media,
+          faqs: fresh.faqs ?? prev.faqs,
+        }));
+      }
+
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) {
@@ -1267,18 +1279,24 @@ function ModelForm({
     order: String(initial?.order ?? 0),
   });
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   async function save() {
     setSaving(true);
+    setFormError(null);
     const url = modelId
       ? `/api/admin/landing/franchises/${franchiseId}/models/${modelId}`
       : `/api/admin/landing/franchises/${franchiseId}/models`;
-    await fetch(url, {
+    const res = await fetch(url, {
       method: modelId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
     setSaving(false);
+    if (!res.ok) {
+      setFormError("Error guardando. Intenta de nuevo.");
+      return;
+    }
     onSave();
   }
 
@@ -1299,6 +1317,11 @@ function ModelForm({
       <div className="sm:col-span-2">
         <Field label="Descripción"><Textarea value={form.description} onChange={(v) => f("description", v)} /></Field>
       </div>
+      {formError && (
+        <div className="sm:col-span-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+          {formError}
+        </div>
+      )}
       <div className="sm:col-span-2 flex gap-2">
         <button onClick={save} disabled={saving} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
           {saving ? "Guardando..." : modelId ? "Actualizar" : "Agregar"}
@@ -1319,6 +1342,7 @@ function GalleryTab({
   const [url, setUrl] = useState("");
   const [label, setLabel] = useState("");
   const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
   const images = media.filter((m) => m.type === "image");
   const max = PLAN_ENTITLEMENTS[plan].maxGalleryImages;
 
@@ -1330,12 +1354,18 @@ function GalleryTab({
   async function addImage() {
     if (!url) return;
     setAdding(true);
+    setAddError(null);
     const body = new FormData();
     body.append("url", url);
     body.append("type", "image");
     body.append("label", label);
     body.append("order", String(images.length));
-    await fetch(`/api/admin/landing/franchises/${franchiseId}/media`, { method: "POST", body });
+    const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/media`, { method: "POST", body });
+    if (!res.ok) {
+      setAddError("Error agregando imagen. Intenta de nuevo.");
+      setAdding(false);
+      return;
+    }
     setUrl(""); setLabel("");
     await refetch();
     setAdding(false);
@@ -1374,6 +1404,11 @@ function GalleryTab({
             <Input value={url} onChange={setUrl} placeholder="https://..." />
             <Input value={label} onChange={setLabel} placeholder="Etiqueta (opcional)" />
           </div>
+          {addError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+              {addError}
+            </div>
+          )}
           <button onClick={addImage} disabled={!url || adding} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
             {adding ? "Agregando..." : "Agregar"}
           </button>
@@ -1445,18 +1480,24 @@ function FaqForm({
   const [question, setQuestion] = useState(initial?.question ?? "");
   const [answer, setAnswer] = useState(initial?.answer ?? "");
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   async function save() {
     setSaving(true);
+    setFormError(null);
     const url = faqId
       ? `/api/admin/landing/franchises/${franchiseId}/faqs/${faqId}`
       : `/api/admin/landing/franchises/${franchiseId}/faqs`;
-    await fetch(url, {
+    const res = await fetch(url, {
       method: faqId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question, answer, order: initial?.order ?? 0 }),
     });
     setSaving(false);
+    if (!res.ok) {
+      setFormError("Error guardando. Intenta de nuevo.");
+      return;
+    }
     onSave();
   }
 
@@ -1464,6 +1505,11 @@ function FaqForm({
     <div className="space-y-3">
       <Field label="Pregunta"><Input value={question} onChange={setQuestion} /></Field>
       <Field label="Respuesta"><Textarea value={answer} onChange={setAnswer} rows={3} /></Field>
+      {formError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+          {formError}
+        </div>
+      )}
       <div className="flex gap-2">
         <button onClick={save} disabled={saving || !question || !answer} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
           {saving ? "Guardando..." : faqId ? "Actualizar" : "Agregar"}
