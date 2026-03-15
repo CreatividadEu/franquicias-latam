@@ -1,8 +1,7 @@
-import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { PLAN_ENTITLEMENTS } from "@/lib/plan-entitlements";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 
 const PLAN_BADGE: Record<string, { label: string; classes: string }> = {
   BASIC: { label: "Presencia", classes: "bg-slate-100 text-slate-600" },
@@ -10,19 +9,126 @@ const PLAN_BADGE: Record<string, { label: string; classes: string }> = {
   ALL_IN: { label: "Aceleración", classes: "bg-teal-100 text-teal-700" },
 };
 
-export default async function LandingFranchisesListPage() {
-  const franchises = await prisma.franchise.findMany({
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      planTier: true,
-      published: true,
-      updatedAt: true,
-      headline: true,
-    },
-    orderBy: { updatedAt: "desc" },
+type FranchiseRow = {
+  id: string;
+  name: string;
+  slug: string | null;
+  planTier: string;
+  published: boolean;
+  updatedAt: string;
+  headline: string | null;
+};
+
+export default function LandingFranchisesListPage() {
+  const [franchises, setFranchises] = useState<FranchiseRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [fadingIds, setFadingIds] = useState<Set<string>>(new Set());
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; franchise: FranchiseRow | null }>({
+    open: false,
+    franchise: null,
   });
+  const [bulkModal, setBulkModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  const loadFranchises = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/landing/franchises");
+      if (res.ok) {
+        const data = await res.json();
+        setFranchises(data);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFranchises();
+  }, [loadFranchises]);
+
+  const allSelected =
+    franchises.length > 0 && franchises.every((f) => selectedIds.has(f.id));
+
+  function toggleAll() {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(franchises.map((f) => f.id)));
+    }
+  }
+
+  function toggleOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function handleSingleDelete() {
+    const f = deleteModal.franchise;
+    if (!f) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/landing/franchises/${f.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Error al eliminar");
+      // Fade out
+      setFadingIds((prev) => new Set(prev).add(f.id));
+      setTimeout(() => {
+        setFranchises((prev) => prev.filter((x) => x.id !== f.id));
+        setFadingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(f.id);
+          return next;
+        });
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(f.id);
+          return next;
+        });
+      }, 300);
+      setDeleteModal({ open: false, franchise: null });
+      showToast("Franquicia eliminada");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  async function handleBulkDelete() {
+    const ids = Array.from(selectedIds);
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/admin/landing/franchises/bulk", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (!res.ok) throw new Error("Error al eliminar");
+      setBulkModal(false);
+      setSelectedIds(new Set());
+      await loadFranchises();
+      showToast(`${ids.length} franquicia${ids.length !== 1 ? "s" : ""} eliminada${ids.length !== 1 ? "s" : ""}`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const selectedFranchises = franchises.filter((f) => selectedIds.has(f.id));
 
   return (
     <div className="space-y-6">
@@ -45,6 +151,14 @@ export default async function LandingFranchisesListPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-4 py-3 text-left">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleAll}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                />
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Franquicia
               </th>
@@ -63,9 +177,16 @@ export default async function LandingFranchisesListPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
-            {franchises.length === 0 && (
+            {loading && (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">
+                  Cargando...
+                </td>
+              </tr>
+            )}
+            {!loading && franchises.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">
                   No hay franquicias todavía.{" "}
                   <Link href="/admin/franquicias/new" className="text-blue-600 underline">
                     Crear la primera
@@ -74,12 +195,23 @@ export default async function LandingFranchisesListPage() {
               </tr>
             )}
             {franchises.map((f) => {
-              const plan = f.planTier as keyof typeof PLAN_ENTITLEMENTS;
-              const badge = PLAN_BADGE[plan] ?? PLAN_BADGE.BASIC;
+              const badge = PLAN_BADGE[f.planTier] ?? PLAN_BADGE.BASIC;
               const slugForUrl = f.slug ?? f.name.toLowerCase().replace(/\s+/g, "-");
+              const isFading = fadingIds.has(f.id);
 
               return (
-                <tr key={f.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={f.id}
+                  className={`hover:bg-gray-50 transition-all duration-300 ${isFading ? "opacity-0" : "opacity-100"}`}
+                >
+                  <td className="px-4 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(f.id)}
+                      onChange={() => toggleOne(f.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                    />
+                  </td>
                   <td className="px-6 py-4">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{f.name}</p>
@@ -94,7 +226,9 @@ export default async function LandingFranchisesListPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.classes}`}>
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.classes}`}
+                    >
                       {badge.label}
                     </span>
                   </td>
@@ -136,6 +270,13 @@ export default async function LandingFranchisesListPage() {
                       >
                         Editar
                       </Link>
+                      <button
+                        onClick={() => setDeleteModal({ open: true, franchise: f })}
+                        className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700"
+                        title="Eliminar franquicia"
+                      >
+                        Eliminar
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -144,6 +285,101 @@ export default async function LandingFranchisesListPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Floating bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 rounded-xl bg-gray-900 px-5 py-3 shadow-2xl">
+          <span className="text-sm font-medium text-white">
+            {selectedIds.size} franquicia{selectedIds.size !== 1 ? "s" : ""} seleccionada{selectedIds.size !== 1 ? "s" : ""}
+          </span>
+          <button
+            onClick={() => setBulkModal(true)}
+            className="rounded-lg bg-red-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-red-700 transition-colors"
+          >
+            Eliminar seleccionadas
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="text-xs text-gray-400 hover:text-gray-200 transition-colors"
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
+
+      {/* Single delete modal */}
+      {deleteModal.open && deleteModal.franchise && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              ¿Eliminar {deleteModal.franchise.name}?
+            </h2>
+            <p className="text-sm text-gray-600">
+              Esta acción no se puede deshacer. Se eliminarán todos los datos, modelos de negocio, FAQs, medios y configuraciones asociadas.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteModal({ open: false, franchise: null })}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                disabled={deleting}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSingleDelete}
+                disabled={deleting}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {deleting ? "Eliminando..." : "Eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk delete modal */}
+      {bulkModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              ¿Eliminar {selectedIds.size} franquicia{selectedIds.size !== 1 ? "s" : ""}?
+            </h2>
+            <p className="text-sm text-gray-600">
+              Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.
+            </p>
+            <ul className="max-h-40 overflow-y-auto space-y-1">
+              {selectedFranchises.map((f) => (
+                <li key={f.id} className="text-sm text-gray-700 font-medium">
+                  • {f.name}
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setBulkModal(false)}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                disabled={deleting}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={deleting}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {deleting ? "Eliminando..." : "Eliminar todo"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-lg bg-green-600 px-4 py-3 text-sm font-medium text-white shadow-lg">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
