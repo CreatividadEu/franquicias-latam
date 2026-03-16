@@ -19,7 +19,7 @@ import { BrochureSection } from "@/components/franchise-landing/brochure-section
 import { BookingSection } from "@/components/franchise-landing/booking-section";
 import { ChatbotSection } from "@/components/franchise-landing/chatbot-section";
 import { AiAssistantSection } from "@/components/franchise-landing/ai-assistant-section";
-import { CalendlyCTASection } from "@/components/home/CalendlyCTASection";
+import { FranchiseCalendlySection } from "@/components/franchise-landing/franchise-calendly-section";
 import { CtaFooterSection } from "@/components/franchise-landing/cta-footer-section";
 
 // ── Legacy renderer imports ────────────────────────────────────────────────────
@@ -193,13 +193,13 @@ export default async function FranchiseLandingPage({
         {pageData.hero && <HeroSection data={pageData.hero} />}
         {pageData.video && <VideoSection data={pageData.video} />}
         {pageData.financials && <FinancialsSection data={pageData.financials} />}
+        {pageData.gallery && <GallerySection data={pageData.gallery} />}
         {pageData.chatbot && (
           franchise.botConfig?.botMode === "ai_assistant"
             ? <AiAssistantSection />
             : <ChatbotSection data={pageData.chatbot} />
         )}
-        <CalendlyCTASection />
-        {pageData.gallery && <GallerySection data={pageData.gallery} />}
+        <FranchiseCalendlySection />
         {pageData.businessModels && (
           <BusinessModelsSection data={pageData.businessModels} />
         )}

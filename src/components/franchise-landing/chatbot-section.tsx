@@ -267,7 +267,7 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
 
   return (
     <section className="bg-[#f8fafc] py-16 md:py-24" aria-label="Calificación guiada">
-      <div className="mx-auto max-w-4xl px-6">
+      <div className="mx-auto max-w-5xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -284,7 +284,7 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
           >
             ¿Eres el perfil ideal?
           </h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-[15px] leading-relaxed text-slate-500">
             Responde 4 preguntas y obtén tu análisis de encaje con {data.franchiseName}.
           </p>
         </motion.div>
@@ -321,11 +321,11 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
           {/* Messages */}
           <div
             ref={scrollRef}
-            className="flex min-h-[420px] flex-col gap-3 overflow-y-auto p-5"
+            className="flex min-h-[520px] flex-col gap-3 overflow-y-auto p-6"
           >
             {!started && (
               <div className="flex flex-1 flex-col items-center justify-center gap-4 py-6 text-center">
-                <p className="text-sm text-slate-500">
+                <p className="text-[15px] leading-relaxed text-slate-500">
                   Hola 👋 Voy a ayudarte a evaluar si {data.franchiseName} es el modelo adecuado para tu perfil.
                 </p>
                 <button
@@ -348,14 +348,14 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
                 >
                   {msg.role === "bot" && (
                     <div
-                      className="max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm text-[#171717]"
+                      className="max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3.5 text-[15px] leading-relaxed text-[#171717]"
                       style={{ background: "#f1f5f9", border: "1px solid rgba(0,0,0,0.06)" }}
                     >
                       {msg.text}
                     </div>
                   )}
                   {msg.role === "user" && (
-                    <div className="ml-auto max-w-[75%] rounded-2xl rounded-br-sm bg-[#eef3ff] px-4 py-3 text-sm text-[#171717]">
+                    <div className="ml-auto max-w-[75%] rounded-2xl rounded-br-sm bg-[#eef3ff] px-4 py-3.5 text-[15px] leading-relaxed text-[#171717]">
                       {msg.text}
                     </div>
                   )}
@@ -381,7 +381,7 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
                   <button
                     key={opt.label}
                     onClick={() => pickOption(opt)}
-                    className="min-h-[44px] rounded-full border border-black/10 bg-white px-4 py-2 text-left text-xs font-medium text-[#171717] shadow-sm transition-all hover:border-[#2563eb]/40 hover:bg-blue-50 hover:text-[#2563eb] active:scale-95"
+                    className="min-h-[44px] rounded-full border border-black/10 bg-white px-5 py-2.5 text-left text-sm font-medium text-[#171717] shadow-sm transition-all hover:border-[#2563eb]/40 hover:bg-blue-50 hover:text-[#2563eb] active:scale-95"
                   >
                     {opt.label}
                   </button>
