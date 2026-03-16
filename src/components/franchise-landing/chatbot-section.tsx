@@ -267,7 +267,7 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
 
   return (
     <section className="bg-[#f8fafc] py-16 md:py-24" aria-label="Calificación guiada">
-      <div className="mx-auto max-w-2xl px-6">
+      <div className="mx-auto max-w-4xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -321,7 +321,7 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
           {/* Messages */}
           <div
             ref={scrollRef}
-            className="flex min-h-[280px] flex-col gap-3 overflow-y-auto p-5"
+            className="flex min-h-[420px] flex-col gap-3 overflow-y-auto p-5"
           >
             {!started && (
               <div className="flex flex-1 flex-col items-center justify-center gap-4 py-6 text-center">

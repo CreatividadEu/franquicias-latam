@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import type { FinancialsData } from "@/lib/franchise-mapper";
 
 // ── Formatters ────────────────────────────────────────────────────────────────
@@ -14,29 +15,101 @@ function formatAmountUSD(amount: number): string {
 
 function parseRoyaltyParts(royaltyInfo: string | null): {
   royalty: string | null;
+  royaltyNum: number | null;
   adFund: string | null;
+  adFundNum: number | null;
 } {
-  if (!royaltyInfo) return { royalty: null, adFund: null };
+  if (!royaltyInfo) return { royalty: null, royaltyNum: null, adFund: null, adFundNum: null };
   const nums = royaltyInfo.match(/(\d+(?:\.\d+)?)/g);
   return {
     royalty: nums?.[0] ? `${nums[0]}%` : null,
+    royaltyNum: nums?.[0] ? parseFloat(nums[0]) : null,
     adFund: nums?.[1] ? `${nums[1]}%` : null,
+    adFundNum: nums?.[1] ? parseFloat(nums[1]) : null,
   };
 }
 
+// ── Count-up hook (same pattern as home CalendlyCTASection) ───────────────────
+
+function useCountUp(target: number, active: boolean, duration = 900): number {
+  const [count, setCount] = useState(0);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    if (!active) {
+      setCount(0);
+      return;
+    }
+    if (typeof window === "undefined") {
+      setCount(target);
+      return;
+    }
+    // Respect prefers-reduced-motion
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setCount(target);
+      return;
+    }
+    const startTime = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(target * eased));
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        rafRef.current = null;
+        setCount(target);
+      }
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [target, active, duration]);
+
+  return count;
+}
+
 // ── Card ──────────────────────────────────────────────────────────────────────
+
+type MetricCardProps = {
+  label: string;
+  value: string;
+  accent?: boolean;
+  delay?: number;
+  // Animation — pass numericA (and optionally numericB for ranges) + a formatFn
+  numericA?: number;
+  numericB?: number;
+  formatFn?: (a: number, b: number) => string;
+  isVisible: boolean;
+};
 
 function MetricCard({
   label,
   value,
   accent,
   delay,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-  delay?: number;
-}) {
+  numericA,
+  numericB,
+  formatFn,
+  isVisible,
+}: MetricCardProps) {
+  const hasAnimation = numericA !== undefined && formatFn !== undefined;
+  const countA = useCountUp(numericA ?? 0, isVisible && hasAnimation);
+  const countB = useCountUp(numericB ?? 0, isVisible && hasAnimation && numericB !== undefined);
+
+  const displayValue =
+    isVisible && hasAnimation
+      ? formatFn!(countA, numericB !== undefined ? countB : 0)
+      : value;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -58,7 +131,7 @@ function MetricCard({
           accent ? "text-[#2563eb]" : "text-[#171717]"
         }`}
       >
-        {value}
+        {displayValue}
       </p>
     </motion.div>
   );
@@ -67,37 +140,84 @@ function MetricCard({
 // ── Section ───────────────────────────────────────────────────────────────────
 
 export function FinancialsSection({ data }: { data: FinancialsData }) {
-  const { royalty, adFund } = parseRoyaltyParts(data.royaltyInfo);
+  const { royalty, royaltyNum, adFund, adFundNum } = parseRoyaltyParts(data.royaltyInfo);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
-  const metrics: { label: string; value: string; accent?: boolean }[] = [
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  type MetricDef = {
+    label: string;
+    value: string;
+    accent?: boolean;
+    numericA?: number;
+    numericB?: number;
+    formatFn?: (a: number, b: number) => string;
+  };
+
+  // "desde" appears in every variable metric label (per design spec)
+  const metrics: MetricDef[] = [
     {
       label: "Canon de entrada desde",
       value: formatAmountUSD(data.investmentMin),
+      numericA: data.investmentMin,
+      formatFn: (a) => formatAmountUSD(a),
     },
     {
-      label: "Rango de inversión total",
+      label: "Rango de inversión desde / hasta",
       value: `${formatAmountUSD(data.investmentMin)} – ${formatAmountUSD(data.investmentMax)}`,
+      numericA: data.investmentMin,
+      numericB: data.investmentMax,
+      formatFn: (a, b) => `${formatAmountUSD(a)} – ${formatAmountUSD(b)}`,
     },
   ];
 
   if (data.ebitdaReference) {
-    metrics.push({ label: "EBITDA", value: data.ebitdaReference, accent: true });
+    // EBITDA is already a descriptive range string (e.g. "17%-23%"); label conveys "desde"
+    metrics.push({ label: "EBITDA desde", value: data.ebitdaReference, accent: true });
   }
   if (data.paybackMonths != null) {
     metrics.push({
-      label: "Retorno estimado",
+      label: "Retorno estimado desde",
       value: `${data.paybackMonths} meses`,
+      numericA: data.paybackMonths,
+      formatFn: (a) => `${a} meses`,
     });
   }
   if (royalty) {
-    metrics.push({ label: "Royalty sobre ventas", value: royalty });
+    metrics.push({
+      label: "Royalty desde",
+      value: royalty,
+      numericA: royaltyNum ?? 0,
+      formatFn: (a) => `${a}%`,
+    });
   }
   if (adFund) {
-    metrics.push({ label: "Fondo de publicidad", value: adFund });
+    metrics.push({
+      label: "Fondo de publicidad desde",
+      value: adFund,
+      numericA: adFundNum ?? 0,
+      formatFn: (a) => `${a}%`,
+    });
   }
 
   return (
-    <section className="bg-white py-16 md:py-24" aria-label="Financieros">
+    <section ref={sectionRef} className="bg-white py-16 md:py-24" aria-label="Financieros">
       <div className="mx-auto max-w-6xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -125,6 +245,10 @@ export function FinancialsSection({ data }: { data: FinancialsData }) {
               value={m.value}
               accent={m.accent}
               delay={i * 0.08}
+              numericA={m.numericA}
+              numericB={m.numericB}
+              formatFn={m.formatFn}
+              isVisible={isVisible}
             />
           ))}
         </div>

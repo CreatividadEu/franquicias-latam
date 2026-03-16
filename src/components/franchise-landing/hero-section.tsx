@@ -24,7 +24,7 @@ export function HeroSection({ data }: { data: HeroData }) {
 
   return (
     <section
-      className="section-grid-bg relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 py-24 text-center"
+      className="section-grid-bg relative flex flex-col items-center justify-center overflow-hidden bg-white px-6 py-12 text-center md:py-16"
       style={bgStyle}
       aria-label="Hero"
     >
@@ -37,7 +37,7 @@ export function HeroSection({ data }: { data: HeroData }) {
         </div>
       )}
 
-      <div className="relative z-10 mx-auto max-w-4xl space-y-8">
+      <div className="relative z-10 mx-auto max-w-4xl space-y-4 sm:space-y-5">
         {/* Logo */}
         {data.logoUrl && (
           <motion.div
@@ -46,7 +46,7 @@ export function HeroSection({ data }: { data: HeroData }) {
             transition={{ duration: 0.5 }}
             className="flex justify-center"
           >
-            <div className="relative h-16 w-48">
+            <div className="relative h-24 w-64 sm:h-28 sm:w-72">
               <Image
                 src={data.logoUrl}
                 alt={`${data.name} logo`}
@@ -126,21 +126,7 @@ export function HeroSection({ data }: { data: HeroData }) {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 0.8 }}
-        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
-      >
-        <div className="flex h-9 w-5 items-start justify-center rounded-full border border-black/15 p-1">
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-            className="h-1.5 w-1 rounded-full bg-[#2563eb]/60"
-          />
-        </div>
-      </motion.div>
+
     </section>
   );
 }
