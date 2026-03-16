@@ -120,7 +120,7 @@ export async function findMatches(
     slug: buildFranchiseSlug(m.franchise.name, m.franchise.id),
     name: m.franchise.name,
     description: m.franchise.description,
-    logo: m.franchise.logo,
+    logo: m.franchise.logo ?? m.franchise.logoUrl ?? null,
     investmentMin: m.franchise.investmentMin,
     investmentMax: m.franchise.investmentMax,
     sectorName: m.franchise.sector.name,
