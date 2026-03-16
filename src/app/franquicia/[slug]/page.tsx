@@ -191,18 +191,18 @@ export default async function FranchiseLandingPage({
         )}
         {pageData.hero && <HeroSection data={pageData.hero} />}
         {pageData.video && <VideoSection data={pageData.video} />}
-        {pageData.businessModels && (
-          <BusinessModelsSection data={pageData.businessModels} />
-        )}
+        {pageData.financials && <FinancialsSection data={pageData.financials} />}
         {pageData.chatbot && (
           franchise.botConfig?.botMode === "ai_assistant"
             ? <AiAssistantSection />
             : <ChatbotSection data={pageData.chatbot} />
         )}
         {pageData.gallery && <GallerySection data={pageData.gallery} />}
-        {pageData.financials && <FinancialsSection data={pageData.financials} />}
-        {pageData.faq && <FaqSection data={pageData.faq} />}
+        {pageData.businessModels && (
+          <BusinessModelsSection data={pageData.businessModels} />
+        )}
         {pageData.brochure && <BrochureSection data={pageData.brochure} />}
+        {pageData.faq && <FaqSection data={pageData.faq} />}
         {pageData.booking && <BookingSection data={pageData.booking} />}
         <CtaFooterSection franchise={pageData.hero} />
       </main>

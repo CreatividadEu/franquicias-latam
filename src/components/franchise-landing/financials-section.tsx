@@ -1,8 +1,30 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { formatCurrency } from "@/lib/utils";
 import type { FinancialsData } from "@/lib/franchise-mapper";
+
+// ── Formatters ────────────────────────────────────────────────────────────────
+
+function formatAmountUSD(amount: number): string {
+  return (
+    new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(amount) +
+    " USD"
+  );
+}
+
+function parseRoyaltyParts(royaltyInfo: string | null): {
+  royalty: string | null;
+  adFund: string | null;
+} {
+  if (!royaltyInfo) return { royalty: null, adFund: null };
+  const nums = royaltyInfo.match(/(\d+(?:\.\d+)?)/g);
+  return {
+    royalty: nums?.[0] ? `${nums[0]}%` : null,
+    adFund: nums?.[1] ? `${nums[1]}%` : null,
+  };
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
 
 function MetricCard({
   label,
@@ -42,15 +64,19 @@ function MetricCard({
   );
 }
 
+// ── Section ───────────────────────────────────────────────────────────────────
+
 export function FinancialsSection({ data }: { data: FinancialsData }) {
+  const { royalty, adFund } = parseRoyaltyParts(data.royaltyInfo);
+
   const metrics: { label: string; value: string; accent?: boolean }[] = [
     {
-      label: "Inversión mínima",
-      value: formatCurrency(data.investmentMin),
+      label: "Canon de entrada desde",
+      value: formatAmountUSD(data.investmentMin),
     },
     {
-      label: "Rango de inversión",
-      value: `${formatCurrency(data.investmentMin)} – ${formatCurrency(data.investmentMax)}`,
+      label: "Rango de inversión total",
+      value: `${formatAmountUSD(data.investmentMin)} – ${formatAmountUSD(data.investmentMax)}`,
     },
   ];
 
@@ -58,13 +84,16 @@ export function FinancialsSection({ data }: { data: FinancialsData }) {
     metrics.push({ label: "EBITDA", value: data.ebitdaReference, accent: true });
   }
   if (data.paybackMonths != null) {
-    metrics.push({ label: "Retorno estimado", value: `${data.paybackMonths} meses` });
+    metrics.push({
+      label: "Retorno estimado",
+      value: `${data.paybackMonths} meses`,
+    });
   }
-  if (data.royaltyInfo) {
-    metrics.push({ label: "Royalty", value: data.royaltyInfo });
+  if (royalty) {
+    metrics.push({ label: "Royalty sobre ventas", value: royalty });
   }
-  if (data.operatorProfile) {
-    metrics.push({ label: "Perfil del operador", value: data.operatorProfile });
+  if (adFund) {
+    metrics.push({ label: "Fondo de publicidad", value: adFund });
   }
 
   return (
