@@ -199,7 +199,11 @@ export default async function FranchiseLandingPage({
         )}
         {pageData.financials && <FinancialsSection data={pageData.financials} />}
         {pageData.businessModels && (
-          <BusinessModelsSection data={pageData.businessModels} />
+          <BusinessModelsSection
+            data={pageData.businessModels}
+            franchiseSlug={slug}
+            franchiseName={franchise.name}
+          />
         )}
         <FranchiseCalendlySection />
         {pageData.brochure && <BrochureSection data={pageData.brochure} />}

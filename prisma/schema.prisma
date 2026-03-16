@@ -347,6 +347,26 @@ model LeadFranchiseMatch {
   @@map("lead_franchise_matches")
 }
 
+// ── Form Leads (landing page qualification form) ────────────────────────────
+
+model FormLead {
+  id              String   @id @default(cuid())
+  name            String
+  email           String
+  phone           String
+  investmentRange String
+  city            String?
+  experience      String?
+  franchiseSlug   String
+  landingSource   String   @default("landing-form")
+  type            String   @default("form")
+  createdAt       DateTime @default(now())
+
+  @@index([franchiseSlug])
+  @@index([email])
+  @@map("form_leads")
+}
+
 model SmsVerification {
   id        String   @id @default(cuid())
   phone     String
