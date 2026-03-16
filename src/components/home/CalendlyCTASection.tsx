@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const CALENDLY_URL =
-  "https://calendly.com/franquicias-latam/programa_aceleradora_franquicias";
+  "https://calendly.com/franquicias_latam/programa_aceleradora_franquicias";
 
 export function CalendlyCTASection() {
   const statsRef = useRef<HTMLDivElement | null>(null);
