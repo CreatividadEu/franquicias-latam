@@ -84,6 +84,7 @@ export type BookingData = {
 
 export type ChatbotData = {
   franchiseName: string;
+  logoUrl?: string | null;
 };
 
 export type LandingPageData = {
@@ -260,7 +261,7 @@ export function mapFranchiseToLandingPageData(
     cfg?.chatbotEnabled,
     true
   )
-    ? { franchiseName: franchise.name }
+    ? { franchiseName: franchise.name, logoUrl: franchise.logoUrl ?? franchise.logo ?? null }
     : null;
 
   return {

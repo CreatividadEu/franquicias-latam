@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, CalendarDays, FileText, Mail, ArrowRight } from "lucide-react";
+import { CalendarDays, FileText, Mail, ArrowRight, CheckCircle } from "lucide-react";
 import type { ChatbotData } from "@/lib/franchise-mapper";
 
 // ── Decision tree ─────────────────────────────────────────────────────────────
@@ -134,7 +134,48 @@ const SCORE_CONFIG = {
   },
 };
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Brand avatar ──────────────────────────────────────────────────────────────
+
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
+function BrandAvatar({
+  name,
+  logoUrl,
+  size = "md",
+}: {
+  name: string;
+  logoUrl?: string | null;
+  size?: "md" | "lg";
+}) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const initials = getInitials(name);
+  const textCls = size === "lg" ? "text-2xl font-bold" : "text-base font-bold";
+
+  if (logoUrl && !imgFailed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logoUrl}
+        alt={name}
+        onError={() => setImgFailed(true)}
+        className="h-full w-full rounded-xl object-contain p-1.5"
+      />
+    );
+  }
+
+  return (
+    <span className={`${textCls} tracking-tight text-[#2563eb]`}>{initials}</span>
+  );
+}
+
+// ── Component helpers ─────────────────────────────────────────────────────────
 
 type Message =
   | { role: "bot"; text: string }
@@ -144,14 +185,14 @@ type Message =
 function TypingIndicator() {
   return (
     <div
-      className="flex items-center gap-1 rounded-2xl rounded-bl-sm px-4 py-3 w-fit"
+      className="flex items-center gap-1.5 rounded-2xl rounded-bl-sm px-4 py-3.5 w-fit"
       style={{ background: "#f1f5f9", border: "1px solid rgba(0,0,0,0.06)" }}
     >
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
-          className="h-1.5 w-1.5 rounded-full bg-slate-400"
-          animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
+          className="h-2 w-2 rounded-full bg-slate-400"
+          animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.15, 0.8] }}
           transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
         />
       ))}
@@ -159,7 +200,7 @@ function TypingIndicator() {
   );
 }
 
-function ResultCard({ result, franchiseName }: { result: Result; franchiseName: string }) {
+function ResultCard({ result }: { result: Result }) {
   const config = SCORE_CONFIG[result.score];
 
   return (
@@ -176,7 +217,7 @@ function ResultCard({ result, franchiseName }: { result: Result; franchiseName: 
         </span>
       </div>
 
-      <p className="text-sm leading-relaxed text-[#171717]">{result.message}</p>
+      <p className="text-[15px] leading-relaxed text-[#171717]">{result.message}</p>
 
       {result.ctaType === "book_call" && (
         <a
@@ -212,6 +253,8 @@ function ResultCard({ result, franchiseName }: { result: Result; franchiseName: 
 function getNodeById(id: string): TreeNode | undefined {
   return DECISION_TREE.find((n) => n.id === id);
 }
+
+// ── Main section ──────────────────────────────────────────────────────────────
 
 export function ChatbotSection({ data }: { data: ChatbotData }) {
   const [started, setStarted] = useState(false);
@@ -268,76 +311,154 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
   return (
     <section className="bg-[#f8fafc] py-16 md:py-24" aria-label="Calificación guiada">
       <div className="mx-auto max-w-5xl px-6">
+
+        {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.5 }}
-          className="mb-10 space-y-2 text-center"
+          className="mb-10 space-y-3 text-center"
         >
           <p className="text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
             Calificación inteligente
           </p>
           <h2
-            className="text-3xl font-bold text-[#171717] sm:text-4xl"
+            className="text-4xl font-bold text-[#171717] sm:text-5xl"
             style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
           >
             ¿Eres el perfil ideal?
           </h2>
-          <p className="text-[15px] leading-relaxed text-slate-500">
-            Responde 4 preguntas y obtén tu análisis de encaje con {data.franchiseName}.
+          <p className="mx-auto max-w-xl text-[17px] leading-relaxed text-slate-500">
+            Conversa con el asesor de{" "}
+            <span className="font-medium text-[#171717]">{data.franchiseName}</span>{" "}
+            y valida tu encaje real: inversión, operación, territorio y potencial.
           </p>
         </motion.div>
 
-        <div
+        {/* Chat shell */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5, delay: 0.1 }}
           className="overflow-hidden rounded-2xl"
           style={{
             background: "#ffffff",
             border: "1px solid rgba(0,0,0,0.08)",
-            boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
+            boxShadow: "0 4px 32px rgba(0,0,0,0.08)",
           }}
         >
-          {/* Chat header */}
+          {/* ── Chat header ────────────────────────────────────────────────── */}
           <div
-            className="flex items-center gap-3 px-5 py-4"
+            className="flex items-center gap-4 px-6 py-4"
             style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
           >
+            {/* Brand avatar */}
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-full"
-              style={{ background: "rgba(37,99,235,0.08)", border: "1px solid rgba(37,99,235,0.2)" }}
+              className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl"
+              style={{
+                background: "rgba(37,99,235,0.06)",
+                border: "1.5px solid rgba(37,99,235,0.18)",
+              }}
             >
-              <Bot className="h-4 w-4 text-[#2563eb]" />
+              <BrandAvatar name={data.franchiseName} logoUrl={data.logoUrl} size="md" />
             </div>
-            <div>
-              <p className="text-xs font-semibold text-[#171717]">Asesor {data.franchiseName}</p>
-              <p className="text-[10px] text-slate-400">Motor de calificación</p>
+
+            {/* Name + role */}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-tight text-[#171717]">
+                {data.franchiseName}
+              </p>
+              <p className="mt-0.5 text-xs text-slate-400">Asesor de franquicias</p>
             </div>
-            <div className="ml-auto flex items-center gap-1.5">
-              <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-              <span className="text-[10px] text-slate-400">En línea</span>
+
+            {/* Online indicator */}
+            <div className="ml-auto flex items-center gap-2">
+              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              <span className="text-xs font-medium text-slate-500">En línea</span>
             </div>
           </div>
 
-          {/* Messages */}
+          {/* ── Messages area ───────────────────────────────────────────────── */}
           <div
             ref={scrollRef}
-            className="flex min-h-[520px] flex-col gap-3 overflow-y-auto p-6"
+            className="flex min-h-[540px] flex-col gap-3 overflow-y-auto p-6"
           >
+            {/* Welcome screen (before start) */}
             {!started && (
-              <div className="flex flex-1 flex-col items-center justify-center gap-4 py-6 text-center">
-                <p className="text-[15px] leading-relaxed text-slate-500">
-                  Hola 👋 Voy a ayudarte a evaluar si {data.franchiseName} es el modelo adecuado para tu perfil.
-                </p>
-                <button
+              <div className="flex flex-1 flex-col items-center justify-center gap-8 py-8 text-center">
+
+                {/* Large brand identity */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="relative">
+                    <div
+                      className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl"
+                      style={{
+                        background: "rgba(37,99,235,0.06)",
+                        border: "1.5px solid rgba(37,99,235,0.18)",
+                      }}
+                    >
+                      <BrandAvatar name={data.franchiseName} logoUrl={data.logoUrl} size="lg" />
+                    </div>
+                    {/* Online badge */}
+                    <div className="absolute -bottom-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm">
+                      <div className="h-3.5 w-3.5 rounded-full bg-emerald-500 animate-pulse" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[15px] font-semibold text-[#171717]">
+                      Asesor {data.franchiseName}
+                    </p>
+                    <p className="text-sm text-slate-400">Disponible ahora</p>
+                  </div>
+                </div>
+
+                {/* Greeting */}
+                <div className="max-w-sm space-y-2">
+                  <p className="text-[18px] font-semibold leading-snug text-[#171717]">
+                    Hola 👋 Voy a ayudarte a evaluar si{" "}
+                    <span className="text-[#2563eb]">{data.franchiseName}</span> encaja con tu perfil.
+                  </p>
+                  <p className="text-[15px] leading-relaxed text-slate-500">
+                    4 preguntas rápidas. Al final recibirás un análisis de encaje personalizado.
+                  </p>
+                </div>
+
+                {/* Feature list */}
+                <div className="w-full max-w-xs space-y-3">
+                  {[
+                    "Evaluamos tu capacidad de inversión real",
+                    "Analizamos tu perfil y experiencia previa",
+                    "Te decimos si hay match y el siguiente paso",
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-3 text-left">
+                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#2563eb]" />
+                      <span className="text-[14px] leading-snug text-slate-600">{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA with glow pulse */}
+                <motion.button
                   onClick={start}
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_4px_16px_-4px_rgba(37,99,235,0.4)] transition-all hover:-translate-y-px active:scale-95"
+                  animate={{
+                    boxShadow: [
+                      "0 4px 16px -4px rgba(37,99,235,0.35)",
+                      "0 8px 36px -4px rgba(37,99,235,0.6)",
+                      "0 4px 16px -4px rgba(37,99,235,0.35)",
+                    ],
+                  }}
+                  transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
+                  className="inline-flex min-h-[50px] items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-8 py-3.5 text-[15px] font-semibold text-white transition-all hover:-translate-y-px active:scale-95"
                 >
-                  Comenzar evaluación
+                  Iniciar evaluación
                   <ArrowRight className="h-4 w-4" />
-                </button>
+                </motion.button>
               </div>
             )}
 
+            {/* Chat messages */}
             <AnimatePresence mode="popLayout">
               {messages.map((msg, i) => (
                 <motion.div
@@ -348,19 +469,19 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
                 >
                   {msg.role === "bot" && (
                     <div
-                      className="max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3.5 text-[15px] leading-relaxed text-[#171717]"
+                      className="max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3.5 text-[16px] leading-relaxed text-[#171717]"
                       style={{ background: "#f1f5f9", border: "1px solid rgba(0,0,0,0.06)" }}
                     >
                       {msg.text}
                     </div>
                   )}
                   {msg.role === "user" && (
-                    <div className="ml-auto max-w-[75%] rounded-2xl rounded-br-sm bg-[#eef3ff] px-4 py-3.5 text-[15px] leading-relaxed text-[#171717]">
+                    <div className="ml-auto max-w-[75%] rounded-2xl rounded-br-sm bg-[#eef3ff] px-4 py-3.5 text-[16px] leading-relaxed text-[#171717]">
                       {msg.text}
                     </div>
                   )}
                   {msg.role === "result" && (
-                    <ResultCard result={msg.result} franchiseName={data.franchiseName} />
+                    <ResultCard result={msg.result} />
                   )}
                 </motion.div>
               ))}
@@ -373,15 +494,18 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
             )}
           </div>
 
-          {/* Options */}
+          {/* ── Options bar ─────────────────────────────────────────────────── */}
           {currentNode && !done && (
-            <div className="p-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-              <div className="flex flex-wrap gap-2">
+            <div
+              className="p-5"
+              style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
+            >
+              <div className="flex flex-wrap gap-2.5">
                 {currentNode.options.map((opt) => (
                   <button
                     key={opt.label}
                     onClick={() => pickOption(opt)}
-                    className="min-h-[44px] rounded-full border border-black/10 bg-white px-5 py-2.5 text-left text-sm font-medium text-[#171717] shadow-sm transition-all hover:border-[#2563eb]/40 hover:bg-blue-50 hover:text-[#2563eb] active:scale-95"
+                    className="min-h-[44px] rounded-full border border-black/10 bg-white px-5 py-2.5 text-left text-[15px] font-medium text-[#171717] shadow-sm transition-all hover:border-[#2563eb]/40 hover:bg-blue-50 hover:text-[#2563eb] active:scale-95"
                   >
                     {opt.label}
                   </button>
@@ -389,7 +513,7 @@ export function ChatbotSection({ data }: { data: ChatbotData }) {
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
