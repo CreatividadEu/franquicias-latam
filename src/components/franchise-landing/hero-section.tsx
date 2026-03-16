@@ -38,6 +38,25 @@ export function HeroSection({ data }: { data: HeroData }) {
       )}
 
       <div className="relative z-10 mx-auto max-w-4xl space-y-4 sm:space-y-5">
+        {/* Verified badge */}
+        {data.showVerifiedBadge && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex justify-center"
+          >
+            <Image
+              src="/fotos_home/verified_latam.png"
+              alt="Verificado por Franquicias LATAM"
+              width={160}
+              height={40}
+              className="h-10 w-auto object-contain"
+              priority
+            />
+          </motion.div>
+        )}
+
         {/* Logo */}
         {data.logoUrl && (
           <motion.div

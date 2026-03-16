@@ -26,7 +26,7 @@ export async function PUT(
   const boolFields = [
     "heroEnabled", "videoEnabled", "galleryEnabled", "businessModelsEnabled",
     "financialsEnabled", "faqEnabled", "brochureEnabled", "bookingEnabled",
-    "chatbotEnabled", "nurturingEnabled",
+    "chatbotEnabled", "nurturingEnabled", "showVerifiedBadge",
   ] as const;
 
   const data: Record<string, boolean> = {};

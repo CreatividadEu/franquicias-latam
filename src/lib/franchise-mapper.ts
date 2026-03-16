@@ -31,6 +31,7 @@ export type HeroData = {
   cta2Label: string | null;
   cta2Url: string | null;
   planTier: PlanTier;
+  showVerifiedBadge: boolean;
 };
 
 export type VideoData = {
@@ -143,6 +144,7 @@ export function mapFranchiseToLandingPageData(
         cta2Label: franchise.cta2Label,
         cta2Url: franchise.cta2Url,
         planTier: plan,
+        showVerifiedBadge: cfg?.showVerifiedBadge ?? false,
       }
     : null;
 

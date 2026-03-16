@@ -198,6 +198,7 @@ model FranchiseModuleConfig {
   bookingEnabled        Boolean   @default(false)
   chatbotEnabled        Boolean   @default(false)
   nurturingEnabled      Boolean   @default(false)
+  showVerifiedBadge     Boolean   @default(false)
 
   @@map("franchise_module_configs")
 }

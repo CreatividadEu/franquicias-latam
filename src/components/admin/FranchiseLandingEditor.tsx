@@ -27,6 +27,7 @@ type ModuleConfig = {
   heroEnabled: boolean; videoEnabled: boolean; galleryEnabled: boolean;
   businessModelsEnabled: boolean; financialsEnabled: boolean; faqEnabled: boolean;
   brochureEnabled: boolean; bookingEnabled: boolean; chatbotEnabled: boolean; nurturingEnabled: boolean;
+  showVerifiedBadge: boolean;
 } | null;
 
 type AutomationConfig = {
@@ -148,6 +149,7 @@ function planToModuleConfig(plan: PlanTier): NonNullable<ModuleConfig> {
     bookingEnabled: modules.includes("booking"),
     chatbotEnabled: modules.includes("chatbot"),
     nurturingEnabled: modules.includes("nurturing"),
+    showVerifiedBadge: false,
   };
 }
 
@@ -436,7 +438,10 @@ export function FranchiseLandingEditor({
       }
     }
 
-    const newModuleConfig = planToModuleConfig(newPlan);
+    const newModuleConfig = {
+      ...planToModuleConfig(newPlan),
+      showVerifiedBadge: data.moduleConfig?.showVerifiedBadge ?? false,
+    };
     setData((prev) => ({ ...prev, planTier: newPlan, moduleConfig: newModuleConfig }));
     setSaved(false);
 
@@ -542,6 +547,7 @@ export function FranchiseLandingEditor({
           <GeneralTab
             data={data}
             set={set}
+            setModule={setModule}
             allSectors={allSectors}
             allCountries={allCountries}
             selectedCountryIds={selectedCountryIds}
@@ -716,6 +722,7 @@ function PlanBadge({ plan }: { plan: PlanTier }) {
 function GeneralTab({
   data,
   set,
+  setModule,
   allSectors,
   allCountries,
   selectedCountryIds,
@@ -727,6 +734,7 @@ function GeneralTab({
 }: {
   data: Franchise;
   set: <K extends keyof Franchise>(k: K, v: Franchise[K]) => void;
+  setModule: (k: keyof NonNullable<ModuleConfig>, v: boolean) => void;
   allSectors: Sector[];
   allCountries: Country[];
   selectedCountryIds: string[];
@@ -823,6 +831,27 @@ function GeneralTab({
           <Field label="Línea de credibilidad" hint="Aparece como badge bajo el logo. Ej: '45 países · +US$200M/año'">
             <Input value={data.credibilityLine ?? ""} onChange={(v) => set("credibilityLine", v || null)} />
           </Field>
+          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-gray-800">Badge de verificación Franquicias LATAM</p>
+              <p className="text-xs text-gray-400">Muestra el sello verificado encima del logo en el hero.</p>
+            </div>
+            <label className="flex cursor-pointer items-center gap-2">
+              <span className="text-xs text-gray-500">
+                {(data.moduleConfig?.showVerifiedBadge ?? false) ? "Activado" : "Desactivado"}
+              </span>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={data.moduleConfig?.showVerifiedBadge ?? false}
+                  onChange={(e) => setModule("showVerifiedBadge", e.target.checked)}
+                />
+                <div className={cn("h-5 w-9 rounded-full transition-colors", (data.moduleConfig?.showVerifiedBadge ?? false) ? "bg-blue-600" : "bg-gray-300")} />
+                <div className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform", (data.moduleConfig?.showVerifiedBadge ?? false) ? "translate-x-4" : "translate-x-0.5")} />
+              </div>
+            </label>
+          </div>
           <Field
             label="Descripción corta"
             hint="Para tarjetas y Google. No aparece en el hero."
@@ -2017,6 +2046,7 @@ function defaultModuleConfig(c: ModuleConfig): NonNullable<ModuleConfig> {
     heroEnabled: true, videoEnabled: false, galleryEnabled: false,
     businessModelsEnabled: false, financialsEnabled: true, faqEnabled: false,
     brochureEnabled: false, bookingEnabled: false, chatbotEnabled: false, nurturingEnabled: false,
+    showVerifiedBadge: false,
     ...c,
   };
 }
