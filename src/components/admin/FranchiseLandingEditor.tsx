@@ -1539,22 +1539,18 @@ function GalleryTab({
             </>
           ) : (
             <>
-              {/* Drop zone */}
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => !adding && fileInputRef.current?.click()}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click(); }}
-                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              {/* Drop zone — label wraps the input so any click natively opens the file dialog */}
+              <label
+                onDragOver={(e) => { e.preventDefault(); if (!adding) setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
-                onDrop={(e) => { e.preventDefault(); setDragging(false); pickFile(e.dataTransfer.files); }}
-                className={`relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 p-6 text-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                onDrop={(e) => { e.preventDefault(); setDragging(false); if (!adding) pickFile(e.dataTransfer.files); }}
+                className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 p-6 text-center transition-colors ${
                   dragging
                     ? "border-blue-400 bg-blue-50"
                     : file
                     ? "border-gray-300 bg-gray-50"
                     : "border-dashed border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100"
-                } ${adding ? "cursor-not-allowed opacity-60" : ""}`}
+                } ${adding ? "cursor-not-allowed opacity-60 pointer-events-none" : ""}`}
               >
                 {adding ? (
                   <>
@@ -1590,10 +1586,11 @@ function GalleryTab({
                   ref={fileInputRef}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
+                  disabled={adding}
                   className="sr-only"
                   onChange={(e) => pickFile(e.target.files)}
                 />
-              </div>
+              </label>
 
               {file && !adding && (
                 <button type="button" onClick={clearFile} className="text-xs text-red-500 hover:underline">
