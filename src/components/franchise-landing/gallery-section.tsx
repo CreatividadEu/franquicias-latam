@@ -160,13 +160,11 @@ export function GallerySection({ data }: { data: GalleryImageData[] }) {
   useEffect(() => {
     const measure = () => {
       if (!trackRef.current || !firstLoopRef.current) return;
-      const computed = window.getComputedStyle(trackRef.current);
-      const parsedGap = Number.parseFloat(computed.columnGap || computed.gap || "");
-      const groupGap = Number.isFinite(parsedGap) ? parsedGap : DEFAULT_GAP;
       const firstCard = firstLoopRef.current.firstElementChild as HTMLElement | null;
       const cardWidth = firstCard?.getBoundingClientRect().width ?? 0;
-      loopWidthRef.current = firstLoopRef.current.getBoundingClientRect().width + groupGap;
-      cardStrideRef.current = cardWidth > 0 ? cardWidth + groupGap : 0;
+      // loop div includes pr-6 (trailing padding = gap), so its width already equals one full loop stride
+      loopWidthRef.current = firstLoopRef.current.getBoundingClientRect().width;
+      cardStrideRef.current = cardWidth > 0 ? cardWidth + DEFAULT_GAP : 0;
       xRef.current = normalizeOffset(xRef.current);
       applyTransform();
     };
@@ -307,14 +305,14 @@ export function GallerySection({ data }: { data: GalleryImageData[] }) {
         >
           <div
             ref={trackRef}
-            className="flex w-max gap-6 will-change-transform"
+            className="flex w-max will-change-transform"
             style={{ transform: "translate3d(0,0,0)" }}
           >
             {[0, 1].map((loopIndex) => (
               <div
                 key={`gallery-loop-${loopIndex}`}
                 ref={loopIndex === 0 ? firstLoopRef : null}
-                className="flex shrink-0 gap-6"
+                className="flex shrink-0 gap-6 pr-6"
               >
                 {data.map((item, cardIndex) => (
                   <GalleryCard
