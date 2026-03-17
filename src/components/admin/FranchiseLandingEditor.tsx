@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PLAN_ENTITLEMENTS, isModuleAllowed } from "@/lib/plan-entitlements";
@@ -1391,6 +1391,16 @@ function GalleryTab({
   // Shared
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+
+  // Stable object URL — created once per file, revoked on change/unmount
+  const previewUrl = useMemo(
+    () => (file ? URL.createObjectURL(file) : null),
+    [file]
+  );
+  useEffect(() => {
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
+  }, [previewUrl]);
+
   const images = media.filter((m) => m.type === "image");
   const max = PLAN_ENTITLEMENTS[plan].maxGalleryImages;
 
@@ -1558,7 +1568,7 @@ function GalleryTab({
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={URL.createObjectURL(file)}
+                      src={previewUrl ?? ""}
                       alt="Preview"
                       className="h-24 w-24 rounded-lg object-cover"
                     />
