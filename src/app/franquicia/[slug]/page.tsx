@@ -62,7 +62,7 @@ async function getFranchise(slug: string, preview: boolean) {
   // Find by matching slug helper (works with name-based or id-suffixed slugs)
   const candidates = await prisma.franchise.findMany({
     where: { active: true },
-    select: { id: true, name: true, published: true },
+    select: { id: true, name: true, slug: true, published: true },
   });
 
   const matched = candidates.find((c) => matchesFranchiseSlug(c, slug));

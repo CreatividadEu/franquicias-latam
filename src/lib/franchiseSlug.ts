@@ -17,11 +17,12 @@ export function buildFranchiseSlug(name: string, id: string): string {
 }
 
 export function matchesFranchiseSlug(
-  franchise: { id: string; name: string },
+  franchise: { id: string; name: string; slug?: string | null },
   requestedSlug: string
 ): boolean {
   const normalizedSlug = requestedSlug.trim().toLowerCase();
   return (
+    (franchise.slug != null && franchise.slug === normalizedSlug) ||
     buildFranchiseSlug(franchise.name, franchise.id) === normalizedSlug ||
     slugifyFranchiseName(franchise.name) === normalizedSlug
   );
