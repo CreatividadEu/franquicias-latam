@@ -56,7 +56,7 @@ type Franchise = {
   headline: string | null; subheadline: string | null; shortDescription: string | null;
   longDescription: string | null; logoUrl: string | null; heroImageUrl: string | null;
   youtubeUrl: string | null; brochureUrl: string | null; bookingUrl: string | null;
-  credibilityLine: string | null; cta1Label: string | null; cta1Url: string | null;
+  credibilityLine: string | null; foundingYear: number | null; cta1Label: string | null; cta1Url: string | null;
   cta2Label: string | null; cta2Url: string | null; ebitdaReference: string | null;
   paybackMonths: number | null; royaltyInfo: string | null; operatorProfile: string | null;
   businessModels: BusinessModel[]; media: MediaItem[]; faqs: FaqItem[];
@@ -467,7 +467,7 @@ export function FranchiseLandingEditor({
             shortDescription: data.shortDescription, longDescription: data.longDescription,
             logoUrl: data.logoUrl, heroImageUrl: data.heroImageUrl, youtubeUrl: data.youtubeUrl,
             brochureUrl: data.brochureUrl, bookingUrl: data.bookingUrl,
-            credibilityLine: data.credibilityLine, cta1Label: data.cta1Label, cta1Url: data.cta1Url,
+            credibilityLine: data.credibilityLine, foundingYear: data.foundingYear, cta1Label: data.cta1Label, cta1Url: data.cta1Url,
             cta2Label: data.cta2Label, cta2Url: data.cta2Url, ebitdaReference: data.ebitdaReference,
             paybackMonths: data.paybackMonths, royaltyInfo: data.royaltyInfo,
             operatorProfile: data.operatorProfile,
@@ -830,6 +830,14 @@ function GeneralTab({
           </Field>
           <Field label="Línea de credibilidad" hint="Aparece como badge bajo el logo. Ej: '45 países · +US$200M/año'">
             <Input value={data.credibilityLine ?? ""} onChange={(v) => set("credibilityLine", v || null)} />
+          </Field>
+          <Field label="Año de fundación de la marca" hint="Se muestra como pill sobre el titular. Ej: 'Marca fundada en 2018'">
+            <Input
+              type="number"
+              value={String(data.foundingYear ?? "")}
+              onChange={(v) => set("foundingYear", v ? Number(v) : null)}
+              placeholder="Ej: 2018"
+            />
           </Field>
           <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
             <div>

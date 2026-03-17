@@ -58,7 +58,7 @@ export async function PUT(
   const allowedFields = [
     "planTier", "published", "headline", "subheadline", "shortDescription",
     "longDescription", "logoUrl", "heroImageUrl", "youtubeUrl", "brochureUrl",
-    "bookingUrl", "credibilityLine", "cta1Label", "cta1Url", "cta2Label",
+    "bookingUrl", "credibilityLine", "foundingYear", "cta1Label", "cta1Url", "cta2Label",
     "cta2Url", "ebitdaReference", "paybackMonths", "royaltyInfo",
     "operatorProfile", "name", "slug", "investmentMin", "investmentMax",
     // Base config fields (legacy + new)
@@ -76,6 +76,8 @@ export async function PUT(
   if (data.investmentMax !== undefined) data.investmentMax = Number(data.investmentMax);
   if (data.paybackMonths !== undefined)
     data.paybackMonths = data.paybackMonths ? Number(data.paybackMonths) : null;
+  if (data.foundingYear !== undefined)
+    data.foundingYear = data.foundingYear ? Number(data.foundingYear) : null;
   if (data.active !== undefined) data.active = Boolean(data.active);
   if (data.featured !== undefined) data.featured = Boolean(data.featured);
 

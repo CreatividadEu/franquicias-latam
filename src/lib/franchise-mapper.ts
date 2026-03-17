@@ -26,6 +26,7 @@ export type HeroData = {
   logoUrl: string | null;
   heroImageUrl: string | null;
   credibilityLine: string | null;
+  foundingYear: number | null;
   cta1Label: string;
   cta1Url: string;
   cta2Label: string | null;
@@ -139,6 +140,7 @@ export function mapFranchiseToLandingPageData(
         logoUrl: franchise.logoUrl ?? franchise.logo,
         heroImageUrl: franchise.heroImageUrl,
         credibilityLine: franchise.credibilityLine,
+        foundingYear: franchise.foundingYear ?? null,
         cta1Label: franchise.cta1Label ?? "Quiero saber más",
         cta1Url: franchise.cta1Url ?? "/quiz",
         cta2Label: franchise.cta2Label,

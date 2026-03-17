@@ -58,16 +58,16 @@ export function HeroSection({ data }: { data: HeroData }) {
           </motion.div>
         )}
 
-        {/* Credibility badge */}
-        {data.credibilityLine && (
+        {/* Founding year pill */}
+        {data.foundingYear && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
             className="flex justify-center"
           >
-            <span className="rounded-full border border-black/10 bg-[#eef3ff] px-4 py-1.5 text-xs font-medium tracking-wide text-[#2563eb]">
-              {data.credibilityLine}
+            <span className="rounded-full border border-black/10 bg-[#eef3ff] px-4 py-1.5 text-sm font-semibold tracking-wide text-[#2563eb]">
+              Marca fundada en {data.foundingYear}
             </span>
           </motion.div>
         )}

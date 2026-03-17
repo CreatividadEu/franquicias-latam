@@ -118,6 +118,7 @@ model Franchise {
   brochureUrl       String?
   bookingUrl        String?
   credibilityLine   String?
+  foundingYear      Int?
   cta1Label         String?
   cta1Url           String?
   cta2Label         String?
