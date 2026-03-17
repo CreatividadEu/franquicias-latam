@@ -4,7 +4,7 @@ const SUPABASE_URL =
   process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const DEFAULT_FRANCHISES_BUCKET =
-  process.env.SUPABASE_FRANCHISES_BUCKET ?? "franchises";
+  process.env.SUPABASE_FRANCHISES_BUCKET ?? "franchise-assets";
 
 let supabaseAdminClient: SupabaseClient | null | undefined;
 const ensuredBuckets = new Set<string>();
