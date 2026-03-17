@@ -43,7 +43,7 @@ export async function ensureFranchiseStorageBucket() {
     return { client, bucket };
   }
 
-  const { error } = await client.storage.getBucket(bucket);
+  const { data: bucketData, error } = await client.storage.getBucket(bucket);
   if (error) {
     const missingBucket =
       error.message.toLowerCase().includes("not found") ||
@@ -53,6 +53,7 @@ export async function ensureFranchiseStorageBucket() {
       throw error;
     }
 
+    // Bucket doesn't exist — create it as public
     const { error: createError } = await client.storage.createBucket(bucket, {
       public: true,
     });
@@ -62,6 +63,12 @@ export async function ensureFranchiseStorageBucket() {
       !createError.message.toLowerCase().includes("already exists")
     ) {
       throw createError;
+    }
+  } else if (!bucketData?.public) {
+    // Bucket exists but is private — make it public so stored URLs are accessible
+    const { error: updateError } = await client.storage.updateBucket(bucket, { public: true });
+    if (updateError) {
+      console.warn("[supabaseAdmin] Could not set bucket to public:", updateError.message);
     }
   }
 

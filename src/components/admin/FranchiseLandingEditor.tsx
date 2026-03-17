@@ -1433,9 +1433,22 @@ function GalleryTab({
     }
   }
 
+  const MAX_FILE_MB = 4; // Vercel serverless body limit is 4.5 MB — keep a safe margin
+
   function handleFiles(files: FileList | null) {
     if (!files || files.length === 0 || remaining <= 0) return;
-    Array.from(files).slice(0, remaining).forEach((f) => uploadOne(f));
+    const valid: File[] = [];
+    for (const f of Array.from(files).slice(0, remaining)) {
+      if (f.size > MAX_FILE_MB * 1024 * 1024) {
+        // Surface the error as a failed slot so the user sees it inline
+        const slotId = Math.random().toString(36).slice(2);
+        const previewUrl = URL.createObjectURL(f);
+        setSlots((prev) => [...prev, { id: slotId, previewUrl, status: "error", errorMsg: `Archivo muy grande (máx ${MAX_FILE_MB} MB)` }]);
+      } else {
+        valid.push(f);
+      }
+    }
+    valid.forEach((f) => uploadOne(f));
     // Reset input so the same file can be re-selected after an error
     if (inputRef.current) inputRef.current.value = "";
   }
