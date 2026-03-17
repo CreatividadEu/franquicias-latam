@@ -63,9 +63,10 @@ export async function POST(
       const path = `${franchiseId}/landing/gallery/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
       const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
       const { error: uploadError } = await client.storage
         .from(bucket)
-        .upload(path, arrayBuffer, { contentType: file.type, upsert: false });
+        .upload(path, buffer, { contentType: file.type || "application/octet-stream", upsert: false });
 
       if (uploadError) {
         console.error("[media/POST] Supabase upload error:", uploadError.message, "bucket:", bucket, "path:", path);

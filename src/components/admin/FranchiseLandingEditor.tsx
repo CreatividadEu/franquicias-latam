@@ -1566,12 +1566,14 @@ function GalleryTab({
                   </>
                 ) : file ? (
                   <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={previewUrl ?? ""}
-                      alt="Preview"
-                      className="h-24 w-24 rounded-lg object-cover"
-                    />
+                    {previewUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="h-24 w-24 rounded-lg object-cover"
+                      />
+                    )}
                     <span className="max-w-full truncate text-xs text-gray-700">{file.name}</span>
                     <span className="text-xs text-gray-400">Clic o arrastra para reemplazar</span>
                   </>
