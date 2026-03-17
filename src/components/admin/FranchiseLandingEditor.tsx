@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PLAN_ENTITLEMENTS, isModuleAllowed } from "@/lib/plan-entitlements";
@@ -1373,103 +1373,95 @@ function ModelForm({
 
 // ── Gallery tab ───────────────────────────────────────────────────────────────
 
-const GALLERY_ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-const GALLERY_MAX_MB = 5;
+type UploadSlot = {
+  id: string;
+  previewUrl: string;
+  status: "uploading" | "error";
+  errorMsg: string;
+};
 
 function GalleryTab({
   franchiseId, media, plan, onRefresh,
 }: { franchiseId: string; media: MediaItem[]; plan: PlanTier; onRefresh: (m: MediaItem[]) => void }) {
-  const [addMode, setAddMode] = useState<"url" | "file">("url");
-  // URL mode
-  const [url, setUrl] = useState("");
-  const [label, setLabel] = useState("");
-  // File mode
-  const [file, setFile] = useState<File | null>(null);
-  const [fileLabel, setFileLabel] = useState("");
+  const [addMode, setAddMode] = useState<"file" | "url">("file");
   const [dragging, setDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  // Shared
-  const [adding, setAdding] = useState(false);
-  const [addError, setAddError] = useState<string | null>(null);
-
-  // Stable object URL — created once per file, revoked on change/unmount
-  const previewUrl = useMemo(
-    () => (file ? URL.createObjectURL(file) : null),
-    [file]
-  );
-  useEffect(() => {
-    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
-  }, [previewUrl]);
+  // File upload slots — each in-progress upload lives here until confirmed
+  const [slots, setSlots] = useState<UploadSlot[]>([]);
+  // URL mode state
+  const [addUrl, setAddUrl] = useState("");
+  const [addLabel, setAddLabel] = useState("");
+  const [addingUrl, setAddingUrl] = useState(false);
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const images = media.filter((m) => m.type === "image");
   const max = PLAN_ENTITLEMENTS[plan].maxGalleryImages;
+  const activeUploads = slots.filter((s) => s.status === "uploading").length;
+  const remaining = max - images.length - activeUploads;
 
   async function refetch() {
     const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/media`);
     if (res.ok) onRefresh(await res.json());
   }
 
-  function validateFile(f: File): string | null {
-    if (!GALLERY_ACCEPTED_TYPES.includes(f.type)) return "Formato no válido. Usa JPG, PNG o WebP.";
-    if (f.size > GALLERY_MAX_MB * 1024 * 1024) return `Archivo muy grande. Máximo ${GALLERY_MAX_MB} MB.`;
-    return null;
-  }
+  // Upload one file: show preview immediately, then confirm with the server
+  async function uploadOne(file: File) {
+    const slotId = Math.random().toString(36).slice(2);
+    const previewUrl = URL.createObjectURL(file);
+    setSlots((prev) => [...prev, { id: slotId, previewUrl, status: "uploading", errorMsg: "" }]);
 
-  function pickFile(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    const f = files[0];
-    const err = validateFile(f);
-    if (err) { setAddError(err); return; }
-    setAddError(null);
-    setFile(f);
-  }
-
-  function clearFile() {
-    setFile(null);
-    setAddError(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }
-
-  async function addImage() {
-    if (!url) return;
-    setAdding(true);
-    setAddError(null);
-    const body = new FormData();
-    body.append("url", url);
-    body.append("type", "image");
-    body.append("label", label);
-    body.append("order", String(images.length));
-    const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/media`, { method: "POST", body });
-    if (!res.ok) {
-      setAddError("Error agregando imagen. Intenta de nuevo.");
-      setAdding(false);
-      return;
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("type", "image");
+      body.append("order", String(images.length + activeUploads));
+      const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/media`, { method: "POST", body });
+      if (res.ok) {
+        setSlots((prev) => prev.filter((s) => s.id !== slotId));
+        URL.revokeObjectURL(previewUrl);
+        await refetch();
+      } else {
+        const json = await res.json().catch(() => ({})) as { error?: string };
+        setSlots((prev) => prev.map((s) =>
+          s.id === slotId ? { ...s, status: "error", errorMsg: json.error ?? "Error al subir" } : s
+        ));
+      }
+    } catch {
+      setSlots((prev) => prev.map((s) =>
+        s.id === slotId ? { ...s, status: "error", errorMsg: "Error de red" } : s
+      ));
     }
-    setUrl(""); setLabel("");
-    await refetch();
-    setAdding(false);
   }
 
-  async function addImageByFile() {
-    if (!file) return;
-    setAdding(true);
-    setAddError(null);
+  function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0 || remaining <= 0) return;
+    Array.from(files).slice(0, remaining).forEach((f) => uploadOne(f));
+    // Reset input so the same file can be re-selected after an error
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  async function addByUrl() {
+    if (!addUrl.trim()) return;
+    setAddingUrl(true);
+    setUrlError(null);
     const body = new FormData();
-    body.append("file", file);
+    body.append("url", addUrl.trim());
     body.append("type", "image");
-    body.append("label", fileLabel);
+    body.append("label", addLabel);
     body.append("order", String(images.length));
     const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/media`, { method: "POST", body });
-    if (!res.ok) {
+    if (res.ok) {
+      setAddUrl(""); setAddLabel(""); await refetch();
+    } else {
       const json = await res.json().catch(() => ({})) as { error?: string };
-      setAddError(json.error ?? "Error subiendo imagen. Intenta de nuevo.");
-      setAdding(false);
-      return;
+      setUrlError(json.error ?? "Error agregando imagen.");
     }
-    clearFile();
-    setFileLabel("");
-    await refetch();
-    setAdding(false);
+    setAddingUrl(false);
+  }
+
+  function dismissSlot(slot: UploadSlot) {
+    URL.revokeObjectURL(slot.previewUrl);
+    setSlots((prev) => prev.filter((s) => s.id !== slot.id));
   }
 
   async function deleteMedia(id: string) {
@@ -1478,136 +1470,117 @@ function GalleryTab({
     await refetch();
   }
 
+  const isAtLimit = images.length + activeUploads >= max;
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-500">{images.length} / {max} imágenes</p>
 
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-        {images.map((img) => (
-          <div key={img.id} className="relative group">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img.url} alt={img.altText ?? ""} className="aspect-square w-full rounded-lg border border-gray-200 object-cover" />
-            <button
-              onClick={() => deleteMedia(img.id)}
-              className="absolute right-1 top-1 hidden group-hover:flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white text-xs"
-            >
-              ×
-            </button>
-            {img.label && <p className="mt-1 text-xs text-gray-500 text-center truncate">{img.label}</p>}
-          </div>
-        ))}
-      </div>
+      {/* Confirmed images + in-progress upload slots */}
+      {(images.length > 0 || slots.length > 0) && (
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+          {images.map((img) => (
+            <div key={img.id} className="relative group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img.url} alt={img.altText ?? ""} className="aspect-square w-full rounded-lg border border-gray-200 object-cover" />
+              <button
+                onClick={() => deleteMedia(img.id)}
+                className="absolute right-1 top-1 hidden group-hover:flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white text-xs"
+              >
+                ×
+              </button>
+              {img.label && <p className="mt-1 text-xs text-gray-500 text-center truncate">{img.label}</p>}
+            </div>
+          ))}
+          {slots.map((slot) => (
+            <div key={slot.id} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={slot.previewUrl} alt="" className="aspect-square w-full rounded-lg border border-gray-200 object-cover opacity-50" />
+              <div className="absolute inset-0 flex items-center justify-center rounded-lg">
+                {slot.status === "uploading" ? (
+                  <svg className="h-5 w-5 animate-spin text-white drop-shadow" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => dismissSlot(slot)}
+                    className="rounded bg-red-500 px-2 py-1 text-xs font-medium text-white"
+                  >
+                    Error — quitar
+                  </button>
+                )}
+              </div>
+              {slot.status === "error" && (
+                <p className="mt-1 text-xs text-red-500 text-center truncate">{slot.errorMsg}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
-      {images.length < max && (
+      {!isAtLimit && (
         <div className="rounded-lg border border-dashed border-gray-300 p-4 space-y-3">
           {/* Mode switcher */}
           <div className="flex gap-1 rounded-md bg-gray-100 p-1">
             <button
               type="button"
-              onClick={() => { setAddMode("url"); setAddError(null); }}
-              className={`flex-1 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
-                addMode === "url" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Por URL
-            </button>
-            <button
-              type="button"
-              onClick={() => { setAddMode("file"); setAddError(null); }}
+              onClick={() => { setAddMode("file"); setUrlError(null); }}
               className={`flex-1 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
                 addMode === "file" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"
               }`}
             >
               Subir archivo
             </button>
+            <button
+              type="button"
+              onClick={() => { setAddMode("url"); setUrlError(null); }}
+              className={`flex-1 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+                addMode === "url" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Por URL
+            </button>
           </div>
 
-          {addMode === "url" ? (
-            <>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <Input value={url} onChange={setUrl} placeholder="https://..." />
-                <Input value={label} onChange={setLabel} placeholder="Etiqueta (opcional)" />
-              </div>
-              {addError && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                  {addError}
-                </div>
-              )}
-              <button onClick={addImage} disabled={!url || adding} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
-                {adding ? "Agregando..." : "Agregar"}
-              </button>
-            </>
+          {addMode === "file" ? (
+            /* Drop zone — <label> natively opens the file dialog on click */
+            <label
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+              className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 p-6 text-center transition-colors ${
+                dragging ? "border-blue-400 bg-blue-50" : "border-dashed border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100"
+              }`}
+            >
+              <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 0l-3 3m3-3l3 3" />
+              </svg>
+              <span className="text-sm text-gray-500">Arrastra o haz clic para subir</span>
+              <span className="text-xs text-gray-400">JPG, PNG, WebP</span>
+              <input
+                ref={inputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="sr-only"
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+            </label>
           ) : (
             <>
-              {/* Drop zone — label wraps the input so any click natively opens the file dialog */}
-              <label
-                onDragOver={(e) => { e.preventDefault(); if (!adding) setDragging(true); }}
-                onDragLeave={() => setDragging(false)}
-                onDrop={(e) => { e.preventDefault(); setDragging(false); if (!adding) pickFile(e.dataTransfer.files); }}
-                className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 p-6 text-center transition-colors ${
-                  dragging
-                    ? "border-blue-400 bg-blue-50"
-                    : file
-                    ? "border-gray-300 bg-gray-50"
-                    : "border-dashed border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100"
-                } ${adding ? "cursor-not-allowed opacity-60 pointer-events-none" : ""}`}
-              >
-                {adding ? (
-                  <>
-                    <svg className="h-6 w-6 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
-                    <span className="text-xs text-gray-500">Subiendo...</span>
-                  </>
-                ) : file ? (
-                  <>
-                    {previewUrl && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className="h-24 w-24 rounded-lg object-cover"
-                      />
-                    )}
-                    <span className="max-w-full truncate text-xs text-gray-700">{file.name}</span>
-                    <span className="text-xs text-gray-400">Clic o arrastra para reemplazar</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 0l-3 3m3-3l3 3" />
-                    </svg>
-                    <span className="text-sm text-gray-500">Arrastra o haz clic para subir</span>
-                    <span className="text-xs text-gray-400">JPG, PNG, WebP · máx. {GALLERY_MAX_MB} MB</span>
-                  </>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={adding}
-                  className="sr-only"
-                  onChange={(e) => pickFile(e.target.files)}
-                />
-              </label>
-
-              {file && !adding && (
-                <button type="button" onClick={clearFile} className="text-xs text-red-500 hover:underline">
-                  Quitar archivo
-                </button>
-              )}
-
-              <Input value={fileLabel} onChange={setFileLabel} placeholder="Etiqueta (opcional)" />
-
-              {addError && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input value={addUrl} onChange={setAddUrl} placeholder="https://..." />
+                <Input value={addLabel} onChange={setAddLabel} placeholder="Etiqueta (opcional)" />
+              </div>
+              {urlError && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-                  {addError}
+                  {urlError}
                 </div>
               )}
-
-              <button onClick={addImageByFile} disabled={!file || adding} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
-                {adding ? "Subiendo..." : "Subir y agregar"}
+              <button onClick={addByUrl} disabled={!addUrl.trim() || addingUrl} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
+                {addingUrl ? "Agregando..." : "Agregar"}
               </button>
             </>
           )}
