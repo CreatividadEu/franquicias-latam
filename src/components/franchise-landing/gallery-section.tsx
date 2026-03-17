@@ -308,7 +308,7 @@ export function GallerySection({ data }: { data: GalleryImageData[] }) {
             className="flex w-max will-change-transform"
             style={{ transform: "translate3d(0,0,0)" }}
           >
-            {[0, 1].map((loopIndex) => (
+            {[0, 1, 2, 3].map((loopIndex) => (
               <div
                 key={`gallery-loop-${loopIndex}`}
                 ref={loopIndex === 0 ? firstLoopRef : null}
