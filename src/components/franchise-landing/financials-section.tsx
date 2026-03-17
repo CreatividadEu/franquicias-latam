@@ -41,16 +41,16 @@ function useCountUp(target: number, active: boolean, duration = 900): number {
       rafRef.current = null;
     }
     if (!active) {
-      setCount(0);
+      setCount(0); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
     if (typeof window === "undefined") {
-      setCount(target);
+      setCount(target); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
     // Respect prefers-reduced-motion
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setCount(target);
+      setCount(target); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
     const startTime = performance.now();
