@@ -171,21 +171,24 @@ export function FinancialsSection({ data }: { data: FinancialsData }) {
   };
 
   // "desde" appears in every variable metric label (per design spec)
-  const metrics: MetricDef[] = [
-    {
-      label: "Canon de entrada desde",
-      value: formatAmountUSD(data.investmentMin),
-      numericA: data.investmentMin,
+  const metrics: MetricDef[] = [];
+
+  if (data.canonEntrada) {
+    metrics.push({
+      label: "Canon de entrada",
+      value: formatAmountUSD(data.canonEntrada),
+      numericA: data.canonEntrada,
       formatFn: (a) => formatAmountUSD(a),
-    },
-    {
-      label: "Rango de inversión desde / hasta",
-      value: `${formatAmountUSD(data.investmentMin)} – ${formatAmountUSD(data.investmentMax)}`,
-      numericA: data.investmentMin,
-      numericB: data.investmentMax,
-      formatFn: (a, b) => `${formatAmountUSD(a)} – ${formatAmountUSD(b)}`,
-    },
-  ];
+    });
+  }
+
+  metrics.push({
+    label: "Rango de inversión desde / hasta",
+    value: `${formatAmountUSD(data.investmentMin)} – ${formatAmountUSD(data.investmentMax)}`,
+    numericA: data.investmentMin,
+    numericB: data.investmentMax,
+    formatFn: (a, b) => `${formatAmountUSD(a)} – ${formatAmountUSD(b)}`,
+  });
 
   if (data.ebitdaReference) {
     // EBITDA is already a descriptive range string (e.g. "17%-23%"); label conveys "desde"

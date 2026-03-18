@@ -58,7 +58,7 @@ type Franchise = {
   youtubeUrl: string | null; brochureUrl: string | null; bookingUrl: string | null;
   credibilityLine: string | null; foundingYear: number | null; cta1Label: string | null; cta1Url: string | null;
   cta2Label: string | null; cta2Url: string | null; ebitdaReference: string | null;
-  paybackMonths: number | null; royaltyInfo: string | null; operatorProfile: string | null;
+  paybackMonths: number | null; royaltyInfo: string | null; operatorProfile: string | null; canonEntrada: number | null;
   businessModels: BusinessModel[]; media: MediaItem[]; faqs: FaqItem[];
   moduleConfig: ModuleConfig; automationConfig: AutomationConfig;
 };
@@ -470,7 +470,7 @@ export function FranchiseLandingEditor({
             credibilityLine: data.credibilityLine, foundingYear: data.foundingYear, cta1Label: data.cta1Label, cta1Url: data.cta1Url,
             cta2Label: data.cta2Label, cta2Url: data.cta2Url, ebitdaReference: data.ebitdaReference,
             paybackMonths: data.paybackMonths, royaltyInfo: data.royaltyInfo,
-            operatorProfile: data.operatorProfile,
+            operatorProfile: data.operatorProfile, canonEntrada: data.canonEntrada,
             investmentMin: data.investmentMin, investmentMax: data.investmentMax,
             // base config fields
             sectorId: baseForm.sectorId || undefined,
@@ -1071,6 +1071,19 @@ function FinancialsTab({
 
   return (
     <div className="space-y-8">
+      {/* SECTION: Canon de Entrada */}
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Canon de Entrada</h3>
+        <div className="mb-4 border-t border-gray-100" />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Canon de entrada (USD)" hint="Valor del canon o fee de entrada de la franquicia">
+            <Input type="number" value={String(data.canonEntrada ?? "")} onChange={(v) => set("canonEntrada", v ? Number(v) : null)} placeholder="15000" />
+          </Field>
+        </div>
+      </section>
+
+      <div className="border-t border-gray-100" />
+
       {/* SECTION: Márgenes */}
       <section>
         <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Márgenes</h3>

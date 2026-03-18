@@ -62,6 +62,7 @@ export type GalleryImageData = {
 export type FinancialsData = {
   investmentMin: number;
   investmentMax: number;
+  canonEntrada: number | null;
   ebitdaReference: string | null;
   paybackMonths: number | null;
   royaltyInfo: string | null;
@@ -214,6 +215,7 @@ export function mapFranchiseToLandingPageData(
     ? {
         investmentMin: franchise.investmentMin,
         investmentMax: franchise.investmentMax,
+        canonEntrada: franchise.canonEntrada ?? null,
         ebitdaReference: franchise.ebitdaReference,
         paybackMonths: franchise.paybackMonths,
         royaltyInfo: franchise.royaltyInfo,

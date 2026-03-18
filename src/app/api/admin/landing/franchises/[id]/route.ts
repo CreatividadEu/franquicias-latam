@@ -60,7 +60,7 @@ export async function PUT(
     "longDescription", "logoUrl", "heroImageUrl", "youtubeUrl", "brochureUrl",
     "bookingUrl", "credibilityLine", "foundingYear", "cta1Label", "cta1Url", "cta2Label",
     "cta2Url", "ebitdaReference", "paybackMonths", "royaltyInfo",
-    "operatorProfile", "name", "slug", "investmentMin", "investmentMax",
+    "operatorProfile", "canonEntrada", "name", "slug", "investmentMin", "investmentMax",
     // Base config fields (legacy + new)
     "sectorId", "active", "featured", "contactEmail", "logo", "video",
   ] as const;
@@ -74,6 +74,8 @@ export async function PUT(
 
   if (data.investmentMin !== undefined) data.investmentMin = Number(data.investmentMin);
   if (data.investmentMax !== undefined) data.investmentMax = Number(data.investmentMax);
+  if (data.canonEntrada !== undefined)
+    data.canonEntrada = data.canonEntrada ? Number(data.canonEntrada) : null;
   if (data.paybackMonths !== undefined)
     data.paybackMonths = data.paybackMonths ? Number(data.paybackMonths) : null;
   if (data.foundingYear !== undefined)
