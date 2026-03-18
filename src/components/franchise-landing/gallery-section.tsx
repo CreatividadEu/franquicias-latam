@@ -278,13 +278,13 @@ export function GallerySection({ data }: { data: GalleryImageData[] }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
-            Galería
+            Bienvenidos
           </p>
           <h2
             className="mt-2 text-3xl font-bold text-[#171717] sm:text-4xl"
             style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
           >
-            Conoce el espacio
+            Conoce Nuestra Franquicia
           </h2>
         </div>
       </div>
