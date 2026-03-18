@@ -273,7 +273,7 @@ export function GallerySection({ data }: { data: GalleryImageData[] }) {
   return (
     <section
       aria-label="Galería"
-      className="bg-[#f8fafc] pt-16 pb-16 md:pt-24 md:pb-20"
+      className="section-grid-bg bg-white pt-16 pb-16 md:pt-24 md:pb-20"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
