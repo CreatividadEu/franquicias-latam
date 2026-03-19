@@ -41,6 +41,25 @@ enum PlanTier {
   ALL_IN
 }
 
+enum ListingType {
+  ACTIVE_FRANCHISE
+  EXTERNAL_FRANCHISE
+  IDENTIFIED_BRAND
+}
+
+enum VerificationStatus {
+  VERIFIED_BY_FL
+  NOT_VERIFIED
+  UNDER_REVIEW
+}
+
+enum InterestCtaMode {
+  APPLY
+  REQUEST_INFO
+  EXPLORE_BRAND
+  JOIN_INTEREST
+}
+
 // ── Lookup Tables ──────────────────────────────────
 
 model Sector {
@@ -134,6 +153,18 @@ model Franchise {
   faqs              FranchiseFaq[]
   moduleConfig      FranchiseModuleConfig?
   automationConfig  FranchiseAutomationConfig?
+  listingType       ListingType          @default(ACTIVE_FRANCHISE)
+  verificationStatus VerificationStatus  @default(VERIFIED_BY_FL)
+  editorialBadge    String?
+  publicInterestCount Int                @default(0)
+  publicInterestEnabled Boolean          @default(false)
+  publicInterestLabel String?
+  interestCtaMode   InterestCtaMode      @default(APPLY)
+  availabilityLabel String?
+  statusDisclaimer  String?
+  showApplicationForm Boolean            @default(true)
+  showFinancialData Boolean              @default(true)
+  showVerifiedBadge Boolean              @default(false)
 
   @@map("franchises")
 }
@@ -361,11 +392,21 @@ model FormLead {
   city            String?
   experience      String?
   franchiseSlug   String
+  listingSlug     String?
+  listingType     ListingType @default(ACTIVE_FRANCHISE)
+  sourceType      String   @default("franchise_application")
+  editorialBadge  String?
+  cityInterest    String?
+  country         String?
+  message         String?
   landingSource   String   @default("landing-form")
   type            String   @default("form")
   createdAt       DateTime @default(now())
 
   @@index([franchiseSlug])
+  @@index([listingSlug])
+  @@index([listingType])
+  @@index([sourceType])
   @@index([email])
   @@map("form_leads")
 }

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
+import { resolveListingState } from "@/lib/listing-config";
 
 async function requireAdmin() {
   const cookieStore = await cookies();
@@ -27,6 +28,9 @@ export async function GET() {
       published: true,
       updatedAt: true,
       headline: true,
+      listingType: true,
+      availabilityLabel: true,
+      editorialBadge: true,
       logoUrl: true,
       heroImageUrl: true,
       moduleConfig: { select: { heroEnabled: true } },
@@ -45,6 +49,20 @@ export async function POST(req: Request) {
 
   const body = await req.json();
   const { name, slug, planTier, sectorId } = body;
+  const listingState = resolveListingState({
+    listingType: body.listingType,
+    verificationStatus: body.verificationStatus,
+    editorialBadge: body.editorialBadge,
+    publicInterestCount: body.publicInterestCount,
+    publicInterestEnabled: body.publicInterestEnabled,
+    publicInterestLabel: body.publicInterestLabel,
+    interestCtaMode: body.interestCtaMode,
+    availabilityLabel: body.availabilityLabel,
+    statusDisclaimer: body.statusDisclaimer,
+    showApplicationForm: body.showApplicationForm,
+    showFinancialData: body.showFinancialData,
+    showVerifiedBadge: body.showVerifiedBadge,
+  });
 
   if (!name || !sectorId) {
     return NextResponse.json({ error: "name y sectorId son requeridos" }, { status: 400 });
@@ -67,10 +85,23 @@ export async function POST(req: Request) {
       planTier: planTier || "BASIC",
       published: false,
       active: body.active !== false,
+      listingType: listingState.listingType,
+      verificationStatus: listingState.verificationStatus,
+      editorialBadge: listingState.editorialBadge,
+      publicInterestCount: listingState.publicInterestCount,
+      publicInterestEnabled: listingState.publicInterestEnabled,
+      publicInterestLabel: listingState.publicInterestLabel,
+      interestCtaMode: listingState.interestCtaMode,
+      availabilityLabel: listingState.availabilityLabel,
+      statusDisclaimer: listingState.statusDisclaimer,
+      showApplicationForm: listingState.showApplicationForm,
+      showFinancialData: listingState.showFinancialData,
+      showVerifiedBadge: listingState.showVerifiedBadge,
       moduleConfig: {
         create: {
           heroEnabled: true,
-          financialsEnabled: true,
+          financialsEnabled: listingState.showFinancialData,
+          showVerifiedBadge: listingState.showVerifiedBadge,
         },
       },
     },

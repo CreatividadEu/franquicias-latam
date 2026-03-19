@@ -1,46 +1,148 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { matchesFranchiseSlug } from "@/lib/franchiseSlug";
+import {
+  getLeadSourceType,
+  resolveListingState,
+  shouldUseInterestFlow,
+} from "@/lib/listing-config";
+
+function normalizeText(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : "";
+}
+
+async function findListingBySlug(slug: string) {
+  const candidates = await prisma.franchise.findMany({
+    where: { active: true },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      listingType: true,
+      verificationStatus: true,
+      editorialBadge: true,
+      publicInterestCount: true,
+      publicInterestEnabled: true,
+      publicInterestLabel: true,
+      interestCtaMode: true,
+      availabilityLabel: true,
+      statusDisclaimer: true,
+      showApplicationForm: true,
+      showFinancialData: true,
+      showVerifiedBadge: true,
+    },
+  });
+
+  return candidates.find((candidate) => matchesFranchiseSlug(candidate, slug)) ?? null;
+}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, phone, investmentRange, city, experience, franchiseSlug } =
-      body as {
-        name: string;
-        email: string;
-        phone: string;
-        investmentRange: string;
-        city?: string;
-        experience?: string;
-        franchiseSlug: string;
-      };
+    const name = normalizeText(body.name);
+    const email = normalizeText(body.email).toLowerCase();
+    const phone = normalizeText(body.phone);
+    const rawSlug =
+      normalizeText(body.listingSlug) || normalizeText(body.franchiseSlug);
+    const investmentRange = normalizeText(body.investmentRange);
+    const experience = normalizeText(body.experience);
+    const cityInterest =
+      normalizeText(body.cityInterest) || normalizeText(body.city);
+    const country = normalizeText(body.country);
+    const message = normalizeText(body.message);
 
-    if (!name?.trim() || !email?.trim() || !phone?.trim() || !franchiseSlug?.trim()) {
+    if (!name || !email || !phone || !rawSlug) {
       return NextResponse.json(
-        { error: "Nombre, email, teléfono y franquicia son requeridos" },
+        { error: "Nombre, email, teléfono y listing son requeridos" },
         { status: 400 },
       );
     }
 
-    const formLead = await prisma.formLead.create({
-      data: {
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        phone: phone.trim(),
-        investmentRange: investmentRange?.trim() || "",
-        city: city?.trim() || null,
-        experience: experience?.trim() || null,
-        franchiseSlug: franchiseSlug.trim(),
-        landingSource: "landing-form",
-      },
+    const matchedListing = await findListingBySlug(rawSlug);
+    const resolvedListing = resolveListingState({
+      listingType: matchedListing?.listingType ?? body.listingType,
+      verificationStatus:
+        matchedListing?.verificationStatus ?? body.verificationStatus,
+      editorialBadge: matchedListing?.editorialBadge ?? body.editorialBadge,
+      publicInterestCount:
+        matchedListing?.publicInterestCount ?? body.publicInterestCount,
+      publicInterestEnabled:
+        matchedListing?.publicInterestEnabled ?? body.publicInterestEnabled,
+      publicInterestLabel:
+        matchedListing?.publicInterestLabel ?? body.publicInterestLabel,
+      interestCtaMode: matchedListing?.interestCtaMode ?? body.interestCtaMode,
+      availabilityLabel:
+        matchedListing?.availabilityLabel ?? body.availabilityLabel,
+      statusDisclaimer:
+        matchedListing?.statusDisclaimer ?? body.statusDisclaimer,
+      showApplicationForm:
+        matchedListing?.showApplicationForm ?? body.showApplicationForm,
+      showFinancialData:
+        matchedListing?.showFinancialData ?? body.showFinancialData,
+      showVerifiedBadge:
+        matchedListing?.showVerifiedBadge ?? body.showVerifiedBadge,
+    });
+
+    const sourceType =
+      normalizeText(body.sourceType) || getLeadSourceType(resolvedListing);
+    const isInterestFlow = shouldUseInterestFlow(resolvedListing);
+    const landingSource =
+      normalizeText(body.landingSource) ||
+      (isInterestFlow ? "listing-interest" : "landing-form");
+    const leadType =
+      normalizeText(body.type) || (isInterestFlow ? "interest" : "form");
+    const listingSlug = matchedListing?.slug ?? rawSlug;
+
+    const created = await prisma.$transaction(async (tx) => {
+      const lead = await tx.formLead.create({
+        data: {
+          name,
+          email,
+          phone,
+          investmentRange,
+          city: cityInterest || null,
+          experience: experience || null,
+          franchiseSlug: listingSlug,
+          listingSlug,
+          listingType: resolvedListing.listingType,
+          sourceType,
+          editorialBadge: (
+            matchedListing?.editorialBadge ??
+            normalizeText(body.editorialBadge)
+          ) || null,
+          cityInterest: cityInterest || null,
+          country: country || null,
+          message: message || null,
+          landingSource,
+          type: leadType,
+        },
+      });
+
+      let publicInterestCount = matchedListing?.publicInterestCount ?? 0;
+
+      if (isInterestFlow && matchedListing?.publicInterestEnabled) {
+        const updated = await tx.franchise.update({
+          where: { id: matchedListing.id },
+          data: { publicInterestCount: { increment: 1 } },
+          select: { publicInterestCount: true },
+        });
+        publicInterestCount = updated.publicInterestCount;
+      }
+
+      return { lead, publicInterestCount };
     });
 
     console.log("[form-leads/POST] Created form lead", {
-      id: formLead.id,
-      franchiseSlug,
+      id: created.lead.id,
+      listingSlug,
+      sourceType,
+      listingType: resolvedListing.listingType,
     });
 
-    return NextResponse.json({ id: formLead.id }, { status: 201 });
+    return NextResponse.json(
+      { id: created.lead.id, publicInterestCount: created.publicInterestCount },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("[form-leads/POST] Error:", error);
     return NextResponse.json(

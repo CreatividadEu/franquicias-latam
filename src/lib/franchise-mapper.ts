@@ -1,5 +1,17 @@
 import type { Prisma } from "@prisma/client";
 import { isModuleAllowed, getEntitlements, type PlanTier } from "./plan-entitlements";
+import {
+  getLeadModuleCopy,
+  getLeadSourceType,
+  getListingPrimaryCtaLabel,
+  getListingPrimaryCtaUrl,
+  resolveListingState,
+  shouldUseInterestFlow,
+  type InterestCtaMode,
+  type ListingType,
+  type ResolvedListingState,
+  type VerificationStatus,
+} from "./listing-config";
 
 // ── Prisma include shape ──────────────────────────────────────────────────────
 
@@ -33,6 +45,16 @@ export type HeroData = {
   cta2Url: string | null;
   planTier: PlanTier;
   showVerifiedBadge: boolean;
+  listingType: ListingType;
+  verificationStatus: VerificationStatus;
+  editorialBadge: string | null;
+  availabilityLabel: string;
+  statusDisclaimer: string | null;
+  publicInterestEnabled: boolean;
+  publicInterestCount: number;
+  publicInterestLabel: string | null;
+  interestCtaMode: InterestCtaMode;
+  usesInterestFlow: boolean;
 };
 
 export type VideoData = {
@@ -90,6 +112,32 @@ export type ChatbotData = {
   logoUrl?: string | null;
 };
 
+export type ListingStateData = ResolvedListingState & {
+  usesInterestFlow: boolean;
+  leadSourceType: string;
+  primaryCtaLabel: string;
+  primaryCtaUrl: string;
+};
+
+export type LeadModuleData = {
+  variant: "apply" | "interest";
+  sourceType: string;
+  listingType: ListingType;
+  editorialBadge: string | null;
+  availabilityLabel: string;
+  publicInterestEnabled: boolean;
+  publicInterestCount: number;
+  publicInterestLabel: string | null;
+  interestCtaMode: InterestCtaMode;
+  eyebrow: string;
+  title: string;
+  description: string;
+  submitLabel: string;
+  successTitle: string;
+  successDescription: string;
+  showExperienceField: boolean;
+};
+
 export type LandingPageData = {
   hero: HeroData | null;
   video: VideoData | null;
@@ -100,6 +148,8 @@ export type LandingPageData = {
   brochure: BrochureData | null;
   booking: BookingData | null;
   chatbot: ChatbotData | null;
+  listing: ListingStateData;
+  leadModule: LeadModuleData | null;
   planTier: PlanTier;
 };
 
@@ -126,6 +176,43 @@ export function mapFranchiseToLandingPageData(
   const plan = (franchise.planTier as PlanTier) ?? "BASIC";
   const entitlements = getEntitlements(plan);
   const cfg = franchise.moduleConfig;
+  const listingState = resolveListingState({
+    listingType: franchise.listingType,
+    verificationStatus: franchise.verificationStatus,
+    editorialBadge: franchise.editorialBadge,
+    publicInterestCount: franchise.publicInterestCount,
+    publicInterestEnabled: franchise.publicInterestEnabled,
+    publicInterestLabel: franchise.publicInterestLabel,
+    interestCtaMode: franchise.interestCtaMode,
+    availabilityLabel: franchise.availabilityLabel,
+    statusDisclaimer: franchise.statusDisclaimer,
+    showApplicationForm: franchise.showApplicationForm,
+    showFinancialData:
+      typeof franchise.showFinancialData === "boolean"
+        ? franchise.showFinancialData
+        : cfg?.financialsEnabled,
+    showVerifiedBadge:
+      typeof franchise.showVerifiedBadge === "boolean"
+        ? franchise.showVerifiedBadge
+        : cfg?.showVerifiedBadge,
+  });
+  const usesInterestFlow = shouldUseInterestFlow(listingState);
+  const primaryCtaLabel = getListingPrimaryCtaLabel(
+    listingState,
+    franchise.cta1Label,
+  );
+  const primaryCtaUrl = getListingPrimaryCtaUrl(
+    listingState,
+    franchise.cta1Url,
+  );
+  const leadSourceType = getLeadSourceType(listingState);
+  const listingData: ListingStateData = {
+    ...listingState,
+    usesInterestFlow,
+    leadSourceType,
+    primaryCtaLabel,
+    primaryCtaUrl,
+  };
 
   // ── Hero (always allowed on all plans, but gated by moduleConfig) ────────
   const heroData: HeroData | null = gate(
@@ -142,12 +229,24 @@ export function mapFranchiseToLandingPageData(
         heroImageUrl: franchise.heroImageUrl,
         credibilityLine: franchise.credibilityLine,
         foundingYear: franchise.foundingYear ?? null,
-        cta1Label: franchise.cta1Label ?? "Quiero saber más",
-        cta1Url: franchise.cta1Url ?? "/quiz",
+        cta1Label: primaryCtaLabel,
+        cta1Url: primaryCtaUrl,
         cta2Label: franchise.cta2Label,
         cta2Url: franchise.cta2Url,
         planTier: plan,
-        showVerifiedBadge: cfg?.showVerifiedBadge ?? false,
+        showVerifiedBadge:
+          (listingState.showVerifiedBadge || cfg?.showVerifiedBadge === true) &&
+          listingState.verificationStatus === "VERIFIED_BY_FL",
+        listingType: listingState.listingType,
+        verificationStatus: listingState.verificationStatus,
+        editorialBadge: listingState.editorialBadge,
+        availabilityLabel: listingState.availabilityLabel,
+        statusDisclaimer: listingState.statusDisclaimer,
+        publicInterestEnabled: listingState.publicInterestEnabled,
+        publicInterestCount: listingState.publicInterestCount,
+        publicInterestLabel: listingState.publicInterestLabel,
+        interestCtaMode: listingState.interestCtaMode,
+        usesInterestFlow,
       }
     : null;
 
@@ -209,7 +308,7 @@ export function mapFranchiseToLandingPageData(
   const financialsData: FinancialsData | null = gate(
     plan,
     "financials",
-    cfg?.financialsEnabled ?? true,
+    (cfg?.financialsEnabled ?? true) && listingState.showFinancialData,
     true
   )
     ? {
@@ -270,6 +369,26 @@ export function mapFranchiseToLandingPageData(
     ? { franchiseName: franchise.name, logoUrl: franchise.logoUrl ?? franchise.logo ?? null }
     : null;
 
+  const leadModuleCopy = getLeadModuleCopy(
+    listingState,
+    franchise.name,
+    franchise.cta1Label,
+  );
+  const leadModuleData: LeadModuleData | null =
+    listingState.showApplicationForm || usesInterestFlow
+      ? {
+          ...leadModuleCopy,
+          sourceType: leadSourceType,
+          listingType: listingState.listingType,
+          editorialBadge: listingState.editorialBadge,
+          availabilityLabel: listingState.availabilityLabel,
+          publicInterestEnabled: listingState.publicInterestEnabled,
+          publicInterestCount: listingState.publicInterestCount,
+          publicInterestLabel: listingState.publicInterestLabel,
+          interestCtaMode: listingState.interestCtaMode,
+        }
+      : null;
+
   return {
     hero: heroData,
     video: videoData,
@@ -280,6 +399,8 @@ export function mapFranchiseToLandingPageData(
     brochure: brochureData,
     booking: bookingData,
     chatbot: chatbotData,
+    listing: listingData,
+    leadModule: leadModuleData,
     planTier: plan,
   };
 }

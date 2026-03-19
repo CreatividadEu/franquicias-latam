@@ -4,7 +4,6 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
 import type { BusinessModelData } from "@/lib/franchise-mapper";
-import { QualificationForm } from "./qualification-form";
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
@@ -135,13 +134,13 @@ function ModelCard({
 
 export function BusinessModelsSection({
   data,
-  franchiseSlug,
-  franchiseName,
+  sidePanel,
 }: {
   data: BusinessModelData[];
-  franchiseSlug: string;
-  franchiseName: string;
+  sidePanel?: React.ReactNode;
 }) {
+  const hasSidePanel = Boolean(sidePanel);
+
   return (
     <section className="bg-[#f8fafc] py-16 md:py-24" aria-label="Modelos de negocio">
       <div className="mx-auto max-w-6xl px-6">
@@ -165,27 +164,37 @@ export function BusinessModelsSection({
         </motion.div>
 
         {/* Two-column grid: LEFT model cards / RIGHT form */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[420px_1fr]">
+        <div
+          className={
+            hasSidePanel
+              ? "grid grid-cols-1 gap-12 lg:grid-cols-[420px_1fr]"
+              : "grid grid-cols-1 gap-12"
+          }
+        >
 
           {/* LEFT — model cards */}
-          <div className="space-y-6">
+          <div
+            className={
+              hasSidePanel
+                ? "space-y-6"
+                : "grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+            }
+          >
             {data.map((model, i) => (
               <ModelCard key={model.id} model={model} index={i} />
             ))}
           </div>
 
-          {/* RIGHT — qualification form */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <QualificationForm
-              franchiseSlug={franchiseSlug}
-              franchiseName={franchiseName}
-            />
-          </motion.div>
+          {hasSidePanel && (
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              {sidePanel}
+            </motion.div>
+          )}
 
         </div>
       </div>

@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { matchesFranchiseSlug } from "@/lib/franchiseSlug";
@@ -18,6 +17,7 @@ import { FaqSection } from "@/components/franchise-landing/faq-section";
 import { BrochureSection } from "@/components/franchise-landing/brochure-section";
 import { BookingSection } from "@/components/franchise-landing/booking-section";
 import { ChatbotSection } from "@/components/franchise-landing/chatbot-section";
+import { QualificationForm } from "@/components/franchise-landing/qualification-form";
 import { AiAssistantSection } from "@/components/franchise-landing/ai-assistant-section";
 import { FranchiseCalendlySection } from "@/components/franchise-landing/franchise-calendly-section";
 import { CtaFooterSection } from "@/components/franchise-landing/cta-footer-section";
@@ -182,6 +182,13 @@ export default async function FranchiseLandingPage({
   // ── NEW ENGINE ─────────────────────────────────────────────────────────────
   if (engine === "new") {
     const pageData = mapFranchiseToLandingPageData(franchise);
+    const leadModulePanel = pageData.leadModule ? (
+      <QualificationForm
+        module={pageData.leadModule}
+        listingSlug={slug}
+        listingName={franchise.name}
+      />
+    ) : null;
 
     return (
       <main className="bg-white min-h-screen text-[#171717]">
@@ -192,6 +199,7 @@ export default async function FranchiseLandingPage({
         )}
         {pageData.hero && <HeroSection data={pageData.hero} />}
         {pageData.gallery && <GallerySection data={pageData.gallery} />}
+        {pageData.video && <VideoSection data={pageData.video} />}
         {pageData.chatbot && (
           franchise.botConfig?.botMode === "ai_assistant"
             ? <AiAssistantSection />
@@ -201,11 +209,19 @@ export default async function FranchiseLandingPage({
         {pageData.businessModels && (
           <BusinessModelsSection
             data={pageData.businessModels}
-            franchiseSlug={slug}
-            franchiseName={franchise.name}
+            sidePanel={leadModulePanel}
           />
         )}
-        <FranchiseCalendlySection />
+        {!pageData.businessModels && leadModulePanel && (
+          <section className="bg-[#f8fafc] py-16 md:py-20" aria-label="Captura de interés">
+            <div className="mx-auto max-w-3xl px-6">
+              {leadModulePanel}
+            </div>
+          </section>
+        )}
+        {pageData.listing.listingType === "ACTIVE_FRANCHISE" && (
+          <FranchiseCalendlySection />
+        )}
         {pageData.brochure && <BrochureSection data={pageData.brochure} />}
         {pageData.faq && <FaqSection data={pageData.faq} />}
         {pageData.booking && <BookingSection data={pageData.booking} />}

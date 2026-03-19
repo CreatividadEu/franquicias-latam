@@ -38,6 +38,17 @@ export function HeroSection({ data }: { data: HeroData }) {
       )}
 
       <div className="relative z-10 mx-auto max-w-4xl space-y-4 sm:space-y-5">
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
+            {data.availabilityLabel}
+          </span>
+          {data.editorialBadge && (
+            <span className="rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-slate-700 shadow-sm">
+              {data.editorialBadge}
+            </span>
+          )}
+        </div>
+
         {/* Logo */}
         {data.logoUrl && (
           <motion.div
@@ -93,6 +104,17 @@ export function HeroSection({ data }: { data: HeroData }) {
           {data.subheadline}
         </motion.p>
 
+        {data.credibilityLine && (
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.34, duration: 0.45 }}
+            className="mx-auto max-w-xl text-sm font-medium leading-relaxed text-slate-500"
+          >
+            {data.credibilityLine}
+          </motion.p>
+        )}
+
         {/* Verified badge */}
         {data.showVerifiedBadge && (
           <motion.div
@@ -107,6 +129,17 @@ export function HeroSection({ data }: { data: HeroData }) {
               alt="Verificado por Franquicias LATAM"
               className="h-[120px] w-auto"
             />
+          </motion.div>
+        )}
+
+        {data.statusDisclaimer && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.37, duration: 0.45 }}
+            className="mx-auto max-w-3xl rounded-2xl border border-amber-200/80 bg-white/80 px-5 py-3 text-sm leading-relaxed text-slate-600 shadow-sm backdrop-blur-sm"
+          >
+            {data.statusDisclaimer}
           </motion.div>
         )}
 

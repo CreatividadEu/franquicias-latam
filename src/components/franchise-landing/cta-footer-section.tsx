@@ -9,6 +9,22 @@ export function CtaFooterSection({ franchise }: { franchise: HeroData | null }) 
   const name = franchise?.name ?? "esta franquicia";
   const cta1Label = franchise?.cta1Label ?? "Quiero saber más";
   const cta1Url = franchise?.cta1Url ?? "/quiz";
+  const isInterestFlow = franchise?.usesInterestFlow ?? false;
+  const headline = !franchise
+    ? `¿Listo para avanzar con ${name}?`
+    : franchise.listingType === "IDENTIFIED_BRAND"
+    ? `¿Quieres que exploremos ${name}?`
+    : franchise.listingType === "EXTERNAL_FRANCHISE"
+    ? `¿Te interesa evaluar ${name}?`
+    : `¿Listo para avanzar con ${name}?`;
+  const description = !franchise
+    ? "Un solo paso para validar tu encaje, resolver tus dudas y activar el proceso con el equipo de franquicia."
+    : isInterestFlow
+    ? "Comparte tu ciudad, tu rango de inversión y el contexto de interés. Priorizaremos la conversación desde señales reales de demanda."
+    : "Un solo paso para validar tu encaje, resolver tus dudas y activar el proceso con el equipo de franquicia.";
+  const footnote = isInterestFlow
+    ? "Sin ruido comercial · Priorización editorial y comercial en 24-48 h"
+    : "Sin compromiso · Respuesta en 24-48 h";
 
   return (
     <section
@@ -37,10 +53,10 @@ export function CtaFooterSection({ franchise }: { franchise: HeroData | null }) 
               className="text-3xl font-bold leading-tight text-[#171717] sm:text-4xl md:text-5xl"
               style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
             >
-              ¿Listo para avanzar con {name}?
+              {headline}
             </h2>
             <p className="mx-auto max-w-xl text-sm leading-relaxed text-slate-500 sm:text-base">
-              Un solo paso para validar tu encaje, resolver tus dudas y activar el proceso con el equipo de franquicia.
+              {description}
             </p>
           </div>
 
@@ -54,9 +70,7 @@ export function CtaFooterSection({ franchise }: { franchise: HeroData | null }) 
             </Link>
           </div>
 
-          <p className="text-xs text-slate-400">
-            Sin compromiso · Respuesta en 24–48 h
-          </p>
+          <p className="text-xs text-slate-400">{footnote}</p>
         </motion.div>
       </div>
     </section>

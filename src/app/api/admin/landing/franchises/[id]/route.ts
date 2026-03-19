@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 import { getSupabaseAdminClient } from "@/lib/supabaseAdmin";
+import {
+  isInterestCtaMode,
+  isListingType,
+  isVerificationStatus,
+} from "@/lib/listing-config";
 
 async function requireAdmin() {
   const cookieStore = await cookies();
@@ -33,6 +38,7 @@ export async function GET(
       moduleConfig: true,
       automationConfig: true,
       sector: true,
+      coverageCountries: { include: { country: true } },
     },
   });
 
@@ -61,6 +67,9 @@ export async function PUT(
     "bookingUrl", "credibilityLine", "foundingYear", "cta1Label", "cta1Url", "cta2Label",
     "cta2Url", "ebitdaReference", "paybackMonths", "royaltyInfo",
     "operatorProfile", "canonEntrada", "name", "slug", "investmentMin", "investmentMax",
+    "listingType", "verificationStatus", "editorialBadge", "publicInterestCount",
+    "publicInterestEnabled", "publicInterestLabel", "interestCtaMode", "availabilityLabel",
+    "statusDisclaimer", "showApplicationForm", "showFinancialData", "showVerifiedBadge",
     // Base config fields (legacy + new)
     "sectorId", "active", "featured", "contactEmail", "logo", "video",
   ] as const;
@@ -82,6 +91,44 @@ export async function PUT(
     data.foundingYear = data.foundingYear ? Number(data.foundingYear) : null;
   if (data.active !== undefined) data.active = Boolean(data.active);
   if (data.featured !== undefined) data.featured = Boolean(data.featured);
+  if (data.publicInterestCount !== undefined) {
+    data.publicInterestCount = Math.max(
+      0,
+      Number.isFinite(Number(data.publicInterestCount))
+        ? Number(data.publicInterestCount)
+        : 0,
+    );
+  }
+  if (data.publicInterestEnabled !== undefined) {
+    data.publicInterestEnabled = Boolean(data.publicInterestEnabled);
+  }
+  if (data.showApplicationForm !== undefined) {
+    data.showApplicationForm = Boolean(data.showApplicationForm);
+  }
+  if (data.showFinancialData !== undefined) {
+    data.showFinancialData = Boolean(data.showFinancialData);
+  }
+  if (data.showVerifiedBadge !== undefined) {
+    data.showVerifiedBadge = Boolean(data.showVerifiedBadge);
+  }
+  if (data.listingType !== undefined && !isListingType(data.listingType)) {
+    return NextResponse.json({ error: "listingType inválido" }, { status: 400 });
+  }
+  if (
+    data.verificationStatus !== undefined &&
+    !isVerificationStatus(data.verificationStatus)
+  ) {
+    return NextResponse.json(
+      { error: "verificationStatus inválido" },
+      { status: 400 },
+    );
+  }
+  if (data.interestCtaMode !== undefined && !isInterestCtaMode(data.interestCtaMode)) {
+    return NextResponse.json(
+      { error: "interestCtaMode inválido" },
+      { status: 400 },
+    );
+  }
 
   // Handle coverageCountryIds: delete old and create new
   if (Array.isArray(body.coverageCountryIds)) {
@@ -96,7 +143,26 @@ export async function PUT(
     }
   }
 
-  const franchise = await prisma.franchise.update({ where: { id }, data });
+  const franchise = await prisma.franchise.update({
+    where: { id },
+    data: {
+      ...data,
+      ...(data.showVerifiedBadge !== undefined
+        ? {
+            moduleConfig: {
+              upsert: {
+                create: {
+                  showVerifiedBadge: Boolean(data.showVerifiedBadge),
+                },
+                update: {
+                  showVerifiedBadge: Boolean(data.showVerifiedBadge),
+                },
+              },
+            },
+          }
+        : {}),
+    },
+  });
   return NextResponse.json(franchise);
 }
 

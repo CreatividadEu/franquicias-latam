@@ -6,6 +6,17 @@ import { cn } from "@/lib/utils";
 import { PLAN_ENTITLEMENTS, isModuleAllowed } from "@/lib/plan-entitlements";
 import type { PlanTier } from "@/lib/plan-entitlements";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import {
+  getListingDefaults,
+  getListingPrimaryCtaLabel,
+  INTEREST_CTA_MODE_OPTIONS,
+  LISTING_TYPE_OPTIONS,
+  resolveListingState,
+  VERIFICATION_STATUS_OPTIONS,
+  type InterestCtaMode,
+  type ListingType,
+  type VerificationStatus,
+} from "@/lib/listing-config";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -59,6 +70,10 @@ type Franchise = {
   credibilityLine: string | null; foundingYear: number | null; cta1Label: string | null; cta1Url: string | null;
   cta2Label: string | null; cta2Url: string | null; ebitdaReference: string | null;
   paybackMonths: number | null; royaltyInfo: string | null; operatorProfile: string | null; canonEntrada: number | null;
+  listingType: ListingType; verificationStatus: VerificationStatus; editorialBadge: string | null;
+  publicInterestCount: number; publicInterestEnabled: boolean; publicInterestLabel: string | null;
+  interestCtaMode: InterestCtaMode; availabilityLabel: string | null; statusDisclaimer: string | null;
+  showApplicationForm: boolean; showFinancialData: boolean; showVerifiedBadge: boolean;
   businessModels: BusinessModel[]; media: MediaItem[]; faqs: FaqItem[];
   moduleConfig: ModuleConfig; automationConfig: AutomationConfig;
 };
@@ -379,6 +394,49 @@ export function FranchiseLandingEditor({
     setSaved(false);
   }
 
+  function applyListingTypePreset(nextListingType: ListingType) {
+    setData((prev) => {
+      const previousResolved = resolveListingState(prev);
+      const nextDefaults = getListingDefaults(nextListingType);
+      const previousDefaultLabel = getListingPrimaryCtaLabel(previousResolved, null);
+
+      return {
+        ...prev,
+        listingType: nextListingType,
+        verificationStatus: nextDefaults.verificationStatus,
+        interestCtaMode: nextDefaults.interestCtaMode,
+        publicInterestEnabled: nextDefaults.publicInterestEnabled,
+        publicInterestCount:
+          Number.isFinite(prev.publicInterestCount) && prev.publicInterestCount >= 0
+            ? prev.publicInterestCount
+            : nextDefaults.publicInterestCount,
+        publicInterestLabel:
+          !prev.publicInterestLabel?.trim() ||
+          prev.publicInterestLabel === previousResolved.publicInterestLabel
+            ? nextDefaults.publicInterestLabel
+            : prev.publicInterestLabel,
+        availabilityLabel:
+          !prev.availabilityLabel?.trim() ||
+          prev.availabilityLabel === previousResolved.availabilityLabel
+            ? nextDefaults.availabilityLabel
+            : prev.availabilityLabel,
+        statusDisclaimer:
+          !prev.statusDisclaimer?.trim() ||
+          prev.statusDisclaimer === previousResolved.statusDisclaimer
+            ? nextDefaults.statusDisclaimer
+            : prev.statusDisclaimer,
+        showApplicationForm: nextDefaults.showApplicationForm,
+        showFinancialData: nextDefaults.showFinancialData,
+        showVerifiedBadge: nextDefaults.showVerifiedBadge,
+        cta1Label:
+          !prev.cta1Label?.trim() || prev.cta1Label === previousDefaultLabel
+            ? null
+            : prev.cta1Label,
+      };
+    });
+    setSaved(false);
+  }
+
   // Load base config, sectors, countries
   useEffect(() => {
     async function loadBase() {
@@ -472,6 +530,18 @@ export function FranchiseLandingEditor({
             paybackMonths: data.paybackMonths, royaltyInfo: data.royaltyInfo,
             operatorProfile: data.operatorProfile, canonEntrada: data.canonEntrada,
             investmentMin: data.investmentMin, investmentMax: data.investmentMax,
+            listingType: data.listingType,
+            verificationStatus: data.verificationStatus,
+            editorialBadge: data.editorialBadge,
+            publicInterestCount: data.publicInterestCount,
+            publicInterestEnabled: data.publicInterestEnabled,
+            publicInterestLabel: data.publicInterestLabel,
+            interestCtaMode: data.interestCtaMode,
+            availabilityLabel: data.availabilityLabel,
+            statusDisclaimer: data.statusDisclaimer,
+            showApplicationForm: data.showApplicationForm,
+            showFinancialData: data.showFinancialData,
+            showVerifiedBadge: data.showVerifiedBadge,
             // base config fields
             sectorId: baseForm.sectorId || undefined,
             active: baseForm.active,
@@ -484,7 +554,12 @@ export function FranchiseLandingEditor({
         }).then((r) => { if (!r.ok) throw new Error("Error guardando datos principales"); }),
 
         data.moduleConfig && fetch(`${base}/modules`, {
-          method: "PUT", headers, body: JSON.stringify(data.moduleConfig),
+          method: "PUT",
+          headers,
+          body: JSON.stringify({
+            ...data.moduleConfig,
+            showVerifiedBadge: data.showVerifiedBadge,
+          }),
         }).then((r) => { if (!r.ok) throw new Error("Error guardando módulos"); }),
 
         fetch(`${base}/automation`, {
@@ -547,7 +622,7 @@ export function FranchiseLandingEditor({
           <GeneralTab
             data={data}
             set={set}
-            setModule={setModule}
+            onApplyListingTypePreset={applyListingTypePreset}
             allSectors={allSectors}
             allCountries={allCountries}
             selectedCountryIds={selectedCountryIds}
@@ -722,7 +797,7 @@ function PlanBadge({ plan }: { plan: PlanTier }) {
 function GeneralTab({
   data,
   set,
-  setModule,
+  onApplyListingTypePreset,
   allSectors,
   allCountries,
   selectedCountryIds,
@@ -734,7 +809,7 @@ function GeneralTab({
 }: {
   data: Franchise;
   set: <K extends keyof Franchise>(k: K, v: Franchise[K]) => void;
-  setModule: (k: keyof NonNullable<ModuleConfig>, v: boolean) => void;
+  onApplyListingTypePreset: (listingType: ListingType) => void;
   allSectors: Sector[];
   allCountries: Country[];
   selectedCountryIds: string[];
@@ -753,6 +828,8 @@ function GeneralTab({
   }
 
   const shortDescLen = (data.shortDescription ?? "").length;
+  const resolvedListing = resolveListingState(data);
+  const defaultPrimaryCtaLabel = getListingPrimaryCtaLabel(resolvedListing, null);
 
   return (
     <div className="space-y-8">
@@ -790,6 +867,161 @@ function GeneralTab({
               ))}
             </select>
           </Field>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Tipo de listing</h3>
+        <p className="mb-4 text-xs text-gray-400">
+          Define cómo se posiciona esta oportunidad en la landing, el tipo de CTA y la visibilidad comercial por defecto.
+        </p>
+        <div className="grid gap-3 lg:grid-cols-3">
+          {LISTING_TYPE_OPTIONS.map((option) => {
+            const isActive = data.listingType === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onApplyListingTypePreset(option.value)}
+                className={cn(
+                  "rounded-2xl border px-4 py-4 text-left transition-all",
+                  isActive
+                    ? "border-blue-500 bg-blue-50 shadow-sm"
+                    : "border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/40",
+                )}
+              >
+                <p className="text-sm font-semibold text-gray-900">{option.label}</p>
+                <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                  {option.description}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Estado y visibilidad comercial</h3>
+        <p className="mb-4 text-xs text-gray-400">
+          Ajusta badges, disclaimer, CTA y el módulo de interés sin afectar el render legacy.
+        </p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Estado de verificación">
+            <select
+              value={data.verificationStatus}
+              onChange={(e) => set("verificationStatus", e.target.value as VerificationStatus)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {VERIFICATION_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Tipo de CTA principal">
+            <select
+              value={data.interestCtaMode}
+              onChange={(e) => set("interestCtaMode", e.target.value as InterestCtaMode)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {INTEREST_CTA_MODE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Badge editorial" hint="Opcional. Ej: FL Spotted, Rising Brand.">
+            <Input
+              value={data.editorialBadge ?? ""}
+              onChange={(v) => set("editorialBadge", v || null)}
+              placeholder="FL Spotted"
+            />
+          </Field>
+          <Field label="Label de disponibilidad" hint="Badge funcional principal de la oportunidad.">
+            <Input
+              value={data.availabilityLabel ?? ""}
+              onChange={(v) => set("availabilityLabel", v || null)}
+              placeholder={resolvedListing.availabilityLabel}
+            />
+          </Field>
+          <div className="sm:col-span-2">
+            <Field label="Disclaimer público" hint="Se muestra como aclaración editorial o de verificación.">
+              <Textarea
+                value={data.statusDisclaimer ?? ""}
+                onChange={(v) => set("statusDisclaimer", v || null)}
+                rows={3}
+                placeholder={resolvedListing.statusDisclaimer ?? "Aclaración pública opcional"}
+              />
+            </Field>
+          </div>
+          <div className="sm:col-span-2 grid gap-4 lg:grid-cols-3">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <Toggle
+                checked={data.showFinancialData}
+                onChange={(v) => set("showFinancialData", v)}
+                label="Mostrar financials"
+              />
+              <p className="mt-2 text-xs leading-relaxed text-gray-400">
+                Mantiene la sección financiera visible solo cuando conviene comercialmente.
+              </p>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <Toggle
+                checked={data.showVerifiedBadge}
+                onChange={(v) => set("showVerifiedBadge", v)}
+                label="Mostrar badge verificado"
+              />
+              <p className="mt-2 text-xs leading-relaxed text-gray-400">
+                Solo debería activarse si la marca está verificada por Franquicias LATAM.
+              </p>
+            </div>
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <Toggle
+                checked={data.showApplicationForm}
+                onChange={(v) => set("showApplicationForm", v)}
+                label="Mostrar formulario de aplicación"
+              />
+              <p className="mt-2 text-xs leading-relaxed text-gray-400">
+                Usa el formulario tradicional para oportunidades activas; desactívalo para flujos de interés.
+              </p>
+            </div>
+          </div>
+          <div className="sm:col-span-2 rounded-xl border border-gray-200 bg-white p-4">
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px]">
+              <div className="space-y-2">
+                <Toggle
+                  checked={data.publicInterestEnabled}
+                  onChange={(v) => set("publicInterestEnabled", v)}
+                  label="Activar contador público de interés"
+                />
+                <p className="text-xs leading-relaxed text-gray-400">
+                  Ideal para marcas identificadas o listings externos donde queremos mostrar señales de demanda reales.
+                </p>
+              </div>
+              <Field label="Valor inicial">
+                <Input
+                  type="number"
+                  value={String(data.publicInterestCount ?? 0)}
+                  onChange={(v) => set("publicInterestCount", Math.max(0, Number(v) || 0))}
+                  placeholder="0"
+                />
+              </Field>
+            </div>
+            <div className="mt-4">
+              <Field label="Label del contador" hint="Ej: Señales de interés, Personas interesadas, Demand signals.">
+                <Input
+                  value={data.publicInterestLabel ?? ""}
+                  onChange={(v) => set("publicInterestLabel", v || null)}
+                  placeholder={resolvedListing.publicInterestLabel ?? "Señales de interés"}
+                />
+              </Field>
+            </div>
+          </div>
+          <div className="sm:col-span-2 rounded-xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-xs leading-relaxed text-blue-900">
+            CTA sugerido ahora: <span className="font-semibold">{defaultPrimaryCtaLabel}</span>
+          </div>
         </div>
       </section>
 
@@ -839,27 +1071,6 @@ function GeneralTab({
               placeholder="Ej: 2018"
             />
           </Field>
-          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-            <div>
-              <p className="text-sm font-medium text-gray-800">Badge de verificación Franquicias LATAM</p>
-              <p className="text-xs text-gray-400">Muestra el sello verificado encima del logo en el hero.</p>
-            </div>
-            <label className="flex cursor-pointer items-center gap-2">
-              <span className="text-xs text-gray-500">
-                {(data.moduleConfig?.showVerifiedBadge ?? false) ? "Activado" : "Desactivado"}
-              </span>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={data.moduleConfig?.showVerifiedBadge ?? false}
-                  onChange={(e) => setModule("showVerifiedBadge", e.target.checked)}
-                />
-                <div className={cn("h-5 w-9 rounded-full transition-colors", (data.moduleConfig?.showVerifiedBadge ?? false) ? "bg-blue-600" : "bg-gray-300")} />
-                <div className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform", (data.moduleConfig?.showVerifiedBadge ?? false) ? "translate-x-4" : "translate-x-0.5")} />
-              </div>
-            </label>
-          </div>
           <Field
             label="Descripción corta"
             hint="Para tarjetas y Google. No aparece en el hero."
@@ -943,9 +1154,9 @@ function GeneralTab({
 
       <div className="border-t border-gray-100" />
 
-      {/* SECTION: Estado y visibilidad */}
+      {/* SECTION: Estado y publicación */}
       <section>
-        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Estado y visibilidad</h3>
+        <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-gray-700">Estado y publicación</h3>
         <div className="mb-4 border-t border-gray-100" />
         <div className="flex flex-wrap gap-6">
           <Toggle

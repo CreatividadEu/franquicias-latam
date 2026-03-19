@@ -1,19 +1,29 @@
 import { redirect } from "next/navigation";
 import { getAdminUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { LISTING_TYPE_OPTIONS } from "@/lib/listing-config";
 
 // ── Filters ───────────────────────────────────────────────────────────────────
 
 function buildWhere(params: {
   franchise?: string;
   investmentRange?: string;
+  sourceType?: string;
+  listingType?: string;
   dateFrom?: string;
   dateTo?: string;
 }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: Record<string, any> = {};
-  if (params.franchise) where.franchiseSlug = params.franchise;
+  if (params.franchise) {
+    where.OR = [
+      { franchiseSlug: params.franchise },
+      { listingSlug: params.franchise },
+    ];
+  }
   if (params.investmentRange) where.investmentRange = params.investmentRange;
+  if (params.sourceType) where.sourceType = params.sourceType;
+  if (params.listingType) where.listingType = params.listingType;
   if (params.dateFrom || params.dateTo) {
     where.createdAt = {};
     if (params.dateFrom) where.createdAt.gte = new Date(params.dateFrom);
@@ -31,7 +41,14 @@ function buildWhere(params: {
 export default async function FormLeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ franchise?: string; investmentRange?: string; dateFrom?: string; dateTo?: string }>;
+  searchParams: Promise<{
+    franchise?: string;
+    investmentRange?: string;
+    sourceType?: string;
+    listingType?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }>;
 }) {
   const admin = await getAdminUser();
   if (!admin) redirect("/admin/login");
@@ -39,7 +56,7 @@ export default async function FormLeadsPage({
   const params = await searchParams;
   const where = buildWhere(params);
 
-  const [leads, total, franchiseSlugs] = await Promise.all([
+  const [leads, total, slugRows] = await Promise.all([
     prisma.formLead.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -47,11 +64,19 @@ export default async function FormLeadsPage({
     }),
     prisma.formLead.count({ where }),
     prisma.formLead.findMany({
-      select: { franchiseSlug: true },
-      distinct: ["franchiseSlug"],
-      orderBy: { franchiseSlug: "asc" },
+      select: { franchiseSlug: true, listingSlug: true },
+      orderBy: { createdAt: "desc" },
+      take: 500,
     }),
   ]);
+
+  const franchiseSlugs = Array.from(
+    new Set(
+      slugRows
+        .map((row) => row.listingSlug ?? row.franchiseSlug)
+        .filter(Boolean),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
 
   const INVESTMENT_LABELS: Record<string, string> = {
     "20k-50k": "$20k – $50k",
@@ -66,13 +91,20 @@ export default async function FormLeadsPage({
     investor: "Con operador",
   };
 
+  const SOURCE_TYPE_LABELS: Record<string, string> = {
+    franchise_application: "Aplicación",
+    external_franchise_interest: "Interés externo",
+    identified_brand_interest: "Interés marca",
+    listing_interest: "Interés listing",
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Form Leads</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Leads capturados desde el formulario de calificación en las landing pages.
+          Leads capturados desde formularios de aplicación e interés en las landing pages.
           {" "}<span className="font-medium text-gray-700">{total} registros</span>
           {where && Object.keys(where).length > 0 && " (filtrados)"}
         </p>
@@ -88,9 +120,9 @@ export default async function FormLeadsPage({
             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           >
             <option value="">Todas</option>
-            {franchiseSlugs.map((f) => (
-              <option key={f.franchiseSlug} value={f.franchiseSlug}>
-                {f.franchiseSlug}
+            {franchiseSlugs.map((slug) => (
+              <option key={slug} value={slug}>
+                {slug}
               </option>
             ))}
           </select>
@@ -106,6 +138,38 @@ export default async function FormLeadsPage({
             <option value="">Todas</option>
             {Object.entries(INVESTMENT_LABELS).map(([val, label]) => (
               <option key={val} value={val}>{label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="min-w-[180px] flex-1">
+          <label className="mb-1 block text-xs font-medium text-gray-600">Tipo de listing</label>
+          <select
+            name="listingType"
+            defaultValue={params.listingType ?? ""}
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          >
+            <option value="">Todos</option>
+            {LISTING_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="min-w-[180px] flex-1">
+          <label className="mb-1 block text-xs font-medium text-gray-600">Source type</label>
+          <select
+            name="sourceType"
+            defaultValue={params.sourceType ?? ""}
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          >
+            <option value="">Todos</option>
+            {Object.entries(SOURCE_TYPE_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
             ))}
           </select>
         </div>
@@ -154,7 +218,7 @@ export default async function FormLeadsPage({
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-sm">
+            <table className="w-full min-w-[1220px] text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                   <th className="px-4 py-3">Fecha</th>
@@ -163,8 +227,11 @@ export default async function FormLeadsPage({
                   <th className="px-4 py-3">Teléfono</th>
                   <th className="px-4 py-3">Inversión</th>
                   <th className="px-4 py-3">Ciudad</th>
+                  <th className="px-4 py-3">País</th>
                   <th className="px-4 py-3">Experiencia</th>
-                  <th className="px-4 py-3">Franquicia</th>
+                  <th className="px-4 py-3">Listing</th>
+                  <th className="px-4 py-3">Tipo listing</th>
+                  <th className="px-4 py-3">Badge editorial</th>
                   <th className="px-4 py-3">Fuente</th>
                 </tr>
               </thead>
@@ -190,7 +257,10 @@ export default async function FormLeadsPage({
                         <span className="text-gray-400">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{lead.city ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {lead.cityInterest ?? lead.city ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{lead.country ?? "—"}</td>
                     <td className="px-4 py-3 text-gray-600">
                       {lead.experience
                         ? EXPERIENCE_LABELS[lead.experience] ?? lead.experience
@@ -198,12 +268,26 @@ export default async function FormLeadsPage({
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
-                        {lead.franchiseSlug}
+                        {lead.listingSlug ?? lead.franchiseSlug}
                       </span>
                     </td>
                     <td className="px-4 py-3">
+                      <span className="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                        {LISTING_TYPE_OPTIONS.find((option) => option.value === lead.listingType)?.label ?? lead.listingType}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {lead.editorialBadge ? (
+                        <span className="inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                          {lead.editorialBadge}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
                       <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                        {lead.landingSource}
+                        {SOURCE_TYPE_LABELS[lead.sourceType] ?? lead.sourceType}
                       </span>
                     </td>
                   </tr>

@@ -17,6 +17,15 @@ type FranchiseRow = {
   published: boolean;
   updatedAt: string;
   headline: string | null;
+  listingType: string;
+  availabilityLabel: string | null;
+  editorialBadge: string | null;
+};
+
+const LISTING_BADGE: Record<string, string> = {
+  ACTIVE_FRANCHISE: "bg-emerald-50 text-emerald-700",
+  EXTERNAL_FRANCHISE: "bg-amber-50 text-amber-700",
+  IDENTIFIED_BRAND: "bg-slate-100 text-slate-700",
 };
 
 export default function LandingFranchisesListPage() {
@@ -223,6 +232,25 @@ export default function LandingFranchisesListPage() {
                       {f.slug && (
                         <p className="text-xs text-gray-400 font-mono">/franquicia/{f.slug}</p>
                       )}
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                            LISTING_BADGE[f.listingType] ?? "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {f.availabilityLabel ??
+                            (f.listingType === "IDENTIFIED_BRAND"
+                              ? "Marca identificada"
+                              : f.listingType === "EXTERNAL_FRANCHISE"
+                              ? "Franquicia externa"
+                              : "Franquicia activa")}
+                        </span>
+                        {f.editorialBadge && (
+                          <span className="inline-flex rounded-full bg-white px-2.5 py-0.5 text-[11px] font-medium text-gray-600 ring-1 ring-gray-200">
+                            {f.editorialBadge}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">

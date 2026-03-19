@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import type { LeadModuleData } from "@/lib/franchise-mapper";
 
 const INVESTMENT_OPTIONS = [
   { value: "20k-50k", label: "$20,000 – $50,000 USD" },
@@ -21,8 +22,10 @@ type FormState = {
   email: string;
   phone: string;
   investmentRange: string;
-  city: string;
+  cityInterest: string;
+  country: string;
   experience: string;
+  message: string;
 };
 
 const EMPTY: FormState = {
@@ -30,25 +33,44 @@ const EMPTY: FormState = {
   email: "",
   phone: "",
   investmentRange: "",
-  city: "",
+  cityInterest: "",
+  country: "",
   experience: "",
+  message: "",
 };
 
+function formatInterestCount(count: number) {
+  if (count <= 0) {
+    return "Sé la primera persona en registrar interés.";
+  }
+
+  return `${count} persona${count === 1 ? "" : "s"} ya ha${count === 1 ? "" : "n"} mostrado interés.`;
+}
+
 export function QualificationForm({
-  franchiseSlug,
-  franchiseName,
+  module,
+  listingSlug,
+  listingName,
 }: {
-  franchiseSlug: string;
-  franchiseName: string;
+  module: LeadModuleData;
+  listingSlug: string;
+  listingName: string;
 }) {
   const [form, setForm] = useState<FormState>(EMPTY);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [interestCount, setInterestCount] = useState(module.publicInterestCount);
+
+  useEffect(() => {
+    setInterestCount(module.publicInterestCount);
+  }, [module.publicInterestCount]);
 
   const set = (field: keyof FormState) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const isInterestFlow = module.variant === "interest";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +81,17 @@ export function QualificationForm({
       const res = await fetch("/api/leads/form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, franchiseSlug, source: "landing-form" }),
+        body: JSON.stringify({
+          ...form,
+          city: form.cityInterest,
+          franchiseSlug: listingSlug,
+          listingSlug,
+          listingType: module.listingType,
+          sourceType: module.sourceType,
+          editorialBadge: module.editorialBadge,
+          landingSource: isInterestFlow ? "listing-interest" : "landing-form",
+          type: isInterestFlow ? "interest" : "form",
+        }),
       });
 
       if (!res.ok) {
@@ -67,6 +99,9 @@ export function QualificationForm({
         throw new Error(data.error || "Error al enviar el formulario");
       }
 
+      if (isInterestFlow && module.publicInterestEnabled) {
+        setInterestCount((prev) => prev + 1);
+      }
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error inesperado");
@@ -77,16 +112,19 @@ export function QualificationForm({
 
   if (success) {
     return (
-      <div className="flex flex-col items-center justify-center gap-5 rounded-xl border border-black/8 bg-white p-10 text-center shadow-sm">
+      <div
+        id="listing-lead-module"
+        className="flex flex-col items-center justify-center gap-5 rounded-xl border border-black/8 bg-white p-10 text-center shadow-sm"
+      >
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
           <CheckCircle2 className="h-7 w-7 text-emerald-500" />
         </div>
         <div className="space-y-1.5">
           <p className="text-lg font-semibold text-[#171717]">
-            Solicitud recibida
+            {module.successTitle}
           </p>
           <p className="max-w-xs text-[15px] leading-relaxed text-slate-500">
-            Nuestro equipo revisará tu perfil y se pondrá en contacto contigo pronto.
+            {module.successDescription}
           </p>
         </div>
       </div>
@@ -95,32 +133,49 @@ export function QualificationForm({
 
   const inputCls =
     "w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-[15px] text-[#171717] outline-none ring-0 transition placeholder:text-slate-400 focus:border-[#2563eb]/40 focus:ring-2 focus:ring-[#2563eb]/15";
-  const labelCls = "block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5";
+  const labelCls = "mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500";
 
   return (
     <div
+      id="listing-lead-module"
       className="rounded-xl border border-black/8 bg-white p-6 shadow-sm lg:sticky lg:top-24"
       style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
     >
-      {/* Header */}
-      <div className="mb-6 space-y-1">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
-          Calificación
-        </p>
-        <h3
-          className="text-xl font-bold text-[#171717]"
-          style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
-        >
-          ¿Podrías ser el operador ideal?
-        </h3>
-        <p className="text-[14px] leading-relaxed text-slate-500">
-          Responde estas preguntas y nuestro equipo evaluará tu perfil para{" "}
-          <span className="font-medium text-[#171717]">{franchiseName}</span>.
-        </p>
+      <div className="mb-6 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-[#2563eb]">
+            {module.eyebrow}
+          </span>
+          {module.editorialBadge && (
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-slate-700">
+              {module.editorialBadge}
+            </span>
+          )}
+        </div>
+        <div className="space-y-1">
+          <h3
+            className="text-xl font-bold text-[#171717]"
+            style={{ fontFamily: "var(--font-heading, system-ui, sans-serif)" }}
+          >
+            {module.title}
+          </h3>
+          <p className="text-[14px] leading-relaxed text-slate-500">
+            {module.description}
+          </p>
+        </div>
+        {isInterestFlow && module.publicInterestEnabled && (
+          <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50 to-white px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-amber-700">
+              {module.publicInterestLabel ?? "Señales de interés"}
+            </p>
+            <p className="mt-1 text-sm font-medium leading-relaxed text-slate-700">
+              {formatInterestCount(interestCount)}
+            </p>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Name */}
         <div>
           <label htmlFor="qf-name" className={labelCls}>
             Nombre completo
@@ -136,7 +191,6 @@ export function QualificationForm({
           />
         </div>
 
-        {/* Email */}
         <div>
           <label htmlFor="qf-email" className={labelCls}>
             Email
@@ -152,7 +206,6 @@ export function QualificationForm({
           />
         </div>
 
-        {/* Phone */}
         <div>
           <label htmlFor="qf-phone" className={labelCls}>
             Teléfono
@@ -168,10 +221,9 @@ export function QualificationForm({
           />
         </div>
 
-        {/* Investment range */}
         <div>
           <label htmlFor="qf-investment" className={labelCls}>
-            Capacidad de inversión
+            {isInterestFlow ? "Capital estimado / rango de inversión" : "Capacidad de inversión"}
           </label>
           <select
             id="qf-investment"
@@ -182,50 +234,82 @@ export function QualificationForm({
             <option value="" disabled>
               Selecciona un rango
             </option>
-            {INVESTMENT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
+            {INVESTMENT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
         </div>
 
-        {/* City */}
         <div>
           <label htmlFor="qf-city" className={labelCls}>
-            Ciudad donde deseas operar
+            {isInterestFlow ? "Ciudad de interés" : "Ciudad donde deseas operar"}
           </label>
           <input
             id="qf-city"
             type="text"
-            placeholder="Ciudad, País"
-            value={form.city}
-            onChange={set("city")}
+            placeholder={isInterestFlow ? "Ciudad objetivo" : "Ciudad, País"}
+            value={form.cityInterest}
+            onChange={set("cityInterest")}
             className={inputCls}
           />
         </div>
 
-        {/* Experience */}
-        <div>
-          <label htmlFor="qf-experience" className={labelCls}>
-            Experiencia operando negocios
-          </label>
-          <select
-            id="qf-experience"
-            value={form.experience}
-            onChange={set("experience")}
-            className={inputCls}
-          >
-            <option value="" disabled>
-              Selecciona una opción
-            </option>
-            {EXPERIENCE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {isInterestFlow ? (
+          <>
+            <div>
+              <label htmlFor="qf-country" className={labelCls}>
+                País
+              </label>
+              <input
+                id="qf-country"
+                type="text"
+                placeholder="País de interés"
+                value={form.country}
+                onChange={set("country")}
+                className={inputCls}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="qf-message" className={labelCls}>
+                Contexto adicional
+              </label>
+              <textarea
+                id="qf-message"
+                rows={4}
+                placeholder={`Cuéntanos por qué ${listingName} encaja con tu ciudad o tu tesis de inversión.`}
+                value={form.message}
+                onChange={set("message")}
+                className={inputCls}
+              />
+            </div>
+          </>
+        ) : (
+          module.showExperienceField && (
+            <div>
+              <label htmlFor="qf-experience" className={labelCls}>
+                Experiencia operando negocios
+              </label>
+              <select
+                id="qf-experience"
+                value={form.experience}
+                onChange={set("experience")}
+                className={inputCls}
+              >
+                <option value="" disabled>
+                  Selecciona una opción
+                </option>
+                {EXPERIENCE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )
+        )}
 
         {error && (
           <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -236,10 +320,10 @@ export function QualificationForm({
         <button
           type="submit"
           disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 py-3 text-[15px] font-semibold text-white shadow-[0_4px_16px_-4px_rgba(37,99,235,0.5)] transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 py-3 text-[15px] font-semibold text-white shadow-[0_4px_16px_-4px_rgba(37,99,235,0.5)] transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:transform-none"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-          {loading ? "Enviando..." : "Aplicar para esta franquicia"}
+          {loading ? "Enviando..." : module.submitLabel}
         </button>
       </form>
     </div>
