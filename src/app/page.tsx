@@ -3,7 +3,6 @@
 import {
   useState,
   useEffect,
-  useCallback,
   useRef,
   type FormEvent,
 } from "react";
@@ -13,6 +12,7 @@ import Image from "next/image";
 import type { SectorOption } from "@/types";
 import { fetchJsonSafely } from "@/lib/safeApiJson";
 import { LatamDepthBackground } from "@/components/LatamDepthBackground";
+import { ClientLogoMarquee } from "@/components/home/ClientLogoMarquee";
 import {
   HomeHeroFranchise,
   MethodologyStrip,
@@ -20,6 +20,8 @@ import {
 import { CalendlyCTASection } from "@/components/home/CalendlyCTASection";
 import { StoikaShowcaseSection } from "@/components/home/StoikaShowcaseSection";
 import { WorkCarousel } from "@/components/home/WorkCarousel";
+import { HomeSiteNavbar } from "@/components/site/HomeSiteNavbar";
+import { HomeSiteFooter } from "@/components/site/HomeSiteFooter";
 
 const countries = [
   { flag: "\u{1F1E8}\u{1F1F4}", name: "Colombia" },
@@ -28,16 +30,6 @@ const countries = [
   { flag: "\u{1F1E8}\u{1F1F1}", name: "Chile" },
   { flag: "\u{1F1F5}\u{1F1EA}", name: "Per\u00fa" },
   { flag: "\u{1F1EA}\u{1F1E8}", name: "Ecuador" },
-];
-
-const clientLogos = [
-  { src: "/logos_clientes/logo_andres.svg", alt: "Andrés" },
-  { src: "/logos_clientes/logo_bid.svg", alt: "BID" },
-  { src: "/logos_clientes/logo_mercado_libre.svg", alt: "Mercado Libre" },
-  { src: "/logos_clientes/logo_nutresa.svg", alt: "Nutresa" },
-  { src: "/logos_clientes/logo_sodexo.svg", alt: "Sodexo" },
-  { src: "/logos_clientes/logo_subway.svg", alt: "Subway" },
-  { src: "/logos_clientes/logo_totto.svg", alt: "Totto" },
 ];
 
 const viewTitles: Record<string, string> = {
@@ -76,7 +68,6 @@ const faqs = [
 
 export default function HomePage() {
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeView, setActiveView] = useState("quiz");
   const [openFaqs, setOpenFaqs] = useState<Set<number>>(new Set());
   const [formModalOpen, setFormModalOpen] = useState(false);
@@ -218,13 +209,6 @@ export default function HomePage() {
     };
   }, [isVideoOpen]);
 
-  const toggleMobileMenu = useCallback(() => {
-    setMobileMenuOpen((prev) => {
-      document.body.style.overflow = !prev ? "hidden" : "";
-      return !prev;
-    });
-  }, []);
-
   const toggleFaq = (index: number) => {
     setOpenFaqs((prev) => {
       const next = new Set(prev);
@@ -271,136 +255,15 @@ export default function HomePage() {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         hideForm();
-        if (mobileMenuOpen) {
-          setMobileMenuOpen(false);
-          document.body.style.overflow = "";
-        }
       }
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [mobileMenuOpen]);
+  }, []);
 
   return (
     <div className="min-h-screen text-[#171717]">
-      {/* ─── Navigation ─── */}
-      <nav className="sticky top-0 z-50 border-b border-black/8 bg-white/92 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-4 py-[0.3rem] sm:px-6 sm:py-[0.4rem]">
-          <div className="flex items-center justify-between">
-            <Image
-              src="/logo_latam/franquicias_latam_logo.png"
-              alt="Franquicias LATAM"
-              width={640}
-              height={160}
-              className="h-[5.12rem] w-auto sm:h-[6.4rem]"
-              priority
-            />
-
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#diagnostico" className="nav-link text-[19px] font-bold">
-                Invierte
-              </a>
-              <a href="#proceso" className="nav-link text-[19px] font-bold">
-                Programa
-              </a>
-              <a href="#video-hero" className="nav-link text-[19px] font-bold">
-                Casos de &Eacute;xito
-              </a>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={toggleMobileMenu}
-              className="md:hidden p-2 -mr-2"
-              aria-label="Toggle menu"
-            >
-              {!mobileMenuOpen ? (
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              )}
-            </button>
-
-            <Link
-              href="/quiz"
-              className="hidden md:inline-flex md:items-center md:justify-center rounded-full bg-white px-7 py-3.5 text-[19px] font-bold text-gray-900 shadow-[0_6px_18px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.18)]"
-            >
-              Comenzar
-            </Link>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <div
-          className={`mobile-menu fixed inset-y-0 right-0 w-64 border-l border-black/5 bg-white/86 shadow-xl backdrop-blur-xl z-50 md:hidden ${
-            mobileMenuOpen ? "open" : ""
-          }`}
-        >
-          <div className="p-6 pt-20">
-            <div className="flex flex-col gap-6">
-              <a
-                href="#diagnostico"
-                onClick={toggleMobileMenu}
-                className="text-[22px] font-bold"
-              >
-                Invierte
-              </a>
-              <a
-                href="#proceso"
-                onClick={toggleMobileMenu}
-                className="text-[22px] font-bold"
-              >
-                Programa
-              </a>
-              <a
-                href="#video-hero"
-                onClick={toggleMobileMenu}
-                className="text-[22px] font-bold"
-              >
-                Casos de &Eacute;xito
-              </a>
-              <Link
-                href="/quiz"
-                onClick={toggleMobileMenu}
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-white px-7 py-3.5 text-[16px] font-semibold text-gray-900 shadow-[0_6px_18px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_10px_24px_rgba(0,0,0,0.12)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(40,96,231,0.18)]"
-              >
-                Comenzar
-              </Link>
-            </div>
-          </div>
-        </div>
-        {mobileMenuOpen && (
-          <div
-            onClick={toggleMobileMenu}
-            className="fixed inset-0 bg-black/50 md:hidden z-40"
-          />
-        )}
-      </nav>
+      <HomeSiteNavbar />
 
       {/* ─── Hero Section ─── */}
       <LatamDepthBackground
@@ -448,24 +311,7 @@ export default function HomePage() {
             </p>
 
             {/* Logo Carousel (Client logos) */}
-            <div className="logo-carousel-container overflow-hidden mb-8 sm:mb-12">
-              <div className="logo-carousel flex items-center gap-10 sm:gap-16">
-                {[...clientLogos, ...clientLogos].map((logo, i) => (
-                  <div
-                    key={`${logo.alt}-${i}`}
-                    className="logo-item flex-shrink-0"
-                  >
-                    <Image
-                      src={logo.src}
-                      alt={logo.alt}
-                      width={120}
-                      height={40}
-                      className="h-11 sm:h-14 w-auto object-contain"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ClientLogoMarquee className="mb-8 sm:mb-12" />
 
             {/* Interactive Quiz Embed */}
             <div className="relative z-40 max-w-3xl mx-auto mt-8 sm:mt-12 lg:mt-16">
@@ -1264,87 +1110,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ─── Footer ─── */}
-      <footer className="bg-transparent border-t border-black/5 py-8 sm:py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
-            <div className="col-span-2 sm:col-span-1">
-              <div className="mb-3 sm:mb-4">
-                <Image
-                  src="/logo_latam/franquicias_latam_logo.png"
-                  alt="Franquicias LATAM"
-                  width={640}
-                  height={160}
-                  className="h-[6.4rem] sm:h-32 w-auto"
-                />
-              </div>
-              <p className="text-gray-900 text-xs sm:text-sm">
-                Plataforma de franquicias para inversionistas en
-                Latinoam&eacute;rica.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
-                Producto
-              </h4>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-900">
-                <li>
-                  <a href="#proceso" className="hover:text-black">
-                    Proceso
-                  </a>
-                </li>
-                <li>
-                  <a href="#plataforma" className="hover:text-black">
-                    Plataforma
-                  </a>
-                </li>
-                <li>
-                  <a href="#casos" className="hover:text-black">
-                    Casos
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
-                Empresa
-              </h4>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-900">
-                <li>
-                  <a href="#contacto" className="hover:text-black">
-                    Contacto
-                  </a>
-                </li>
-                <li>
-                  <Link href="/admin/login" className="hover:text-black">
-                    Admin
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
-                Legal
-              </h4>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-900">
-                <li>
-                  <a href="#" className="hover:text-black">
-                    T&eacute;rminos
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-black">
-                    Privacidad
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-100 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-xs sm:text-sm text-gray-900">
-            &copy; 2026 Franquicias LATAM. Todos los derechos reservados.
-          </div>
-        </div>
-      </footer>
+      <HomeSiteFooter />
     </div>
   );
 }

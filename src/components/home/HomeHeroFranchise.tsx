@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ExpressDiagnosisWidget } from "@/components/ExpressDiagnosisWidget";
+import { ProgramInstitutionalLogosRow } from "@/components/home/ProgramInstitutionalLogosRow";
 
 const programShowcaseCards = [
   {
@@ -240,44 +241,7 @@ function HowItWorks() {
                 Programa implementado por:
               </p>
 
-              <div
-                className="mt-4 flex flex-wrap items-center gap-8 sm:flex-nowrap sm:gap-10"
-                aria-label="Organizaciones aliadas"
-              >
-                <figure className="flex h-12 min-w-0 items-center justify-center">
-                  <Image
-                    src="/logo_bid_3.png"
-                    alt="Banco Interamericano de Desarrollo (BID)"
-                    width={800}
-                    height={300}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-10 w-auto object-contain sm:h-11 md:h-12"
-                  />
-                </figure>
-                <figure className="flex h-12 min-w-0 items-center justify-center">
-                  <Image
-                    src="/logo_onu_1.png"
-                    alt="Naciones Unidas"
-                    width={800}
-                    height={300}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-10 w-auto object-contain sm:h-11 md:h-12"
-                  />
-                </figure>
-                <figure className="flex h-12 min-w-0 items-center justify-center">
-                  <Image
-                    src="/logo_mintic_1.png"
-                    alt="MinTIC — Ministerio de Tecnologías de la Información y las Comunicaciones"
-                    width={800}
-                    height={300}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-10 w-auto object-contain sm:h-11 md:h-12"
-                  />
-                </figure>
-              </div>
+              <ProgramInstitutionalLogosRow />
             </div>
           </div>
 
