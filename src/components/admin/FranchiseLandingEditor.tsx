@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PLAN_ENTITLEMENTS, isModuleAllowed } from "@/lib/plan-entitlements";
 import type { PlanTier } from "@/lib/plan-entitlements";
+import { DocumentUpload } from "@/components/admin/DocumentUpload";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
   getListingDefaults,
@@ -1419,13 +1420,12 @@ function BrochureTab({
   return (
     <div className="space-y-5">
       <Field label="Dossier / Brochure" hint="PDF descargable. Sube un archivo o pega una URL directamente.">
-        <ImageUpload
+        <DocumentUpload
+          franchiseId={data.id}
           value={data.brochureUrl ?? ""}
           onChange={(url) => set("brochureUrl", url || null)}
-          storagePath={`franchise-assets/${data.slug ?? data.id}/brochure`}
           accept=".pdf,application/pdf"
-          hint="PDF u otro archivo descargable."
-          previewHeight="h-8"
+          hint="PDF descargable. Si lo subes desde aquí, luego pulsa Guardar cambios."
         />
       </Field>
     </div>
