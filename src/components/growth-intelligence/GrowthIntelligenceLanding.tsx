@@ -1,942 +1,1769 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Bot,
-  BrainCircuit,
-  BriefcaseBusiness,
-  Building2,
-  ChevronRight,
-  CircleDollarSign,
-  Gauge,
-  HeartPulse,
-  Radar,
-  ScanSearch,
-  ShoppingBag,
-  Sparkles,
-  Store,
-  Target,
-  UtensilsCrossed,
-  Workflow,
-} from "lucide-react";
-import { ProgramInstitutionalLogosRow } from "@/components/home/ProgramInstitutionalLogosRow";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const PRIMARY_CTA_HREF = "/quiz";
 const TEAM_CTA_HREF =
   "https://calendly.com/franquicias_latam/programa_aceleradora_franquicias";
 
-const sectionLinks = [
-  { href: "#senales", label: "Señales" },
-  { href: "#como-funciona", label: "Método" },
-  { href: "#rutas", label: "Rutas" },
-  { href: "#credibilidad", label: "Credibilidad" },
-  { href: "#fit", label: "Fit" },
-  { href: "#faq", label: "FAQ" },
-];
+// ─── Scroll Reveal ────────────────────────────────────────────────────────────
+function useScrollReveal() {
+  useEffect(() => {
+    // Hero elements use no rootMargin offset so they fire immediately on mount
+    const heroObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("is-visible");
+        });
+      },
+      { threshold: 0 },
+    );
+    // Below-fold elements wait until 48px into the viewport
+    const scrollObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("is-visible");
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -48px 0px" },
+    );
+    document
+      .querySelectorAll(".reveal-hero")
+      .forEach((el) => heroObserver.observe(el));
+    document
+      .querySelectorAll(".reveal")
+      .forEach((el) => scrollObserver.observe(el));
+    return () => {
+      heroObserver.disconnect();
+      scrollObserver.disconnect();
+    };
+  }, []);
+}
 
-const blindSpots = [
+// ─── Diagnostic Widget ────────────────────────────────────────────────────────
+const QUESTIONS = [
   {
-    icon: CircleDollarSign,
-    title: "Estás creciendo, pero la caja sigue apretada",
-    description:
-      "Tus ingresos avanzan, pero la liquidez no acompaña. El problema no siempre es vender más, sino liberar la caja que ya estás generando.",
+    q: "¿Tu caja acompaña tu crecimiento?",
+    opts: ["Sí, va bien", "No del todo", "Definitivamente no"],
   },
   {
-    icon: Gauge,
-    title: "Hay demanda, pero la operación no escala",
-    description:
-      "El mercado responde, pero la ejecución se tensa: tiempos, calidad, liderazgo y consistencia empiezan a frenarte.",
+    q: "¿Tu operación puede absorber 2x la demanda actual?",
+    opts: ["Sí", "Con ajustes", "No"],
   },
   {
-    icon: Building2,
-    title: "Quieres expandirte, pero el modelo aún no está listo",
-    description:
-      "La oportunidad existe, pero todavía faltan estructura, repetibilidad y claridad para crecer sin multiplicar el caos.",
+    q: "¿Podrías replicar tu modelo en otra ciudad mañana?",
+    opts: ["Sí", "Parcialmente", "No"],
   },
   {
-    icon: Bot,
-    title: "Quieres IA, pero lo que necesitas primero es secuencia",
-    description:
-      "Automatizar sin diagnóstico suele amplificar desorden. La pregunta no es si implementar IA, sino en qué momento y sobre qué base.",
-  },
-];
-
-const processSteps = [
-  {
-    icon: Radar,
-    title: "Detectamos señales",
-    description:
-      "Leemos patrones comerciales, financieros, operativos y de escalabilidad para identificar dónde se está acumulando la fricción.",
-  },
-  {
-    icon: ScanSearch,
-    title: "Diagnosticamos el cuello de botella real",
-    description:
-      "Separamos síntomas de causas. No atacamos ruido; ubicamos la restricción que hoy está limitando crecimiento, caja o expansión.",
-  },
-  {
-    icon: Target,
-    title: "Activamos la ruta correcta",
-    description:
-      "Traducimos el diagnóstico en una dirección concreta: liberar caja, elevar performance, preparar expansión o diseñar transformación IA.",
+    q: "¿Tienes claridad de dónde IA te daría ventaja real?",
+    opts: ["Sí, tengo claridad", "Algo", "No"],
   },
 ];
 
-const signalGroups = [
+const ROUTE_RESULTS = [
   {
-    title: "Comerciales",
-    items: [
-      "Demanda sin captura suficiente",
-      "Conversión inestable",
-      "Ticket o mezcla comercial deteriorada",
-      "Canales que crecen sin rentabilidad",
-    ],
+    name: "Liberación de Caja",
+    color: "#00FFB2",
+    desc: "Ordena prioridades para capturar liquidez y reducir fricción financiera antes de seguir escalando.",
   },
   {
-    title: "Financieras",
-    items: [
-      "Caja atrapada en operación",
-      "Márgenes erosionados",
-      "Capital de trabajo bajo presión",
-      "Inversión sin retorno claro",
-    ],
+    name: "Performance Improvement",
+    color: "#00D4FF",
+    desc: "Enfoca la mejora donde más impacta margen y capacidad de respuesta sin añadir complejidad.",
   },
   {
-    title: "Operativas",
-    items: [
-      "Capacidad desalineada con la demanda",
-      "Cuellos de botella por proceso",
-      "Dependencia excesiva del dueño",
-      "Fallas de consistencia multi-sede",
-    ],
+    name: "Franchise Readiness",
+    color: "#FFB800",
+    desc: "Convierte la expansión en un sistema replicable antes de que se convierta en una apuesta improvisada.",
   },
   {
-    title: "Escalabilidad",
-    items: [
-      "Modelo difícil de replicar",
-      "Expansión sin readiness",
-      "Estándares poco transferibles",
-      "Tecnología sin secuencia estratégica",
-    ],
+    name: "Transformación IA",
+    color: "#B060FF",
+    desc: "Define dónde IA genera ventaja real y sobre qué base operativa implementarla con criterio.",
   },
 ];
 
-const routes = [
-  {
-    icon: CircleDollarSign,
-    title: "Liberación de Caja",
-    forWho:
-      "Para negocios que venden, pero siguen operando con caja tensionada o con capital atrapado en la ejecución.",
-    outcome:
-      "Ordena prioridades para capturar liquidez, reducir fricción financiera y volver a crear capacidad de maniobra.",
-  },
-  {
-    icon: Gauge,
-    title: "Performance Improvement",
-    forWho:
-      "Para operadores con demanda real, pero con frenos en productividad, consistencia, rentabilidad o experiencia operativa.",
-    outcome:
-      "Enfoca la mejora donde más impacta desempeño, margen y capacidad de respuesta sin añadir complejidad innecesaria.",
-  },
-  {
-    icon: Workflow,
-    title: "Franchise Readiness",
-    forWho:
-      "Para negocios con señales de expansión que necesitan validar si el modelo ya puede replicarse de forma vendible y controlada.",
-    outcome:
-      "Aclara qué debe estructurarse primero para convertir expansión en un sistema, no en una apuesta improvisada.",
-  },
-  {
-    icon: BrainCircuit,
-    title: "Transformación IA",
-    forWho:
-      "Para empresas que quieren automatizar, instrumentar o acelerar decisiones, pero necesitan primero una secuencia estratégica correcta.",
-    outcome:
-      "Define dónde IA sí genera ventaja, qué bases operativas requiere y cómo implementarla sin digitalizar desorden.",
-  },
-];
+// First question with the worst answer wins — earlier restrictions take priority
+function getRoute(answers: number[]) {
+  const max = Math.max(...answers);
+  const idx = answers.indexOf(max);
+  return ROUTE_RESULTS[idx];
+}
 
-const credibilityBlocks = [
-  {
-    title: "Experiencia institucional aplicada",
-    description:
-      "La metodología ya ha sido aplicada en proyectos junto a BID, Naciones Unidas y MinTIC dentro de contextos reales de crecimiento empresarial.",
-  },
-  {
-    title: "Desarrollo productivo y expansión",
-    description:
-      "También se ha utilizado en iniciativas con Propaís y Gobierno de Corea del Sur para estructurar capacidades de escalamiento.",
-  },
-  {
-    title: "Franquicias, expansión y ejecución LATAM",
-    description:
-      "La lectura combina práctica en expansión, estructuración de modelos y decisiones operativas en negocios que quieren multiplicarse con criterio.",
-  },
-  {
-    title: "Capacidad financiera, operativa y tecnológica",
-    description:
-      "No es una mirada aislada. Integra lectura de caja, performance, readiness de expansión y secuencia de transformación.",
-  },
-];
+function DiagnosticWidget() {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [done, setDone] = useState(false);
+  const [route, setRoute] = useState<(typeof ROUTE_RESULTS)[number] | null>(
+    null,
+  );
 
-const fitSegments = [
-  {
-    icon: UtensilsCrossed,
-    title: "Food & Beverage",
-    description:
-      "Conceptos con flujo, complejidad operativa y presión constante entre demanda, caja y estandarización.",
-  },
-  {
-    icon: Store,
-    title: "Retail",
-    description:
-      "Negocios con tracción comercial que necesitan ordenar margen, inventario, formato y capacidad de réplica.",
-  },
-  {
-    icon: HeartPulse,
-    title: "Health & Beauty",
-    description:
-      "Modelos donde experiencia, consistencia y economics de sede importan tanto como el crecimiento comercial.",
-  },
-  {
-    icon: BriefcaseBusiness,
-    title: "Servicios",
-    description:
-      "Empresas donde el cuello de botella suele estar en capacidad, estandarización, pricing o dependencia del fundador.",
-  },
-  {
-    icon: Building2,
-    title: "Conceptos multi-unit",
-    description:
-      "Operaciones con más de una unidad que necesitan visibilidad para crecer sin perder control ni margen.",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Negocios con señales tempranas de expansión",
-    description:
-      "Empresas que empiezan a ver demanda repetible, nuevos mercados o interés por escalar, pero aún no saben qué activar primero.",
-  },
-];
+  const handleNext = () => {
+    if (selected === null) return;
+    const next = [...answers, selected];
+    if (step === QUESTIONS.length - 1) {
+      setAnswers(next);
+      setRoute(getRoute(next));
+      setDone(true);
+    } else {
+      setAnswers(next);
+      setStep(step + 1);
+      setSelected(null);
+    }
+  };
 
-const faqItems = [
-  {
-    question: "¿Esto es consultoría tradicional?",
-    answer:
-      "No. Es un sistema de lectura estratégica para identificar la restricción real y ordenar la siguiente decisión con mayor precisión.",
-  },
-  {
-    question: "¿Es una solución de software?",
-    answer:
-      "Tampoco. Puede activar una ruta tecnológica cuando aplica, pero el punto de partida es el diagnóstico del negocio, no la herramienta.",
-  },
-  {
-    question: "¿Qué recibo al solicitar el diagnóstico?",
-    answer:
-      "Una lectura inicial de señales, una hipótesis clara sobre el cuello de botella dominante y la ruta estratégica que debería ir primero.",
-  },
-  {
-    question: "¿Aplica para cualquier empresa?",
-    answer:
-      "No. Está pensado para negocios con operación real, señales de crecimiento y voluntad de ejecutar decisiones con criterio.",
-  },
-];
+  const reset = () => {
+    setStep(0);
+    setAnswers([]);
+    setSelected(null);
+    setDone(false);
+    setRoute(null);
+  };
 
-type SectionIntroProps = {
-  eyebrow: string;
-  title: string;
-  description?: string;
-  align?: "left" | "center";
-};
+  return (
+    <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+      <div
+        style={{
+          background: "#0f0f0f",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "20px",
+          padding: "40px",
+        }}
+      >
+        {!done ? (
+          <>
+            {/* Progress */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "36px",
+              }}
+            >
+              {QUESTIONS.map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: "4px",
+                    borderRadius: "999px",
+                    flex: i === step ? 2 : 1,
+                    background:
+                      i < step
+                        ? "#00FFB2"
+                        : i === step
+                          ? "#00FFB2"
+                          : "rgba(255,255,255,0.1)",
+                    opacity: i < step ? 0.4 : 1,
+                    transition: "all 0.35s ease",
+                  }}
+                />
+              ))}
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#5A5F68",
+                  marginLeft: "8px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {step + 1} / {QUESTIONS.length}
+              </span>
+            </div>
 
-function SectionIntro({
-  eyebrow,
-  title,
-  description,
-  align = "left",
-}: SectionIntroProps) {
+            {/* Question */}
+            <h3
+              style={{
+                fontSize: "22px",
+                fontWeight: 700,
+                color: "#FAFAFA",
+                letterSpacing: "-0.03em",
+                lineHeight: 1.25,
+                marginBottom: "28px",
+                fontFamily: "'Instrument Sans', sans-serif",
+              }}
+            >
+              {QUESTIONS[step].q}
+            </h3>
+
+            {/* Options */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {QUESTIONS[step].opts.map((opt, i) => (
+                <button
+                  key={opt}
+                  onClick={() => setSelected(i)}
+                  style={{
+                    background:
+                      selected === i
+                        ? "rgba(0,255,178,0.1)"
+                        : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${selected === i ? "#00FFB2" : "rgba(255,255,255,0.08)"}`,
+                    borderRadius: "12px",
+                    padding: "14px 20px",
+                    textAlign: "left",
+                    color: selected === i ? "#00FFB2" : "#FAFAFA",
+                    fontSize: "15px",
+                    fontWeight: selected === i ? 600 : 400,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    width: "100%",
+                  }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={selected === null}
+              style={{
+                marginTop: "24px",
+                width: "100%",
+                background:
+                  selected !== null ? "#00FFB2" : "rgba(255,255,255,0.05)",
+                color: selected !== null ? "#050505" : "#5A5F68",
+                border: "none",
+                borderRadius: "999px",
+                padding: "14px",
+                fontSize: "15px",
+                fontWeight: 700,
+                cursor: selected !== null ? "pointer" : "not-allowed",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {step === QUESTIONS.length - 1 ? "Ver mi ruta →" : "Siguiente →"}
+            </button>
+          </>
+        ) : (
+          <div>
+            <p
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#5A5F68",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                marginBottom: "12px",
+              }}
+            >
+              Tu señal dominante apunta a
+            </p>
+            <h3
+              style={{
+                fontSize: "36px",
+                fontWeight: 800,
+                color: route!.color,
+                letterSpacing: "-0.04em",
+                marginBottom: "12px",
+                fontFamily: "'Instrument Sans', sans-serif",
+              }}
+            >
+              {route!.name}
+            </h3>
+            <p
+              style={{
+                fontSize: "16px",
+                color: "#8A8F98",
+                lineHeight: 1.65,
+                marginBottom: "32px",
+              }}
+            >
+              {route!.desc}
+            </p>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+              }}
+            >
+              <Link
+                href={PRIMARY_CTA_HREF}
+                style={{
+                  background: "#00FFB2",
+                  color: "#050505",
+                  padding: "14px 24px",
+                  borderRadius: "999px",
+                  fontWeight: 700,
+                  fontSize: "15px",
+                  textDecoration: "none",
+                  textAlign: "center",
+                  display: "block",
+                }}
+              >
+                Solicitar diagnóstico completo →
+              </Link>
+              <button
+                type="button"
+                onClick={reset}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "#8A8F98",
+                  padding: "12px 24px",
+                  borderRadius: "999px",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  width: "100%",
+                }}
+              >
+                Reintentar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── FAQ Accordion ────────────────────────────────────────────────────────────
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
   return (
     <div
-      className={cn(
-        "max-w-3xl",
-        align === "center" && "mx-auto text-center",
-      )}
+      style={{
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: "14px",
+        marginBottom: "8px",
+        overflow: "hidden",
+      }}
     >
-      <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-cyan-100/75">
-        <Sparkles className="size-3.5" aria-hidden="true" />
-        {eyebrow}
-      </span>
-      <h2 className="mt-5 text-3xl font-bold leading-[1.02] tracking-[-0.05em] text-white sm:text-4xl lg:text-[3.2rem]">
-        {title}
-      </h2>
-      {description ? (
-        <p className="mt-5 text-base leading-relaxed text-slate-300 sm:text-lg">
-          {description}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-type SurfaceProps = ComponentProps<"div">;
-
-function Surface({ className, ...props }: SurfaceProps) {
-  return (
-    <div
-      className={cn(
-        "rounded-[28px] border border-white/10 bg-white/[0.035] shadow-[0_30px_80px_-42px_rgba(15,23,42,0.85)] backdrop-blur-sm",
-        className,
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        style={{
+          width: "100%",
+          background: open ? "rgba(0,255,178,0.04)" : "#0f0f0f",
+          border: "none",
+          padding: "20px 24px",
+          textAlign: "left",
+          color: "#FAFAFA",
+          fontSize: "16px",
+          fontWeight: 600,
+          cursor: "pointer",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "16px",
+          transition: "background 0.2s",
+          fontFamily: "'Instrument Sans', sans-serif",
+        }}
+      >
+        {q}
+        <span
+          aria-hidden="true"
+          style={{
+            color: "#00FFB2",
+            fontSize: "22px",
+            lineHeight: 1,
+            flexShrink: 0,
+            transition: "transform 0.22s ease",
+            transform: open ? "rotate(45deg)" : "rotate(0deg)",
+            display: "inline-block",
+          }}
+        >
+          +
+        </span>
+      </button>
+      {open && (
+        <div
+          style={{
+            background: "#0a0a0a",
+            padding: "8px 24px 20px",
+            color: "#8A8F98",
+            fontSize: "15px",
+            lineHeight: 1.7,
+          }}
+        >
+          {a}
+        </div>
       )}
-      {...props}
-    />
-  );
-}
-
-function DividerLabel({ children }: { children: ReactNode }) {
-  return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-cyan-100">
-      <span className="size-2 rounded-full bg-cyan-300" aria-hidden="true" />
-      {children}
     </div>
   );
 }
 
+// ─── Main Landing ─────────────────────────────────────────────────────────────
 export function GrowthIntelligenceLanding() {
-  return (
-    <div className="min-h-screen bg-[#050816] text-white">
-      <div className="relative isolate overflow-hidden">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.16),transparent_34%),radial-gradient(circle_at_18%_18%,rgba(59,130,246,0.18),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(99,102,241,0.18),transparent_28%)]"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-[28rem] h-[56rem] bg-[radial-gradient(circle_at_72%_20%,rgba(34,211,238,0.12),transparent_24%),radial-gradient(circle_at_20%_42%,rgba(56,189,248,0.10),transparent_24%),linear-gradient(180deg,rgba(10,15,30,0.14),transparent_55%)]"
-        />
+  useScrollReveal();
 
-        <header className="sticky top-0 z-50 border-b border-white/8 bg-[#050816]/85 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-            <Link href="/" className="flex items-center gap-3">
+  return (
+    <>
+      {/* Font loading — link tags are more performant than @import */}
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+
+      <style>{`
+        html { scroll-behavior: smooth; }
+
+        .gi-page { font-family: 'Inter', sans-serif; }
+        .gi-display { font-family: 'Instrument Sans', sans-serif; }
+
+        /* Reveal animation — starts hidden, fires when element enters viewport */
+        .reveal {
+          opacity: 0;
+          transform: translateY(20px);
+          transition: opacity 0.65s ease, transform 0.65s ease;
+        }
+        .reveal.is-visible { opacity: 1; transform: translateY(0); }
+        /* Stagger delays only apply once visible */
+        .reveal.d1 { transition-delay: 0.1s; }
+        .reveal.d2 { transition-delay: 0.18s; }
+        .reveal.d3 { transition-delay: 0.26s; }
+        .reveal.d4 { transition-delay: 0.34s; }
+        .reveal.d5 { transition-delay: 0.42s; }
+
+        /* Hero elements are already in viewport — reveal them immediately */
+        .reveal-hero {
+          opacity: 0;
+          transform: translateY(16px);
+          transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .reveal-hero.is-visible { opacity: 1; transform: translateY(0); }
+        .reveal-hero.d1 { transition-delay: 0.05s; }
+        .reveal-hero.d2 { transition-delay: 0.12s; }
+        .reveal-hero.d3 { transition-delay: 0.2s; }
+        .reveal-hero.d4 { transition-delay: 0.28s; }
+
+        @keyframes marquee {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .marquee-track { animation: marquee 32s linear infinite; }
+
+        @keyframes badge-pulse {
+          0%,100% { box-shadow: 0 0 0 0 rgba(0,255,178,0.25); }
+          50%      { box-shadow: 0 0 24px 4px rgba(0,255,178,0.12); }
+        }
+        .badge-pulse { animation: badge-pulse 3.5s ease-in-out infinite; }
+
+        .gi-card {
+          transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+        .gi-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(0,255,178,0.28) !important;
+          box-shadow: 0 0 32px rgba(0,255,178,0.07);
+        }
+        /* Route cards override to cyan glow */
+        .gi-route-card:hover {
+          border-color: rgba(0,212,255,0.3) !important;
+          box-shadow: 0 0 32px rgba(0,212,255,0.08);
+        }
+
+        .gi-grid-bg {
+          background-image:
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+          background-size: 72px 72px;
+        }
+
+        /* Responsive grid helpers */
+        .two-col-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 72px;
+          align-items: center;
+        }
+        @media (max-width: 900px) {
+          .two-col-grid { grid-template-columns: 1fr; gap: 48px; }
+        }
+
+        /* Mobile nav — hidden by default, shown md+ via Tailwind */
+        .gi-nav { display: none; align-items: center; gap: 28px; flex: 1; justify-content: center; }
+        @media (min-width: 768px) { .gi-nav { display: flex; } }
+
+        .nav-link { color: #8A8F98; font-size: 14px; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+        .nav-link:hover { color: #FAFAFA; }
+
+        /* Focus styles for keyboard navigation */
+        :focus-visible {
+          outline: 2px solid #00FFB2;
+          outline-offset: 3px;
+          border-radius: 4px;
+        }
+
+        /* Respect user motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+          .reveal, .reveal-hero {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+          .marquee-track { animation: none; }
+          .badge-pulse { animation: none; }
+          .gi-card, .gi-route-card { transition: none; }
+          html { scroll-behavior: auto; }
+        }
+      `}</style>
+
+      <div
+        className="gi-page"
+        style={{ background: "#050505", color: "#FAFAFA", minHeight: "100vh" }}
+      >
+        {/* ── NAVBAR ────────────────────────────────────────────────── */}
+        <header
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 50,
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            backdropFilter: "blur(24px)",
+            background: "rgba(5,5,5,0.88)",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "1200px",
+              margin: "0 auto",
+              padding: "0 24px",
+              height: "64px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "24px",
+            }}
+          >
+            {/* Logo */}
+            <Link
+              href="/"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                textDecoration: "none",
+                flexShrink: 0,
+              }}
+            >
               <Image
                 src="/logo_latam/franquicias_latam_logo.png"
                 alt="Franquicias LATAM"
-                width={640}
-                height={160}
-                className="h-10 w-auto brightness-0 invert sm:h-12"
+                width={320}
+                height={80}
+                className="h-8 w-auto brightness-0 invert"
                 priority
               />
-              <div className="hidden min-[480px]:block">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-cyan-100/75">
-                  Strategic Offer
-                </p>
-                <p className="text-sm font-semibold tracking-tight text-white">
-                  Sistema Growth Intelligence
-                </p>
-              </div>
+              <span
+                style={{
+                  background: "rgba(0,255,178,0.1)",
+                  border: "1px solid rgba(0,255,178,0.22)",
+                  borderRadius: "999px",
+                  padding: "3px 10px",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: "#00FFB2",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Growth Intelligence
+              </span>
             </Link>
 
-            <div className="flex items-center gap-3">
-              <a
-                href="#como-funciona"
-                className="hidden rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-white/20 hover:text-white sm:inline-flex"
-              >
-                Ver cómo funciona
-              </a>
-              <Button
-                asChild
-                size="sm"
-                className="rounded-full px-5 shadow-[0_20px_45px_-24px_rgba(56,189,248,0.9)]"
-              >
-                <Link href={PRIMARY_CTA_HREF}>
-                  Solicitar diagnóstico
-                  <ArrowRight aria-hidden="true" />
-                </Link>
-              </Button>
-            </div>
+            {/* Nav — visibility handled by .gi-nav CSS (not inline style, which would override) */}
+            <nav className="gi-nav" aria-label="Navegación principal">
+              <a href="#como-funciona" className="nav-link">Cómo Funciona</a>
+              <a href="#rutas" className="nav-link">Rutas</a>
+              <a href="#diagnostico" className="nav-link">Diagnóstico</a>
+            </nav>
+
+            {/* CTA */}
+            <Link
+              href={PRIMARY_CTA_HREF}
+              style={{
+                background: "#00FFB2",
+                color: "#050505",
+                borderRadius: "999px",
+                padding: "8px 20px",
+                fontSize: "13px",
+                fontWeight: 700,
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              Solicitar Diagnóstico →
+            </Link>
           </div>
         </header>
 
         <main>
-          <section className="relative overflow-hidden px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-16 lg:pb-24 lg:pt-20">
-            <div className="mx-auto max-w-7xl">
-              <div className="grid gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-14">
-                <div className="relative z-10 min-w-0">
-                  <DividerLabel>Growth Intelligence System</DividerLabel>
-                  <h1 className="mt-6 max-w-4xl text-4xl font-bold leading-[0.96] tracking-[-0.06em] text-white sm:text-5xl lg:text-[5.2rem]">
-                    Tu negocio ya está dando señales. La pregunta es si las
-                    estás viendo a tiempo.
-                  </h1>
-                  <p className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-300 sm:text-xl">
-                    Nuestro Growth Intelligence System detecta señales de
-                    crecimiento, fugas de caja, cuellos de botella operativos y
-                    potencial de expansión para recomendar la ruta correcta:
-                    liberar caja, mejorar desempeño, preparar expansión o
-                    implementar IA.
-                  </p>
+          {/* ── HERO ──────────────────────────────────────────────────── */}
+          <section
+            style={{
+              padding: "100px 24px 80px",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* Animated grid */}
+            <div
+              className="gi-grid-bg"
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
+                opacity: 0.5,
+              }}
+            />
+            {/* Glow orb */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                top: "-80px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "900px",
+                height: "500px",
+                background:
+                  "radial-gradient(ellipse at 50% 0%, rgba(0,255,178,0.13) 0%, transparent 65%)",
+                pointerEvents: "none",
+              }}
+            />
 
-                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                    <Button
-                      asChild
-                      size="lg"
-                      className="rounded-full px-7 shadow-[0_24px_55px_-28px_rgba(56,189,248,0.95)]"
-                    >
-                      <Link href={PRIMARY_CTA_HREF}>
-                        Solicitar diagnóstico
-                        <ArrowRight aria-hidden="true" />
-                      </Link>
-                    </Button>
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="lg"
-                      className="rounded-full border-white/15 bg-white/[0.03] px-7 text-white hover:border-white/25 hover:bg-white/[0.07]"
-                    >
-                      <a href="#como-funciona">Ver cómo funciona</a>
-                    </Button>
-                  </div>
+            <div
+              style={{
+                position: "relative",
+                maxWidth: "860px",
+                margin: "0 auto",
+                textAlign: "center",
+              }}
+            >
+              {/* Badge */}
+              <div
+                className="badge-pulse reveal-hero"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  background: "rgba(0,255,178,0.08)",
+                  border: "1px solid rgba(0,255,178,0.2)",
+                  borderRadius: "999px",
+                  padding: "8px 18px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#00FFB2",
+                  marginBottom: "32px",
+                }}
+              >
+                🔍 Sistema de Inteligencia Estratégica
+              </div>
 
-                  <div className="mt-10 grid gap-3 sm:grid-cols-3">
-                    {[
-                      "Detecta lo que ya está pasando",
-                      "Prioriza lo que realmente destraba crecimiento",
-                      "Activa la ruta correcta para escalar",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-4 text-sm leading-relaxed text-slate-200"
-                      >
-                        {item}
-                      </div>
-                    ))}
-                  </div>
+              {/* H1 */}
+              <h1
+                className="gi-display reveal-hero d1"
+                style={{
+                  fontSize: "clamp(40px, 6.5vw, 72px)",
+                  fontWeight: 800,
+                  lineHeight: 1.04,
+                  letterSpacing: "-0.045em",
+                  color: "#FAFAFA",
+                  marginBottom: "24px",
+                }}
+              >
+                Tu negocio ya está dando señales.
+                <br />
+                La pregunta es si las estás
+                <br />
+                <span style={{ color: "#00FFB2" }}>leyendo a tiempo.</span>
+              </h1>
 
-                  <div className="mt-10 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                    <span className="rounded-full border border-white/10 px-3 py-2">
-                      F&B
-                    </span>
-                    <span className="rounded-full border border-white/10 px-3 py-2">
-                      Retail
-                    </span>
-                    <span className="rounded-full border border-white/10 px-3 py-2">
-                      Health & Beauty
-                    </span>
-                    <span className="rounded-full border border-white/10 px-3 py-2">
-                      Servicios
-                    </span>
-                    <span className="rounded-full border border-white/10 px-3 py-2">
-                      Multi-unit
-                    </span>
-                  </div>
-                </div>
+              {/* Sub */}
+              <p
+                className="reveal-hero d2"
+                style={{
+                  fontSize: "20px",
+                  color: "#8A8F98",
+                  lineHeight: 1.65,
+                  maxWidth: "580px",
+                  margin: "0 auto 40px",
+                }}
+              >
+                Detectamos señales de crecimiento, fugas de caja y cuellos de
+                botella para activar la ruta correcta de escala.
+              </p>
 
-                <Surface className="relative overflow-hidden p-5 sm:p-6 lg:p-7">
+              {/* CTAs */}
+              <div
+                className="reveal-hero d3"
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                  marginBottom: "56px",
+                }}
+              >
+                <Link
+                  href={PRIMARY_CTA_HREF}
+                  style={{
+                    background: "#00FFB2",
+                    color: "#050505",
+                    borderRadius: "999px",
+                    padding: "14px 32px",
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    boxShadow: "0 0 48px rgba(0,255,178,0.28)",
+                  }}
+                >
+                  Solicitar Diagnóstico
+                </Link>
+                <a
+                  href="#como-funciona"
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    color: "#FAFAFA",
+                    borderRadius: "999px",
+                    padding: "14px 32px",
+                    fontSize: "16px",
+                    fontWeight: 500,
+                    textDecoration: "none",
+                  }}
+                >
+                  Ver cómo funciona ↓
+                </a>
+              </div>
+
+              {/* Micro stats */}
+              <div
+                className="reveal-hero d4"
+                style={{
+                  display: "flex",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  maxWidth: "440px",
+                  margin: "0 auto",
+                  background: "rgba(255,255,255,0.02)",
+                }}
+              >
+                {[
+                  { val: "4", label: "Rutas Estratégicas" },
+                  { val: "6+", label: "Industrias" },
+                  { val: "72h", label: "Diagnóstico" },
+                ].map(({ val, label }, i) => (
                   <div
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(34,211,238,0.20),transparent_28%),radial-gradient(circle_at_84%_26%,rgba(59,130,246,0.18),transparent_24%),radial-gradient(circle_at_20%_88%,rgba(99,102,241,0.15),transparent_24%)]"
-                  />
-
-                  <div className="relative z-10">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-emerald-100/80">
-                          Señal detectada
-                        </p>
-                        <p className="mt-2 text-lg font-semibold tracking-tight text-white">
-                          Caja atrapada pese a la demanda.
-                        </p>
-                      </div>
-                      <div className="rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-4">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-cyan-100/80">
-                          Oportunidad
-                        </p>
-                        <p className="mt-2 text-lg font-semibold tracking-tight text-white">
-                          Expansión posible si corriges secuencia.
-                        </p>
-                      </div>
+                    key={val}
+                    style={{
+                      flex: 1,
+                      padding: "20px 8px",
+                      textAlign: "center",
+                      borderRight:
+                        i < 2 ? "1px solid rgba(255,255,255,0.07)" : "none",
+                    }}
+                  >
+                    <div
+                      className="gi-display"
+                      style={{
+                        fontSize: "30px",
+                        fontWeight: 800,
+                        color: "#00FFB2",
+                        letterSpacing: "-0.04em",
+                      }}
+                    >
+                      {val}
                     </div>
-
-                    <div className="relative mx-auto mt-8 flex aspect-square w-full max-w-[23rem] items-center justify-center">
-                      <div className="absolute inset-[6%] rounded-full border border-cyan-300/15" />
-                      <div className="absolute inset-[16%] rounded-full border border-cyan-300/15" />
-                      <div className="absolute inset-[29%] rounded-full border border-cyan-300/20" />
-                      <div className="absolute left-1/2 top-[6%] h-[88%] w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/15 to-transparent" />
-                      <div className="absolute left-[6%] top-1/2 h-px w-[88%] -translate-y-1/2 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-
-                      <div className="absolute left-[18%] top-[20%] rounded-full border border-cyan-300/25 bg-[#081122] px-3 py-2 text-xs text-cyan-50 shadow-[0_0_20px_rgba(34,211,238,0.16)]">
-                        Fuga de caja
-                      </div>
-                      <div className="absolute right-[12%] top-[26%] rounded-full border border-white/10 bg-[#0c1529] px-3 py-2 text-xs text-slate-200">
-                        Demanda sin capacidad
-                      </div>
-                      <div className="absolute bottom-[19%] left-[14%] rounded-full border border-white/10 bg-[#0c1529] px-3 py-2 text-xs text-slate-200">
-                        Modelo no replicable
-                      </div>
-                      <div className="absolute bottom-[14%] right-[18%] rounded-full border border-violet-300/20 bg-violet-400/10 px-3 py-2 text-xs text-violet-50 shadow-[0_0_18px_rgba(129,140,248,0.16)]">
-                        IA sin secuencia
-                      </div>
-
-                      <div className="relative flex size-28 items-center justify-center rounded-full border border-cyan-300/25 bg-[radial-gradient(circle,rgba(34,211,238,0.30),rgba(5,8,22,0.72)_72%)] shadow-[0_0_70px_rgba(34,211,238,0.22)]">
-                        <div className="flex size-18 items-center justify-center rounded-full border border-white/15 bg-white/10 backdrop-blur">
-                          <Radar className="size-8 text-cyan-100" aria-hidden="true" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 rounded-[26px] border border-white/10 bg-black/20 p-4 sm:p-5">
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                            Route map
-                          </p>
-                          <p className="mt-2 text-xl font-semibold tracking-tight text-white">
-                            4 rutas. Una prioridad correcta.
-                          </p>
-                        </div>
-                        <div className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-cyan-100">
-                          Diagnóstico activo
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        {routes.map((route) => {
-                          const Icon = route.icon;
-
-                          return (
-                            <div
-                              key={route.title}
-                              className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 transition-transform duration-200 hover:-translate-y-0.5"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="rounded-2xl border border-white/10 bg-white/5 p-2.5">
-                                  <Icon className="size-5 text-cyan-100" aria-hidden="true" />
-                                </div>
-                                <p className="font-semibold tracking-tight text-white">
-                                  {route.title}
-                                </p>
-                              </div>
-                              <p className="mt-3 text-sm leading-relaxed text-slate-300">
-                                {route.outcome}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
+                    <div
+                      style={{ fontSize: "11px", color: "#5A5F68", marginTop: "4px" }}
+                    >
+                      {label}
                     </div>
                   </div>
-                </Surface>
+                ))}
               </div>
             </div>
           </section>
 
-          <section className="px-4 pb-8 sm:px-6">
-            <div className="mx-auto max-w-7xl overflow-x-auto">
-              <nav
-                aria-label="Navegación de la página"
-                className="flex min-w-max items-center gap-2 rounded-full border border-white/8 bg-white/[0.03] p-2"
+          {/* ── LOGO STRIP ────────────────────────────────────────────── */}
+          <section style={{ padding: "32px 0 80px", overflow: "hidden" }}>
+            <p
+              style={{
+                textAlign: "center",
+                fontSize: "10px",
+                fontWeight: 700,
+                color: "#3A3F48",
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                marginBottom: "24px",
+              }}
+            >
+              Experiencia Aplicada Con
+            </p>
+            <div style={{ overflow: "hidden" }}>
+              <div
+                className="marquee-track"
+                style={{
+                  display: "flex",
+                  gap: "72px",
+                  width: "max-content",
+                  alignItems: "center",
+                  padding: "0 36px",
+                }}
               >
-                {sectionLinks.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="rounded-full px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white"
+                {[
+                  "BID",
+                  "Naciones Unidas",
+                  "MinTIC",
+                  "Propaís",
+                  "Gobierno de Corea del Sur",
+                  "BID",
+                  "Naciones Unidas",
+                  "MinTIC",
+                  "Propaís",
+                  "Gobierno de Corea del Sur",
+                ].map((name, i) => (
+                  <span
+                    key={i}
+                    className="gi-display"
+                    style={{
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      color: "#2E3238",
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      whiteSpace: "nowrap",
+                    }}
                   >
-                    {link.label}
-                  </a>
+                    {name}
+                  </span>
                 ))}
-              </nav>
+              </div>
             </div>
           </section>
 
+          {/* ── SIGNAL DETECTION — Bento Grid ─────────────────────────── */}
           <section
             id="senales"
-            className="scroll-mt-28 px-4 py-12 sm:px-6 sm:py-16 lg:py-20"
+            style={{
+              padding: "120px 24px",
+              maxWidth: "1200px",
+              margin: "0 auto",
+            }}
           >
-            <div className="mx-auto max-w-7xl">
-              <SectionIntro
-                eyebrow="Lo que suele pasar"
-                title="Puede que tu negocio ya tenga potencial de escala, pero estés resolviendo el problema equivocado primero."
-                description="La mayoría de las empresas no se frenan por falta de oportunidad. Se frenan por leer mal la secuencia."
-              />
+            <div className="reveal" style={{ marginBottom: "64px" }}>
+              <p
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  color: "#00FFB2",
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  marginBottom: "16px",
+                }}
+              >
+                Señales
+              </p>
+              <h2
+                className="gi-display"
+                style={{
+                  fontSize: "clamp(28px, 4vw, 50px)",
+                  fontWeight: 800,
+                  letterSpacing: "-0.045em",
+                  color: "#FAFAFA",
+                  maxWidth: "560px",
+                  lineHeight: 1.08,
+                  marginBottom: "16px",
+                }}
+              >
+                Tu negocio ya muestra estas señales
+              </h2>
+              <p
+                style={{
+                  fontSize: "18px",
+                  color: "#8A8F98",
+                  maxWidth: "480px",
+                  lineHeight: 1.65,
+                }}
+              >
+                La mayoría no se frena por falta de oportunidad. Se frena por
+                leer mal la secuencia.
+              </p>
+            </div>
 
-              <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {blindSpots.map((item) => {
-                  const Icon = item.icon;
-
-                  return (
-                    <Surface
-                      key={item.title}
-                      className="h-full p-6 transition-transform duration-200 hover:-translate-y-1"
-                    >
-                      <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-cyan-100 w-fit">
-                        <Icon className="size-6" aria-hidden="true" />
-                      </div>
-                      <h3 className="mt-5 text-xl font-semibold leading-tight tracking-tight text-white">
-                        {item.title}
-                      </h3>
-                      <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
-                        {item.description}
-                      </p>
-                    </Surface>
-                  );
-                })}
-              </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                gap: "14px",
+              }}
+            >
+              {[
+                {
+                  icon: "💸",
+                  title: "Caja atrapada",
+                  desc: "Ingresos avanzan, liquidez no acompaña.",
+                  d: "d1",
+                },
+                {
+                  icon: "⚡",
+                  title: "Demanda sin escala",
+                  desc: "El mercado responde, la ejecución se tensa.",
+                  d: "d2",
+                },
+                {
+                  icon: "🏗️",
+                  title: "Modelo no replicable",
+                  desc: "Oportunidad existe, estructura no.",
+                  d: "d3",
+                },
+                {
+                  icon: "🤖",
+                  title: "IA sin secuencia",
+                  desc: "Automatizar sin diagnóstico amplifica desorden.",
+                  d: "d4",
+                },
+              ].map(({ icon, title, desc, d }) => (
+                <div
+                  key={title}
+                  className={`gi-card reveal ${d}`}
+                  style={{
+                    background: "#0f0f0f",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: "16px",
+                    padding: "32px",
+                    cursor: "default",
+                  }}
+                >
+                  <div style={{ fontSize: "34px", marginBottom: "20px" }}>
+                    {icon}
+                  </div>
+                  <h3
+                    className="gi-display"
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: 700,
+                      color: "#FAFAFA",
+                      marginBottom: "8px",
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {title}
+                  </h3>
+                  <p style={{ fontSize: "15px", color: "#8A8F98", lineHeight: 1.65 }}>
+                    {desc}
+                  </p>
+                </div>
+              ))}
             </div>
           </section>
 
+          {/* ── HOW IT WORKS ──────────────────────────────────────────── */}
           <section
             id="como-funciona"
-            className="scroll-mt-28 px-4 py-12 sm:px-6 sm:py-16 lg:py-20"
+            style={{ padding: "120px 24px", background: "#080808" }}
           >
-            <div className="mx-auto max-w-7xl">
-              <SectionIntro
-                eyebrow="Cómo funciona"
-                title="Cómo funciona"
-                description="No todos los negocios necesitan lo mismo. El poder está en saber qué hacer primero."
-              />
-
-              <div className="mt-10 grid gap-4 lg:grid-cols-3">
-                {processSteps.map((step, index) => {
-                  const Icon = step.icon;
-
-                  return (
-                    <Surface key={step.title} className="relative h-full p-6 sm:p-7">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-cyan-100">
-                          <Icon className="size-6" aria-hidden="true" />
-                        </div>
-                        <span className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
-                          0{index + 1}
-                        </span>
-                      </div>
-                      <h3 className="mt-6 text-2xl font-semibold tracking-tight text-white">
-                        {step.title}
-                      </h3>
-                      <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
-                        {step.description}
-                      </p>
-                    </Surface>
-                  );
-                })}
+            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+              <div className="reveal" style={{ marginBottom: "80px" }}>
+                <p
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#00FFB2",
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    marginBottom: "16px",
+                  }}
+                >
+                  Método
+                </p>
+                <h2
+                  className="gi-display"
+                  style={{
+                    fontSize: "clamp(28px, 4vw, 50px)",
+                    fontWeight: 800,
+                    letterSpacing: "-0.045em",
+                    color: "#FAFAFA",
+                    marginBottom: "16px",
+                    lineHeight: 1.08,
+                  }}
+                >
+                  Cómo funciona
+                </h2>
+                <p
+                  style={{
+                    fontSize: "18px",
+                    color: "#8A8F98",
+                    maxWidth: "440px",
+                    lineHeight: 1.65,
+                  }}
+                >
+                  No todos necesitan lo mismo. El poder está en saber qué hacer
+                  primero.
+                </p>
               </div>
-            </div>
-          </section>
 
-          <section className="px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
-            <div className="mx-auto max-w-7xl">
-              <SectionIntro
-                eyebrow="Mapa de análisis"
-                title="Señales que analizamos"
-                description="Leemos el negocio como un sistema. Lo importante no es acumular datos, sino detectar qué patrón explica mejor la restricción actual."
-              />
-
-              <div className="mt-10 grid gap-4 lg:grid-cols-2">
-                {signalGroups.map((group) => (
-                  <Surface key={group.title} className="p-6 sm:p-7">
-                    <div className="flex items-center gap-3">
-                      <div className="size-2.5 rounded-full bg-cyan-300" aria-hidden="true" />
-                      <h3 className="text-xl font-semibold tracking-tight text-white">
-                        {group.title}
-                      </h3>
-                    </div>
-
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      {group.items.map((item) => (
-                        <span
-                          key={item}
-                          className="rounded-full border border-white/10 bg-white/[0.045] px-4 py-2 text-sm text-slate-200"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </Surface>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section
-            id="rutas"
-            className="scroll-mt-28 px-4 py-12 sm:px-6 sm:py-16 lg:py-20"
-          >
-            <div className="mx-auto max-w-7xl">
-              <SectionIntro
-                eyebrow="Rutas estratégicas"
-                title="Cuando el diagnóstico es claro, la ruta correcta también lo es."
-                description="La calidad del crecimiento depende menos de hacer más cosas y más de ejecutar en el orden correcto."
-              />
-
-              <div className="mt-10 grid gap-4 xl:grid-cols-2">
-                {routes.map((route) => {
-                  const Icon = route.icon;
-
-                  return (
-                    <Surface
-                      key={route.title}
-                      className="relative overflow-hidden p-6 sm:p-7"
+              <div className="two-col-grid">
+                {/* Steps */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "48px",
+                  }}
+                >
+                  {[
+                    {
+                      num: "01",
+                      title: "Detectamos señales",
+                      desc: "Leemos patrones comerciales, financieros, operativos y de escalabilidad.",
+                      d: "d1",
+                    },
+                    {
+                      num: "02",
+                      title: "Diagnosticamos la restricción real",
+                      desc: "Separamos síntomas de causas. Ubicamos el cuello de botella dominante.",
+                      d: "d2",
+                    },
+                    {
+                      num: "03",
+                      title: "Activamos la ruta correcta",
+                      desc: "Dirección concreta: liberar caja, elevar performance, preparar expansión o implementar IA.",
+                      d: "d3",
+                    },
+                  ].map(({ num, title, desc, d }) => (
+                    <div
+                      key={num}
+                      className={`reveal ${d}`}
+                      style={{
+                        display: "flex",
+                        gap: "24px",
+                        alignItems: "flex-start",
+                      }}
                     >
-                      <div
-                        aria-hidden="true"
-                        className="absolute right-0 top-0 h-36 w-36 rounded-full bg-cyan-400/10 blur-3xl"
-                      />
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-cyan-100">
-                            <Icon className="size-6" aria-hidden="true" />
-                          </div>
-                          <span className="rounded-full border border-white/10 px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                            Ruta activable
-                          </span>
-                        </div>
-
-                        <h3 className="mt-6 text-[1.65rem] font-semibold tracking-tight text-white sm:text-[1.85rem]">
-                          {route.title}
-                        </h3>
-
-                        <div className="mt-5 space-y-4">
-                          <div>
-                            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                              Para quién es
-                            </p>
-                            <p className="mt-2 text-sm leading-relaxed text-slate-300 sm:text-base">
-                              {route.forWho}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                              Outcome
-                            </p>
-                            <p className="mt-2 text-sm leading-relaxed text-slate-200 sm:text-base">
-                              {route.outcome}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </Surface>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          <section
-            id="credibilidad"
-            className="scroll-mt-28 px-4 py-12 sm:px-6 sm:py-16 lg:py-20"
-          >
-            <div className="mx-auto max-w-7xl">
-              <div className="grid gap-8 xl:grid-cols-[0.88fr_1.12fr] xl:items-start">
-                <SectionIntro
-                  eyebrow="Credibilidad"
-                  title="Construido desde experiencia real en crecimiento, expansión y ejecución"
-                  description="La propuesta no nace de teoría genérica. Se apoya en experiencia aplicada sobre crecimiento empresarial, estructuración y expansión en la región."
-                />
-
-                <Surface className="p-6 sm:p-7">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Organizaciones y contexto de aplicación
-                  </p>
-                  <ProgramInstitutionalLogosRow
-                    className="mt-6 gap-6 sm:gap-8"
-                    imageClassName="opacity-90 brightness-110"
-                  />
-
-                  <div className="mt-8 grid gap-4 md:grid-cols-2">
-                    {credibilityBlocks.map((block) => (
-                      <div
-                        key={block.title}
-                        className="rounded-2xl border border-white/10 bg-white/[0.035] p-5"
+                      <span
+                        className="gi-display"
+                        style={{
+                          fontSize: "52px",
+                          fontWeight: 800,
+                          color: "rgba(0,255,178,0.18)",
+                          lineHeight: 1,
+                          flexShrink: 0,
+                          width: "68px",
+                          letterSpacing: "-0.04em",
+                        }}
                       >
-                        <h3 className="text-lg font-semibold tracking-tight text-white">
-                          {block.title}
+                        {num}
+                      </span>
+                      <div>
+                        <h3
+                          className="gi-display"
+                          style={{
+                            fontSize: "20px",
+                            fontWeight: 700,
+                            color: "#FAFAFA",
+                            marginBottom: "8px",
+                            letterSpacing: "-0.025em",
+                          }}
+                        >
+                          {title}
                         </h3>
-                        <p className="mt-3 text-sm leading-relaxed text-slate-300">
-                          {block.description}
+                        <p
+                          style={{
+                            fontSize: "15px",
+                            color: "#8A8F98",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          {desc}
                         </p>
                       </div>
-                    ))}
-                  </div>
-                </Surface>
-              </div>
-            </div>
-          </section>
+                    </div>
+                  ))}
+                </div>
 
-          <section
-            id="fit"
-            className="scroll-mt-28 px-4 py-12 sm:px-6 sm:py-16 lg:py-20"
-          >
-            <div className="mx-auto max-w-7xl">
-              <SectionIntro
-                eyebrow="Fit"
-                title="¿Para quién aplica?"
-                description="Está diseñado para dueños y operadores que ya tienen algo valioso en marcha y necesitan más claridad estratégica para escalar bien."
-              />
-
-              <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {fitSegments.map((segment) => {
-                  const Icon = segment.icon;
-
-                  return (
-                    <Surface key={segment.title} className="h-full p-6">
-                      <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-cyan-100 w-fit">
-                        <Icon className="size-6" aria-hidden="true" />
+                {/* Dashboard mockup */}
+                <div
+                  className="reveal d2"
+                  style={{
+                    background: "#0f0f0f",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "20px",
+                    padding: "32px",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      width: "240px",
+                      height: "240px",
+                      background:
+                        "radial-gradient(circle at 80% 20%, rgba(0,255,178,0.08) 0%, transparent 70%)",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <p
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      color: "#3A3F48",
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                      marginBottom: "24px",
+                    }}
+                  >
+                    Diagnóstico de Restricción
+                  </p>
+                  {[
+                    {
+                      label: "Flujo de caja",
+                      val: 68,
+                      color: "#00FFB2",
+                    },
+                    {
+                      label: "Capacidad operativa",
+                      val: 42,
+                      color: "#00D4FF",
+                    },
+                    {
+                      label: "Readiness de expansión",
+                      val: 31,
+                      color: "#FFB800",
+                    },
+                    {
+                      label: "Madurez para IA",
+                      val: 55,
+                      color: "#B060FF",
+                    },
+                  ].map(({ label, val, color }) => (
+                    <div key={label} style={{ marginBottom: "20px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        <span style={{ fontSize: "13px", color: "#8A8F98" }}>
+                          {label}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            color,
+                          }}
+                        >
+                          {val}%
+                        </span>
                       </div>
-                      <h3 className="mt-5 text-xl font-semibold tracking-tight text-white">
-                        {segment.title}
-                      </h3>
-                      <p className="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
-                        {segment.description}
+                      <div
+                        style={{
+                          height: "4px",
+                          background: "rgba(255,255,255,0.06)",
+                          borderRadius: "999px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${val}%`,
+                            height: "100%",
+                            background: color,
+                            borderRadius: "999px",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <div
+                    style={{
+                      marginTop: "8px",
+                      background: "rgba(0,255,178,0.07)",
+                      border: "1px solid rgba(0,255,178,0.18)",
+                      borderRadius: "12px",
+                      padding: "14px 18px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <p
+                        style={{
+                          fontSize: "10px",
+                          color: "#5A5F68",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.15em",
+                          marginBottom: "4px",
+                        }}
+                      >
+                        Ruta recomendada
                       </p>
-                    </Surface>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          <section className="px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
-            <div className="mx-auto max-w-7xl">
-              <Surface className="overflow-hidden p-8 sm:p-10 lg:p-12">
-                <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
-                  <div>
-                    <DividerLabel>Exclusividad</DividerLabel>
-                    <h2 className="mt-5 text-3xl font-bold leading-[1.02] tracking-[-0.05em] text-white sm:text-4xl lg:text-[3.1rem]">
-                      No trabajamos con cualquier negocio.
-                    </h2>
-                  </div>
-
-                  <div className="space-y-4 text-base leading-relaxed text-slate-300 sm:text-lg">
-                    <p>
-                      Esto no es para empresas buscando consejos genéricos. Es
-                      para operadores que quieren una ruta más precisa para
-                      crecer.
-                    </p>
-                    <p>
-                      Si el negocio todavía no tiene señales reales o no existe
-                      voluntad de ejecutar con disciplina, no hay fit. Si sí las
-                      tiene, actuar tarde puede costar otro trimestre entero.
-                    </p>
+                      <p
+                        className="gi-display"
+                        style={{
+                          fontSize: "15px",
+                          fontWeight: 700,
+                          color: "#00FFB2",
+                        }}
+                      >
+                        Liberación de Caja
+                      </p>
+                    </div>
+                    <span style={{ color: "#00FFB2", fontSize: "22px" }}>→</span>
                   </div>
                 </div>
-              </Surface>
-            </div>
-          </section>
-
-          <section
-            id="faq"
-            className="scroll-mt-28 px-4 py-12 sm:px-6 sm:py-16 lg:py-20"
-          >
-            <div className="mx-auto max-w-7xl">
-              <SectionIntro
-                eyebrow="Claridad"
-                title="Preguntas frecuentes"
-                description="Una página pensada para tomar mejores decisiones más rápido también debe responder dudas con precisión."
-              />
-
-              <div className="mt-10 grid gap-4 lg:grid-cols-2">
-                {faqItems.map((item) => (
-                  <details
-                    key={item.question}
-                    className="group rounded-[24px] border border-white/10 bg-white/[0.035] p-6"
-                  >
-                    <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-left">
-                      <span className="text-lg font-semibold tracking-tight text-white">
-                        {item.question}
-                      </span>
-                      <span className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition-transform duration-200 group-open:rotate-45">
-                        <ArrowUpRight className="size-4" aria-hidden="true" />
-                      </span>
-                    </summary>
-                    <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base">
-                      {item.answer}
-                    </p>
-                  </details>
-                ))}
               </div>
             </div>
           </section>
 
-          <section className="px-4 pb-16 pt-10 sm:px-6 sm:pb-20 lg:pb-24">
-            <div className="mx-auto max-w-7xl">
-              <div className="overflow-hidden rounded-[34px] border border-cyan-300/16 bg-[linear-gradient(135deg,rgba(8,17,34,0.96),rgba(11,18,38,0.92))] p-8 shadow-[0_40px_120px_-50px_rgba(6,182,212,0.35)] sm:p-10 lg:p-12">
-                <div className="mx-auto max-w-4xl text-center">
-                  <DividerLabel>Próximo paso</DividerLabel>
-                  <h2 className="mt-5 text-3xl font-bold leading-[1.02] tracking-[-0.05em] text-white sm:text-4xl lg:text-[3.45rem]">
-                    Descubre qué está señalando tu negocio antes de perder otro
-                    trimestre resolviendo lo incorrecto.
-                  </h2>
-                  <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">
-                    Si ya hay señales, conviene leerlas bien antes de invertir
-                    más tiempo, más dinero o más energía en la dirección
-                    equivocada.
-                  </p>
+          {/* ── FOUR ROUTES ───────────────────────────────────────────── */}
+          <section
+            id="rutas"
+            style={{
+              padding: "120px 24px",
+              maxWidth: "1200px",
+              margin: "0 auto",
+            }}
+          >
+            <div className="reveal" style={{ marginBottom: "64px" }}>
+              <p
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  color: "#00FFB2",
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  marginBottom: "16px",
+                }}
+              >
+                Rutas
+              </p>
+              <h2
+                className="gi-display"
+                style={{
+                  fontSize: "clamp(28px, 4vw, 50px)",
+                  fontWeight: 800,
+                  letterSpacing: "-0.045em",
+                  color: "#FAFAFA",
+                  lineHeight: 1.08,
+                }}
+              >
+                4 Rutas. Una prioridad correcta.
+              </h2>
+            </div>
 
-                  <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                    <Button
-                      asChild
-                      size="lg"
-                      className="rounded-full px-7 shadow-[0_24px_55px_-28px_rgba(56,189,248,0.95)]"
-                    >
-                      <Link href={PRIMARY_CTA_HREF}>
-                        Solicitar diagnóstico
-                        <ArrowRight aria-hidden="true" />
-                      </Link>
-                    </Button>
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="lg"
-                      className="rounded-full border-white/15 bg-white/[0.04] px-7 text-white hover:border-white/25 hover:bg-white/[0.08]"
-                    >
-                      <a
-                        href={TEAM_CTA_HREF}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Hablar con el equipo
-                        <ChevronRight aria-hidden="true" />
-                      </a>
-                    </Button>
-                  </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(255px, 1fr))",
+                gap: "14px",
+              }}
+            >
+              {[
+                {
+                  name: "Liberación de Caja",
+                  color: "#00FFB2",
+                  forWho:
+                    "Para negocios que venden pero siguen operando con caja tensionada.",
+                  outcome:
+                    "Captura liquidez y reduce fricción financiera operativa.",
+                  d: "d1",
+                },
+                {
+                  name: "Performance Improvement",
+                  color: "#00D4FF",
+                  forWho:
+                    "Para operadores con demanda real pero frenos en productividad.",
+                  outcome:
+                    "Mejora donde más impacta margen y capacidad de respuesta.",
+                  d: "d2",
+                },
+                {
+                  name: "Franchise Readiness",
+                  color: "#FFB800",
+                  forWho:
+                    "Para negocios con señales de expansión que necesitan validar el modelo.",
+                  outcome:
+                    "Convierte expansión en sistema, no en apuesta improvisada.",
+                  d: "d3",
+                },
+                {
+                  name: "Transformación IA",
+                  color: "#B060FF",
+                  forWho:
+                    "Para empresas que quieren automatizar con secuencia estratégica.",
+                  outcome:
+                    "Implementa IA donde genera ventaja real, sin digitalizar desorden.",
+                  d: "d4",
+                },
+              ].map(({ name, color, forWho, outcome, d }) => (
+                <div
+                  key={name}
+                  className={`gi-card gi-route-card reveal ${d}`}
+                  style={{
+                    background: "#0f0f0f",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    borderRadius: "16px",
+                    padding: "28px",
+                    cursor: "default",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "14px",
+                    transition:
+                      "transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease",
+                  }}
+                >
+                  <span
+                    style={{
+                      background: `${color}18`,
+                      borderRadius: "999px",
+                      padding: "4px 12px",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      color,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      alignSelf: "flex-start",
+                    }}
+                  >
+                    {name}
+                  </span>
+                  <p style={{ fontSize: "14px", color: "#8A8F98", lineHeight: 1.6 }}>
+                    {forWho}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#FAFAFA",
+                      fontWeight: 500,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {outcome}
+                  </p>
+                  <span
+                    style={{ color, fontSize: "20px", marginTop: "auto" }}
+                  >
+                    →
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── INTERACTIVE DIAGNOSTIC ────────────────────────────────── */}
+          <section
+            id="diagnostico"
+            style={{ padding: "120px 24px", background: "#080808" }}
+          >
+            <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+              <div
+                className="reveal"
+                style={{ textAlign: "center", marginBottom: "64px" }}
+              >
+                <p
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#00FFB2",
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    marginBottom: "16px",
+                  }}
+                >
+                  ⚡ Diagnóstico Express
+                </p>
+                <h2
+                  className="gi-display"
+                  style={{
+                    fontSize: "clamp(28px, 4vw, 50px)",
+                    fontWeight: 800,
+                    letterSpacing: "-0.045em",
+                    color: "#FAFAFA",
+                    marginBottom: "16px",
+                    lineHeight: 1.08,
+                  }}
+                >
+                  ¿Dónde está tu restricción hoy?
+                </h2>
+                <p
+                  style={{
+                    fontSize: "18px",
+                    color: "#8A8F98",
+                    maxWidth: "440px",
+                    margin: "0 auto",
+                    lineHeight: 1.65,
+                  }}
+                >
+                  Responde 4 preguntas. Identifica tu ruta en 60 segundos.
+                </p>
+              </div>
+              <DiagnosticWidget />
+            </div>
+          </section>
+
+          {/* ── FIT SECTION ───────────────────────────────────────────── */}
+          <section
+            style={{
+              padding: "80px 24px",
+              maxWidth: "1200px",
+              margin: "0 auto",
+              textAlign: "center",
+            }}
+          >
+            <div className="reveal">
+              <p
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: "#5A5F68",
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  marginBottom: "24px",
+                }}
+              >
+                Para quién aplica
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                  justifyContent: "center",
+                  marginBottom: "32px",
+                }}
+              >
+                {[
+                  "F&B",
+                  "Retail",
+                  "Health & Beauty",
+                  "Servicios",
+                  "Multi-unit",
+                  "Señales tempranas de expansión",
+                ].map((tag) => (
+                  <span
+                    key={tag}
+                    style={{
+                      background: "#0f0f0f",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "999px",
+                      padding: "10px 20px",
+                      fontSize: "14px",
+                      color: "#8A8F98",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <p
+                style={{
+                  fontSize: "17px",
+                  color: "#5A5F68",
+                  maxWidth: "520px",
+                  margin: "0 auto",
+                  lineHeight: 1.65,
+                }}
+              >
+                Para operadores con algo valioso en marcha que necesitan
+                claridad para escalar bien.
+              </p>
+            </div>
+          </section>
+
+          {/* ── EXCLUSIVITY ───────────────────────────────────────────── */}
+          <section style={{ padding: "80px 24px", background: "#080808" }}>
+            <div
+              className="reveal"
+              style={{
+                maxWidth: "760px",
+                margin: "0 auto",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "48px",
+                  height: "2px",
+                  background: "#00FFB2",
+                  margin: "0 auto 32px",
+                  borderRadius: "999px",
+                }}
+              />
+              <blockquote
+                className="gi-display"
+                style={{
+                  fontSize: "clamp(22px, 3.5vw, 36px)",
+                  fontWeight: 700,
+                  color: "#FAFAFA",
+                  lineHeight: 1.3,
+                  letterSpacing: "-0.03em",
+                  margin: "0 0 28px",
+                }}
+              >
+                "No trabajamos con cualquier negocio. Esto es para operadores
+                que quieren una ruta más precisa."
+              </blockquote>
+              <div
+                style={{
+                  width: "48px",
+                  height: "2px",
+                  background: "#00FFB2",
+                  margin: "0 auto 24px",
+                  borderRadius: "999px",
+                }}
+              />
+              <p style={{ fontSize: "15px", color: "#5A5F68" }}>
+                Si no hay señales reales ni voluntad de ejecutar, no hay fit.
+              </p>
+            </div>
+          </section>
+
+          {/* ── FAQ ───────────────────────────────────────────────────── */}
+          <section
+            id="faq"
+            style={{
+              padding: "120px 24px",
+              maxWidth: "760px",
+              margin: "0 auto",
+            }}
+          >
+            <div className="reveal" style={{ marginBottom: "48px" }}>
+              <p
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  color: "#00FFB2",
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  marginBottom: "16px",
+                }}
+              >
+                FAQ
+              </p>
+              <h2
+                className="gi-display"
+                style={{
+                  fontSize: "clamp(24px, 3.5vw, 42px)",
+                  fontWeight: 800,
+                  letterSpacing: "-0.04em",
+                  color: "#FAFAFA",
+                  lineHeight: 1.1,
+                }}
+              >
+                Preguntas frecuentes
+              </h2>
+            </div>
+            <div className="reveal d1">
+              {[
+                {
+                  q: "¿Esto es consultoría tradicional?",
+                  a: "No. Es un sistema de lectura estratégica para identificar la restricción real y ordenar la siguiente decisión con mayor precisión.",
+                },
+                {
+                  q: "¿Es software?",
+                  a: "No. Puede activar una ruta tecnológica cuando aplica, pero el punto de partida es el diagnóstico del negocio, no la herramienta.",
+                },
+                {
+                  q: "¿Qué recibo al solicitar diagnóstico?",
+                  a: "Una lectura inicial de señales, una hipótesis clara sobre el cuello de botella dominante y la ruta estratégica que debería ir primero.",
+                },
+                {
+                  q: "¿Aplica para cualquier empresa?",
+                  a: "No. Está pensado para negocios con operación real, señales de crecimiento y voluntad de ejecutar decisiones con criterio.",
+                },
+              ].map(({ q, a }) => (
+                <FAQItem key={q} q={q} a={a} />
+              ))}
+            </div>
+          </section>
+
+          {/* ── FINAL CTA ─────────────────────────────────────────────── */}
+          <section
+            style={{
+              padding: "120px 24px",
+              background: "#080808",
+              textAlign: "center",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "radial-gradient(ellipse at 50% 0%, rgba(0,255,178,0.09) 0%, transparent 60%)",
+                pointerEvents: "none",
+              }}
+            />
+            {/* Mini dashboard strip */}
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "600px",
+                height: "120px",
+                background:
+                  "linear-gradient(to top, rgba(0,255,178,0.04), transparent)",
+                borderTop: "1px solid rgba(0,255,178,0.06)",
+                borderRadius: "20px 20px 0 0",
+                pointerEvents: "none",
+              }}
+            />
+
+            <div
+              style={{ position: "relative", maxWidth: "680px", margin: "0 auto" }}
+            >
+              <div className="reveal">
+                <h2
+                  className="gi-display"
+                  style={{
+                    fontSize: "clamp(28px, 4.5vw, 56px)",
+                    fontWeight: 800,
+                    letterSpacing: "-0.045em",
+                    color: "#FAFAFA",
+                    lineHeight: 1.08,
+                    marginBottom: "20px",
+                  }}
+                >
+                  Descubre qué está señalando tu negocio antes de perder otro
+                  trimestre.
+                </h2>
+                <p
+                  style={{
+                    fontSize: "18px",
+                    color: "#8A8F98",
+                    lineHeight: 1.65,
+                    marginBottom: "40px",
+                  }}
+                >
+                  Si ya hay señales, conviene leerlas antes de invertir más en
+                  la dirección equivocada.
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    justifyContent: "center",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Link
+                    href={PRIMARY_CTA_HREF}
+                    style={{
+                      background: "#00FFB2",
+                      color: "#050505",
+                      borderRadius: "999px",
+                      padding: "16px 36px",
+                      fontSize: "16px",
+                      fontWeight: 700,
+                      textDecoration: "none",
+                      boxShadow: "0 0 60px rgba(0,255,178,0.22)",
+                    }}
+                  >
+                    Solicitar Diagnóstico
+                  </Link>
+                  <a
+                    href={TEAM_CTA_HREF}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      background: "transparent",
+                      border: "1px solid rgba(255,255,255,0.14)",
+                      color: "#FAFAFA",
+                      borderRadius: "999px",
+                      padding: "16px 36px",
+                      fontSize: "16px",
+                      fontWeight: 500,
+                      textDecoration: "none",
+                    }}
+                  >
+                    Hablar con el equipo
+                  </a>
                 </div>
               </div>
             </div>
           </section>
         </main>
 
-        <footer className="border-t border-white/8 px-4 py-8 sm:px-6">
-          <div className="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold tracking-tight text-white">
-                Sistema Growth Intelligence
-              </p>
-              <p className="mt-1 text-sm text-slate-400">
-                Franquicias LATAM. Diagnóstico estratégico para crecimiento,
-                caja, expansión y secuencia de transformación.
-              </p>
+        {/* ── FOOTER ────────────────────────────────────────────────────── */}
+        <footer
+          style={{
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            padding: "36px 24px",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "1200px",
+              margin: "0 auto",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "16px",
+            }}
+          >
+            <p
+              style={{
+                fontSize: "13px",
+                color: "#5A5F68",
+                fontWeight: 500,
+              }}
+            >
+              Growth Intelligence System — Franquicias LATAM
+            </p>
+            <div style={{ display: "flex", gap: "24px" }}>
+              {[
+                { href: "/", label: "Inicio" },
+                { href: PRIMARY_CTA_HREF, label: "Diagnóstico" },
+                { href: TEAM_CTA_HREF, label: "Contacto" },
+              ].map(({ href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  style={{
+                    fontSize: "13px",
+                    color: "#5A5F68",
+                    textDecoration: "none",
+                    transition: "color 0.2s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "#8A8F98")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "#5A5F68")
+                  }
+                >
+                  {label}
+                </a>
+              ))}
             </div>
-
-            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400">
-              <Link href="/" className="transition-colors hover:text-white">
-                Inicio
-              </Link>
-              <Link href={PRIMARY_CTA_HREF} className="transition-colors hover:text-white">
-                Solicitar diagnóstico
-              </Link>
-              <a
-                href={TEAM_CTA_HREF}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-white"
-              >
-                Hablar con el equipo
-              </a>
-            </div>
+            <p style={{ fontSize: "12px", color: "#3A3F48" }}>© 2026</p>
           </div>
         </footer>
       </div>
-    </div>
+    </>
   );
 }
