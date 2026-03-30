@@ -1,5 +1,5 @@
-/* ─── Design Tokens ─────────────────────────────────────────── */
-:root {
+/* ─── Base + Design Tokens ───────────────────────────────────── */
+.page {
   --navy: #0a0e1a;
   --navy-light: #111828;
   --navy-card: #151c2f;
@@ -13,10 +13,7 @@
   --gray-light: #b0bac8;
   --orange: #ff6b35;
   --purple: #8b5cf6;
-}
 
-/* ─── Base ───────────────────────────────────────────────────── */
-.page {
   font-family: 'Plus Jakarta Sans', sans-serif;
   background: var(--navy);
   color: var(--white);
