@@ -1,0 +1,6 @@
+celery==5.4.0
+redis==5.0.4
+playwright==1.44.0
+beautifulsoup4==4.12.3
+asyncpg==0.29.0
+python-dotenv==1.0.1

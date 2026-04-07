@@ -1,0 +1,102 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: trademark_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trademarks_co
+      POSTGRES_USER: ${DB_USER:-trademark_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme_in_prod}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-trademark_user} -d trademarks_co"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: trademark_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: trademark_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-trademark_user}:${DB_PASSWORD:-changeme_in_prod}@postgres:5432/trademarks_co
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    container_name: trademark_worker
+    restart: unless-stopped
+    command: celery -A worker.tasks worker --loglevel=info --concurrency=2
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-trademark_user}:${DB_PASSWORD:-changeme_in_prod}@postgres:5432/trademarks_co
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      SIPI_USERNAME: ${SIPI_USERNAME}
+      SIPI_PASSWORD: ${SIPI_PASSWORD}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      FROM_EMAIL: ${FROM_EMAIL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  beat:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    container_name: trademark_beat
+    restart: unless-stopped
+    command: celery -A worker.tasks beat --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-trademark_user}:${DB_PASSWORD:-changeme_in_prod}@postgres:5432/trademarks_co
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      SIPI_USERNAME: ${SIPI_USERNAME}
+      SIPI_PASSWORD: ${SIPI_PASSWORD}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      FROM_EMAIL: ${FROM_EMAIL}
+    depends_on:
+      redis:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: trademark_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
