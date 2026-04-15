@@ -35,6 +35,17 @@ export function getTwilioEnv(): TwilioEnv {
   };
 }
 
+function normalizeBaseUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  try {
+    return new URL(trimmed).toString().replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
+
 function resolveProviderMode(env: TwilioEnv): TwilioProviderMode {
   if (!!env.accountSid && !!env.authToken && !!env.messagingServiceSid) {
     return "twilio_sms";
@@ -83,6 +94,32 @@ export function getMessagingServiceSid(): string {
 
 export function getProviderMode(): TwilioProviderMode {
   return resolveProviderMode(getTwilioEnv());
+}
+
+export function getAppBaseUrl(): string | null {
+  const candidates = [
+    process.env.TWILIO_STATUS_CALLBACK_BASE_URL,
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "",
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "",
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const normalized = normalizeBaseUrl(candidate);
+    if (normalized) return normalized;
+  }
+
+  return null;
+}
+
+export function getTwilioStatusCallbackUrl(): string | null {
+  const appBaseUrl = getAppBaseUrl();
+  if (!appBaseUrl) return null;
+
+  return new URL("/api/webhooks/twilio/status", appBaseUrl).toString();
 }
 
 export function getTwilioRuntimeFlags(): TwilioRuntimeFlags {

@@ -412,14 +412,20 @@ model FormLead {
 }
 
 model SmsVerification {
-  id        String   @id @default(cuid())
-  phone     String
-  code      String
-  channel   String?  @default("sms")
-  attempts  Int      @default(0)
-  verified  Boolean  @default(false)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id                   String   @id @default(cuid())
+  phone                String
+  code                 String
+  channel              String?  @default("sms")
+  attempts             Int      @default(0)
+  verified             Boolean  @default(false)
+  expiresAt            DateTime
+  createdAt            DateTime @default(now())
+  providerSid          String?  @unique
+  providerStatus       String?
+  providerErrorCode    String?
+  providerErrorMessage String?
+  lastStatusAt         DateTime?
 
+  @@index([phone, createdAt])
   @@map("sms_verifications")
 }

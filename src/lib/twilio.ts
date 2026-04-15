@@ -1,4 +1,8 @@
-import { getMessagingServiceSid, getTwilioClient } from "./twilioConfig";
+import {
+  getMessagingServiceSid,
+  getTwilioClient,
+  getTwilioStatusCallbackUrl,
+} from "./twilioConfig";
 
 export type TwilioSmsError = {
   code?: string | number;
@@ -8,6 +12,7 @@ export type TwilioSmsError = {
 export type TwilioSmsSendResult = {
   sent: boolean;
   sid?: string;
+  status?: string;
   error?: {
     code?: string | number;
     message: string;
@@ -35,15 +40,21 @@ export async function sendSmsOtpWithDetails(
   }
 
   const messagingServiceSid = getMessagingServiceSid();
+  const statusCallback = getTwilioStatusCallbackUrl();
 
   try {
     const message = await client.messages.create({
       to: phone,
       messagingServiceSid,
       body: `Tu código de verificación de Franquicias LATAM es: ${code}`,
+      ...(statusCallback ? { statusCallback } : {}),
     });
 
-    return { sent: !!message.sid, sid: message.sid };
+    return {
+      sent: !!message.sid,
+      sid: message.sid,
+      status: message.status,
+    };
   } catch (error: unknown) {
     const twilioError = error as TwilioSmsError;
     return {

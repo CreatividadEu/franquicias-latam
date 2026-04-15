@@ -24,6 +24,7 @@ export function VerificationStep({
   const [code, setCode] = useState("");
   const [resendTimer, setResendTimer] = useState(60);
   const canResend = resendTimer <= 0;
+  const isColombianNumber = phone.startsWith("+57");
 
   useEffect(() => {
     if (resendTimer <= 0) return;
@@ -58,6 +59,19 @@ export function VerificationStep({
       >
         Ingresa el codigo de 6 digitos
       </motion.p>
+
+      {isColombianNumber && (
+        <motion.p
+          className="text-xs sm:text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center leading-relaxed"
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.25 }}
+        >
+          En Colombia algunos operadores muestran este SMS bajo un shortcode
+          distinto o en otro hilo. Si no lo ves, revisa mensajes de numeros
+          cortos, spam o busca el codigo de 6 digitos en tu app de mensajes.
+        </motion.p>
+      )}
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
