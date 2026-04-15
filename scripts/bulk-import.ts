@@ -45,15 +45,45 @@ const supabase =
       })
     : null;
 
-// ── CSV parser ────────────────────────────────────────────────────────────────
+// ── CSV parser (RFC 4180) ─────────────────────────────────────────────────────
+
+function parseCsvLine(line: string): string[] {
+  const fields: string[] = [];
+  let i = 0;
+  while (i < line.length) {
+    if (line[i] === '"') {
+      let field = '';
+      i++;
+      while (i < line.length) {
+        if (line[i] === '"' && line[i + 1] === '"') {
+          field += '"';
+          i += 2;
+        } else if (line[i] === '"') {
+          i++;
+          break;
+        } else {
+          field += line[i++];
+        }
+      }
+      fields.push(field);
+      if (i < line.length && line[i] === ',') i++;
+    } else {
+      const start = i;
+      while (i < line.length && line[i] !== ',') i++;
+      fields.push(line.slice(start, i).trim());
+      if (i < line.length) i++;
+    }
+  }
+  return fields;
+}
 
 function parseCsv(filePath: string): Record<string, string>[] {
   const content = fs.readFileSync(filePath, "utf8");
   const lines = content.split(/\r?\n/).filter((l) => l.trim());
   if (lines.length < 2) return [];
-  const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+  const headers = parseCsvLine(lines[0]).map((h) => h.trim());
   return lines.slice(1).map((line) => {
-    const values = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+    const values = parseCsvLine(line);
     return Object.fromEntries(headers.map((h, i) => [h, values[i] ?? ""]));
   });
 }
