@@ -1,40 +1,18 @@
 import { NextResponse } from "next/server";
-import { sendSmsOtpWithDetails } from "@/lib/twilio";
-import { prisma } from "@/lib/prisma";
+import { sendVerification } from "@/lib/twilio";
 import { getTwilioRuntimeFlags } from "@/lib/twilioConfig";
-import { generateOTP } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
-/**
- * Manual Test Checklist:
- * 1. Restart the server after env changes.
- * 2. GET /api/debug/twilio and confirm providerMode.
- * 3. POST /api/sms/send with a real phone number.
- * 4. Check Twilio Console -> Monitor -> Messaging logs for outgoing SMS.
- * 5. If there are no Twilio Messaging logs, the request never reached Twilio.
- */
 function maskPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   const visible = digits.slice(-4);
   return visible ? `***${visible}` : "***";
 }
 
-function isTerminalDeliveryFailure(status: string | null | undefined): boolean {
-  return status === "failed" || status === "undelivered";
-}
-
 export async function POST(request: Request) {
   try {
-    const { nodeEnv, smsConfigured, usingMessagingServiceSid, providerMode } =
-      getTwilioRuntimeFlags();
-
-    await prisma.smsVerification.deleteMany({
-      where: {
-        verified: false,
-        expiresAt: { lt: new Date() },
-      },
-    });
+    const { nodeEnv, smsConfigured, providerMode } = getTwilioRuntimeFlags();
 
     const body = await request.json().catch(() => ({}));
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
@@ -43,7 +21,6 @@ export async function POST(request: Request) {
       providerMode,
       nodeEnv,
       smsConfigured,
-      usingMessagingServiceSid,
       phoneMasked: maskPhone(phone),
     });
 
@@ -63,87 +40,20 @@ export async function POST(request: Request) {
           providerMode,
           nodeEnv,
           smsConfigured,
-          usingMessagingServiceSid,
         },
         { status: 500 }
       );
     }
 
-    // Rate limit: max 3 attempts per phone per hour (only in production)
-    if (nodeEnv !== "development") {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const recentAttempts = await prisma.smsVerification.count({
-        where: {
-          phone,
-          createdAt: { gte: oneHourAgo },
-          NOT: {
-            providerStatus: {
-              in: ["failed", "undelivered"],
-            },
-          },
-        },
-      });
-
-      if (recentAttempts >= 3) {
-        console.warn("[sms/send] rate limited");
-        return NextResponse.json(
-          { error: "Demasiados intentos. Intenta en 1 hora." },
-          { status: 429 }
-        );
-      }
-    }
-
-    const latestVerification = await prisma.smsVerification.findFirst({
-      where: { phone },
-      orderBy: { createdAt: "desc" },
-      select: { createdAt: true, providerStatus: true },
-    });
-
-    if (
-      latestVerification &&
-      !isTerminalDeliveryFailure(latestVerification.providerStatus) &&
-      Date.now() - latestVerification.createdAt.getTime() < 60 * 1000
-    ) {
-      return NextResponse.json(
-        { error: "Espera unos segundos antes de solicitar otro código" },
-        { status: 429 }
-      );
-    }
-
-    const code = generateOTP();
-
-    // Delete old unverified codes for this phone to prevent confusion
-    await prisma.smsVerification.deleteMany({
-      where: {
-        phone,
-        verified: false,
-      },
-    });
-
-    const verification = await prisma.smsVerification.create({
-      data: {
-        phone,
-        code,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-      },
-    });
-
     if (!smsConfigured) {
+      // Dev fallback: no Twilio credentials, skip sending
       return NextResponse.json({ ok: true });
     }
 
-    const {
-      sent,
-      sid,
-      status,
-      error: twilioError,
-    } = await sendSmsOtpWithDetails(phone, code);
+    const { sent, error: twilioError } = await sendVerification(phone);
 
     if (!sent) {
-      await prisma.smsVerification.delete({
-        where: { id: verification.id },
-      });
-      console.warn("[sms/send] twilio sms send failed", {
+      console.warn("[sms/send] twilio verify send failed", {
         code: twilioError?.code,
         message: twilioError?.message,
         phoneMasked: maskPhone(phone),
@@ -154,21 +64,8 @@ export async function POST(request: Request) {
       );
     }
 
-    await prisma.smsVerification.update({
-      where: { id: verification.id },
-      data: {
-        providerSid: sid,
-        providerStatus: status ?? "accepted",
-        providerErrorCode: null,
-        providerErrorMessage: null,
-        lastStatusAt: new Date(),
-      },
-    });
-
-    console.log("[sms/send] twilio sms accepted", {
+    console.log("[sms/send] twilio verify accepted", {
       phoneMasked: maskPhone(phone),
-      sid,
-      status: status ?? "accepted",
     });
 
     return NextResponse.json({ ok: true });

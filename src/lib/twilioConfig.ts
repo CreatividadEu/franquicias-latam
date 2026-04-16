@@ -1,25 +1,24 @@
 import twilio from "twilio";
 
 export type TwilioProviderMode =
-  | "twilio_sms"
+  | "twilio_verify"
   | "fallback_db"
   | "error_not_configured";
 
 type TwilioEnv = {
   accountSid: string;
   authToken: string;
-  messagingServiceSid: string;
+  verifyServiceSid: string;
   nodeEnv: string;
 };
 
 export type TwilioRuntimeFlags = {
   nodeEnv: string;
   smsConfigured: boolean;
-  usingMessagingServiceSid: boolean;
   providerMode: TwilioProviderMode;
   hasSid: boolean;
   hasToken: boolean;
-  hasService: boolean;
+  hasVerifyService: boolean;
 };
 
 let cachedClient: ReturnType<typeof twilio> | null | undefined;
@@ -29,26 +28,14 @@ export function getTwilioEnv(): TwilioEnv {
   return {
     accountSid: process.env.TWILIO_ACCOUNT_SID?.trim() ?? "",
     authToken: process.env.TWILIO_AUTH_TOKEN?.trim() ?? "",
-    messagingServiceSid:
-      process.env.TWILIO_MESSAGING_SERVICE_SID?.trim() ?? "",
+    verifyServiceSid: process.env.TWILIO_VERIFY_SERVICE_SID?.trim() ?? "",
     nodeEnv: process.env.NODE_ENV ?? "development",
   };
 }
 
-function normalizeBaseUrl(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-
-  try {
-    return new URL(trimmed).toString().replace(/\/$/, "");
-  } catch {
-    return null;
-  }
-}
-
 function resolveProviderMode(env: TwilioEnv): TwilioProviderMode {
-  if (!!env.accountSid && !!env.authToken && !!env.messagingServiceSid) {
-    return "twilio_sms";
+  if (!!env.accountSid && !!env.authToken && !!env.verifyServiceSid) {
+    return "twilio_verify";
   }
 
   if (env.nodeEnv === "production") {
@@ -60,13 +47,13 @@ function resolveProviderMode(env: TwilioEnv): TwilioProviderMode {
 
 export function isSmsConfigured(): boolean {
   const env = getTwilioEnv();
-  return !!env.accountSid && !!env.authToken && !!env.messagingServiceSid;
+  return !!env.accountSid && !!env.authToken && !!env.verifyServiceSid;
 }
 
 export function getTwilioClient(): ReturnType<typeof twilio> | null {
   const env = getTwilioEnv();
 
-  if (!env.accountSid || !env.authToken || !env.messagingServiceSid) {
+  if (!env.accountSid || !env.authToken) {
     cachedClient = null;
     cachedClientKey = null;
     return null;
@@ -82,60 +69,33 @@ export function getTwilioClient(): ReturnType<typeof twilio> | null {
   return cachedClient;
 }
 
-export function getMessagingServiceSid(): string {
+export function getVerifyServiceSid(): string {
   const env = getTwilioEnv();
 
-  if (!env.messagingServiceSid) {
-    throw new Error("TWILIO_MESSAGING_SERVICE_SID is not configured");
+  if (!env.verifyServiceSid) {
+    throw new Error("TWILIO_VERIFY_SERVICE_SID is not configured");
   }
 
-  return env.messagingServiceSid;
+  return env.verifyServiceSid;
 }
 
 export function getProviderMode(): TwilioProviderMode {
   return resolveProviderMode(getTwilioEnv());
 }
 
-export function getAppBaseUrl(): string | null {
-  const candidates = [
-    process.env.TWILIO_STATUS_CALLBACK_BASE_URL,
-    process.env.NEXT_PUBLIC_APP_URL,
-    process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "",
-    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "",
-  ];
-
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-    const normalized = normalizeBaseUrl(candidate);
-    if (normalized) return normalized;
-  }
-
-  return null;
-}
-
-export function getTwilioStatusCallbackUrl(): string | null {
-  const appBaseUrl = getAppBaseUrl();
-  if (!appBaseUrl) return null;
-
-  return new URL("/api/webhooks/twilio/status", appBaseUrl).toString();
-}
-
 export function getTwilioRuntimeFlags(): TwilioRuntimeFlags {
   const env = getTwilioEnv();
   const hasSid = !!env.accountSid;
   const hasToken = !!env.authToken;
-  const hasService = !!env.messagingServiceSid;
-  const smsConfigured = hasSid && hasToken && hasService;
+  const hasVerifyService = !!env.verifyServiceSid;
+  const smsConfigured = hasSid && hasToken && hasVerifyService;
 
   return {
     nodeEnv: env.nodeEnv,
     smsConfigured,
-    usingMessagingServiceSid: hasService,
     providerMode: resolveProviderMode(env),
     hasSid,
     hasToken,
-    hasService,
+    hasVerifyService,
   };
 }
