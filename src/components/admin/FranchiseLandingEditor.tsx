@@ -1574,7 +1574,17 @@ function ModelForm({
       <Field label="EBITDA"><Input value={form.ebitda} onChange={(v) => f("ebitda", v)} placeholder="28%" /></Field>
       <Field label="Retorno (meses)"><Input type="number" value={form.paybackMonths} onChange={(v) => f("paybackMonths", v)} /></Field>
       <Field label="ROI anual (%)"><Input type="number" value={form.roiAnnual} onChange={(v) => f("roiAnnual", v)} /></Field>
-      <Field label="URL imagen"><Input value={form.imageUrl} onChange={(v) => f("imageUrl", v)} /></Field>
+      <div className="sm:col-span-2">
+        <Field label="Imagen del modelo">
+          <ImageUpload
+            value={form.imageUrl}
+            onChange={(url) => f("imageUrl", url)}
+            storagePath={`franchise-assets/${franchiseId}/models/${modelId ?? "new"}`}
+            hint="JPG, PNG o WebP recomendado."
+            previewHeight="h-20"
+          />
+        </Field>
+      </div>
       <div className="sm:col-span-2">
         <Field label="Descripción"><Textarea value={form.description} onChange={(v) => f("description", v)} /></Field>
       </div>
