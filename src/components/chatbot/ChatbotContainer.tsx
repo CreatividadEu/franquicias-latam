@@ -11,6 +11,7 @@ import { BackButton } from "./BackButton";
 import { ChatTranscript } from "./ChatTranscript";
 import { ChatComposer } from "./ChatComposer";
 import { ChatProgress } from "./ChatProgress";
+import type { SectorOption } from "@/types";
 import { SectorStep } from "./steps/SectorStep";
 import { InvestmentStep } from "./steps/InvestmentStep";
 import { CountryStep } from "./steps/CountryStep";
@@ -20,7 +21,11 @@ import { VerificationStep } from "./steps/VerificationStep";
 
 const COMPOSER_ENABLED_STEPS: ChatStep[] = [];
 
-export function ChatbotContainer() {
+interface ChatbotContainerProps {
+  preloadedSectors?: SectorOption[];
+}
+
+export function ChatbotContainer({ preloadedSectors }: ChatbotContainerProps) {
   const searchParams = useSearchParams();
 
   const initialSectors = useMemo(() => {
@@ -65,7 +70,7 @@ export function ChatbotContainer() {
   const renderCurrentStep = () => {
     switch (state.currentStep) {
       case "sector":
-        return <SectorStep onSelect={selectSectors} />;
+        return <SectorStep onSelect={selectSectors} preloadedSectors={preloadedSectors} />;
       case "investment":
         return <InvestmentStep onSelect={selectInvestment} />;
       case "country":

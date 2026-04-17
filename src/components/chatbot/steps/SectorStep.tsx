@@ -14,6 +14,7 @@ import {
 
 interface SectorStepProps {
   onSelect: (sectors: string[], sectorNames: string[]) => void;
+  preloadedSectors?: SectorOption[];
 }
 
 const containerVariants = {
@@ -35,15 +36,16 @@ const cardVariants = {
   },
 };
 
-export function SectorStep({ onSelect }: SectorStepProps) {
-  const [sectors, setSectors] = useState<SectorOption[]>([]);
+export function SectorStep({ onSelect, preloadedSectors }: SectorStepProps) {
+  const [sectors, setSectors] = useState<SectorOption[]>(preloadedSectors ?? []);
   const [selected, setSelected] = useState<string[]>([]);
 
   useEffect(() => {
+    if (preloadedSectors && preloadedSectors.length > 0) return;
     fetchJsonSafely<{ sectors: SectorOption[] }>("/api/sectors")
       .then((data) => setSectors(data.sectors))
       .catch(console.error);
-  }, []);
+  }, [preloadedSectors]);
 
   const toggleSector = (id: string) => {
     setSelected((prev) =>

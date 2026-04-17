@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { prisma } from "@/lib/prisma";
 import { ChatbotContainer } from "@/components/chatbot/ChatbotContainer";
 
 export const metadata = {
@@ -6,10 +7,15 @@ export const metadata = {
   description: "Encuentra la franquicia ideal para ti en Latinoamerica",
 };
 
-export default function QuizPage() {
+export default async function QuizPage() {
+  const sectors = await prisma.sector.findMany({
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, slug: true, emoji: true },
+  });
+
   return (
     <Suspense>
-      <ChatbotContainer />
+      <ChatbotContainer preloadedSectors={sectors} />
     </Suspense>
   );
 }
