@@ -1028,7 +1028,22 @@ function GeneralTab({
 
       {/* Countries */}
       <section>
-        <label className="mb-2 block text-sm font-medium text-gray-700">Países de cobertura</label>
+        <div className="mb-2 flex items-center justify-between">
+          <label className="text-sm font-medium text-gray-700">Países de cobertura</label>
+          {allCountries.length > 0 && (
+            <button
+              type="button"
+              onClick={() =>
+                selectedCountryIds.length === allCountries.length
+                  ? setSelectedCountryIds([])
+                  : setSelectedCountryIds(allCountries.map((c) => c.id))
+              }
+              className="rounded border border-gray-300 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-50"
+            >
+              {selectedCountryIds.length === allCountries.length ? "Deseleccionar todos" : "Seleccionar todos"}
+            </button>
+          )}
+        </div>
         {allCountries.length === 0 ? (
           <p className="text-sm text-gray-400">Cargando países...</p>
         ) : (
