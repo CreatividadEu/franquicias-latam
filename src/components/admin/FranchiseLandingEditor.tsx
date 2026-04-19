@@ -2,11 +2,13 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { PLAN_ENTITLEMENTS, isModuleAllowed } from "@/lib/plan-entitlements";
 import type { PlanTier } from "@/lib/plan-entitlements";
 import { DocumentUpload } from "@/components/admin/DocumentUpload";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { AutofillFromDossiers } from "@/components/admin/AutofillFromDossiers";
 import {
   getListingDefaults,
   getListingPrimaryCtaLabel,
@@ -343,11 +345,13 @@ export function FranchiseLandingEditor({
   franchise: Franchise;
   sectors: Sector[];
 }) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("general");
   const [data, setData] = useState<Franchise>(initial);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [autofillOpen, setAutofillOpen] = useState(false);
 
   // Base config state (lifted from old BaseConfigTab)
   const [allSectors, setAllSectors] = useState<Sector[]>(sectors);
@@ -695,6 +699,14 @@ export function FranchiseLandingEditor({
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setAutofillOpen(true)}
+            className="rounded-lg border border-purple-300 bg-purple-50 px-3 py-1.5 text-sm font-medium text-purple-700 hover:bg-purple-100 hover:border-purple-400 transition-colors"
+            title="Subir Definición Estratégica + Viabilidad Financiera y rellenar la landing automáticamente"
+          >
+            ✨ Auto-rellenar
+          </button>
           <Toggle
             checked={data.published}
             onChange={(v) => set("published", v)}
@@ -774,6 +786,16 @@ export function FranchiseLandingEditor({
 
         <div className="p-6 space-y-5">{renderTabContent()}</div>
       </div>
+
+      <AutofillFromDossiers
+        franchiseId={data.id}
+        open={autofillOpen}
+        onClose={() => setAutofillOpen(false)}
+        onApplied={() => {
+          setAutofillOpen(false);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }
