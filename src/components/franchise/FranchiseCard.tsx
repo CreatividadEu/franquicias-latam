@@ -36,10 +36,7 @@ export function FranchiseCard({ franchise, backToResultsUrl }: FranchiseCardProp
   const rating = Math.min(5, Math.max(3.5, 3 + (franchise.score / 100) * 2));
   const ratingDisplay = rating.toFixed(1);
   const franchiseHref = backToResultsUrl
-    ? {
-        pathname: `/franquicia/${franchise.slug}`,
-        query: { backTo: backToResultsUrl },
-      }
+    ? `/franquicia/${franchise.slug}?backTo=${encodeURIComponent(backToResultsUrl)}`
     : `/franquicia/${franchise.slug}`;
 
   return (

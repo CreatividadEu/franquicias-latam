@@ -23,6 +23,7 @@
     "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.90.0",
     "@prisma/client": "^6.19.2",
     "@supabase/supabase-js": "^2.95.3",
     "@types/xlsx": "^0.0.35",
