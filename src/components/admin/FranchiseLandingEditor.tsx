@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { PLAN_ENTITLEMENTS, isModuleAllowed } from "@/lib/plan-entitlements";
 import type { PlanTier } from "@/lib/plan-entitlements";
@@ -345,7 +344,6 @@ export function FranchiseLandingEditor({
   franchise: Franchise;
   sectors: Sector[];
 }) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("general");
   const [data, setData] = useState<Franchise>(initial);
   const [saving, setSaving] = useState(false);
@@ -793,7 +791,7 @@ export function FranchiseLandingEditor({
         onClose={() => setAutofillOpen(false)}
         onApplied={() => {
           setAutofillOpen(false);
-          router.refresh();
+          window.location.reload();
         }}
       />
     </div>
