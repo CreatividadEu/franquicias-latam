@@ -191,8 +191,73 @@ export async function POST(
 
   const extracted = validateExtraction(toolUse.input);
 
+  // Apply everything atomically: franchise fields + business models + FAQs
+  const heroUpdate: Record<string, string | number | null> = {};
+  if (extracted.hero) {
+    for (const [k, v] of Object.entries(extracted.hero)) {
+      if (v !== undefined && v !== null) heroUpdate[k] = v;
+    }
+  }
+  const financialUpdate: Record<string, string | number | null> = {};
+  if (extracted.financials) {
+    for (const [k, v] of Object.entries(extracted.financials)) {
+      if (v !== undefined && v !== null) financialUpdate[k] = v;
+    }
+  }
+  const franchiseData = { ...heroUpdate, ...financialUpdate };
+
+  const modelsToCreate = (extracted.businessModels ?? []).map((m, i) => ({
+    franchiseId,
+    name: typeof m.name === "string" ? m.name : "Modelo",
+    size: typeof m.size === "string" ? m.size : null,
+    investmentMin: typeof m.investmentMin === "number" ? m.investmentMin : null,
+    investmentMax: typeof m.investmentMax === "number" ? m.investmentMax : null,
+    ebitda: typeof m.ebitda === "string" ? m.ebitda : null,
+    paybackMonths: typeof m.paybackMonths === "number" ? m.paybackMonths : null,
+    roiAnnual: typeof m.roiAnnual === "number" ? m.roiAnnual : null,
+    description: typeof m.description === "string" ? m.description : null,
+    order: i,
+  }));
+
+  const faqsToCreate = (extracted.faqs ?? [])
+    .filter((f) => f.question && f.answer)
+    .map((f, i) => ({
+      franchiseId,
+      question: f.question as string,
+      answer: f.answer as string,
+      order: i,
+    }));
+
+  try {
+    await prisma.$transaction([
+      ...(Object.keys(franchiseData).length > 0
+        ? [prisma.franchise.update({ where: { id: franchiseId }, data: franchiseData })]
+        : []),
+      ...(modelsToCreate.length > 0
+        ? [prisma.franchiseBusinessModel.createMany({ data: modelsToCreate })]
+        : []),
+      ...(faqsToCreate.length > 0
+        ? [prisma.franchiseFaq.createMany({ data: faqsToCreate })]
+        : []),
+    ]);
+  } catch (error) {
+    console.error("[autofill] DB write failed", error);
+    return NextResponse.json(
+      {
+        error: "Error guardando los datos extraídos en la base de datos",
+        extracted,
+      },
+      { status: 500 }
+    );
+  }
+
   return NextResponse.json({
-    extracted,
+    success: true,
+    applied: {
+      fields: Object.keys(franchiseData).length,
+      models: modelsToCreate.length,
+      faqs: faqsToCreate.length,
+    },
     usage: {
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
