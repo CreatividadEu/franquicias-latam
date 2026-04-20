@@ -6,6 +6,10 @@ import {
   EXTRACTION_TOOL_SCHEMA,
   validateExtraction,
 } from "@/lib/landing-extraction-schema";
+import {
+  getSupabaseAdminClient,
+  getFranchiseStorageBucket,
+} from "@/lib/supabaseAdmin";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -31,13 +35,21 @@ Reglas estrictas:
 
 Devuelves el resultado SIEMPRE invocando la herramienta extract_landing_data una sola vez.`;
 
-async function fileToBase64(file: File): Promise<string> {
-  const buffer = Buffer.from(await file.arrayBuffer());
-  return buffer.toString("base64");
-}
-
-function isPdf(file: File): boolean {
-  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+async function downloadPdfAsBase64(storagePath: string, label: string): Promise<string> {
+  const client = getSupabaseAdminClient();
+  if (!client) {
+    throw new Error("Supabase storage no disponible");
+  }
+  const bucket = getFranchiseStorageBucket();
+  const { data, error } = await client.storage.from(bucket).download(storagePath);
+  if (error || !data) {
+    throw new Error(`No se pudo descargar el PDF '${label}': ${error?.message ?? "desconocido"}`);
+  }
+  const arrayBuffer = await data.arrayBuffer();
+  if (arrayBuffer.byteLength > MAX_PDF_SIZE_BYTES) {
+    throw new Error(`El PDF '${label}' supera 25MB`);
+  }
+  return Buffer.from(arrayBuffer).toString("base64");
 }
 
 export async function POST(
@@ -67,51 +79,45 @@ export async function POST(
     return NextResponse.json({ error: "Franquicia no encontrada" }, { status: 404 });
   }
 
-  let formData: FormData;
+  let body: { strategicPath?: unknown; financialPath?: unknown };
   try {
-    formData = await request.formData();
+    body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: "Body invalido. Se esperaba multipart/form-data" },
+      { error: "Body invalido. Se esperaba JSON { strategicPath, financialPath }" },
       { status: 400 }
     );
   }
 
-  const strategic = formData.get("strategic");
-  const financial = formData.get("financial");
+  const strategicPath = typeof body.strategicPath === "string" ? body.strategicPath : "";
+  const financialPath = typeof body.financialPath === "string" ? body.financialPath : "";
 
-  if (!(strategic instanceof File) || !(financial instanceof File)) {
+  if (!strategicPath || !financialPath) {
     return NextResponse.json(
-      { error: "Faltan archivos. Adjunta 'strategic' y 'financial' como PDFs" },
+      { error: "Faltan strategicPath o financialPath en el body" },
       { status: 400 }
     );
   }
 
-  for (const [label, file] of [["strategic", strategic], ["financial", financial]] as const) {
-    if (!isPdf(file)) {
-      return NextResponse.json(
-        { error: `El archivo '${label}' debe ser PDF` },
-        { status: 400 }
-      );
-    }
-    if (file.size <= 0) {
-      return NextResponse.json(
-        { error: `El archivo '${label}' esta vacio` },
-        { status: 400 }
-      );
-    }
-    if (file.size > MAX_PDF_SIZE_BYTES) {
-      return NextResponse.json(
-        { error: `El archivo '${label}' supera 25MB` },
-        { status: 400 }
-      );
-    }
+  const expectedPrefix = `dossiers/${franchiseId}/`;
+  if (!strategicPath.startsWith(expectedPrefix) || !financialPath.startsWith(expectedPrefix)) {
+    return NextResponse.json(
+      { error: "storagePath no corresponde a esta franquicia" },
+      { status: 400 }
+    );
   }
 
-  const [strategicBase64, financialBase64] = await Promise.all([
-    fileToBase64(strategic),
-    fileToBase64(financial),
-  ]);
+  let strategicBase64: string;
+  let financialBase64: string;
+  try {
+    [strategicBase64, financialBase64] = await Promise.all([
+      downloadPdfAsBase64(strategicPath, "estrategica"),
+      downloadPdfAsBase64(financialPath, "financiera"),
+    ]);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error descargando PDFs";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
 
   const client = new Anthropic({ apiKey });
 

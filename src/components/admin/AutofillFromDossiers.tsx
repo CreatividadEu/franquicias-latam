@@ -161,19 +161,56 @@ export function AutofillFromDossiers({ franchiseId, open, onClose, onApplied }: 
     onClose();
   }, [step, reset, onClose]);
 
+  async function uploadToSupabase(file: File, label: string): Promise<string> {
+    setProgress(`Subiendo ${label}...`);
+    const prepRes = await fetch(
+      `/api/admin/landing/franchises/${franchiseId}/brochure-upload`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type || "application/pdf",
+          fileSize: file.size,
+        }),
+      }
+    );
+    const prepJson = await prepRes.json().catch(() => ({}));
+    if (!prepRes.ok) {
+      throw new Error(prepJson.error ?? `No se pudo preparar el upload de ${label}`);
+    }
+    const { signedUrl, storagePath } = prepJson as {
+      signedUrl: string;
+      storagePath: string;
+    };
+
+    const uploadRes = await fetch(signedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type || "application/pdf" },
+      body: file,
+    });
+    if (!uploadRes.ok) {
+      throw new Error(`Falló el upload de ${label} a Supabase (${uploadRes.status})`);
+    }
+    return storagePath;
+  }
+
   async function runExtraction() {
     if (!strategic || !financial) return;
     setError(null);
     setStep("extracting");
 
-    const fd = new FormData();
-    fd.append("strategic", strategic);
-    fd.append("financial", financial);
-
     try {
+      const [strategicPath, financialPath] = await Promise.all([
+        uploadToSupabase(strategic, "Definición Estratégica"),
+        uploadToSupabase(financial, "Viabilidad Financiera"),
+      ]);
+
+      setProgress("Analizando PDFs con IA...");
       const res = await fetch(`/api/admin/landing/franchises/${franchiseId}/autofill`, {
         method: "POST",
-        body: fd,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ strategicPath, financialPath }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -335,7 +372,7 @@ export function AutofillFromDossiers({ franchiseId, open, onClose, onApplied }: 
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
-              <p className="text-sm text-gray-600">Claude está leyendo los dossiers...</p>
+              <p className="text-sm text-gray-600">{progress || "Claude está leyendo los dossiers..."}</p>
               <p className="text-xs text-gray-400">Esto puede tardar 30-60 segundos.</p>
             </div>
           )}
