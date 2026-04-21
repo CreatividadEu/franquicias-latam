@@ -36,6 +36,7 @@ export function DiagnosticWizard({ onComplete }: Props) {
   const progress = ((currentQ) / QUESTIONS.length) * 100
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelected(null)
   }, [currentQ])
 

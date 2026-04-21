@@ -169,7 +169,7 @@ function PulsoInner() {
               >
                 {v.topic}
               </span>
-              <span className="text-fl-text">"{v.excerpt}"</span>
+              <span className="text-fl-text">&ldquo;{v.excerpt}&rdquo;</span>
             </div>
           ))}
         </div>

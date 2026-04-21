@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import RadarChart from './RadarChart';
 import { DIM_LABELS } from './data';
@@ -54,11 +54,9 @@ export default function QuestionScreen({
   onNext,
   onBack,
 }: QuestionScreenProps) {
+  // Component remounts on every qIdx change (keyed in DiagnosticoApp),
+  // so initial state is always correct — no sync effect needed.
   const [selected, setSelected] = useState<string | null>(answers[q.id] || null);
-
-  useEffect(() => {
-    setSelected(answers[q.id] || null);
-  }, [q.id, answers]);
 
   function handleSelect(opt: Question['options'][0]) {
     setSelected(opt.value);

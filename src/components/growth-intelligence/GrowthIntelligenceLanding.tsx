@@ -2051,8 +2051,8 @@ export function GrowthIntelligenceLanding() {
                   margin: "0 0 28px",
                 }}
               >
-                "No trabajamos con cualquier negocio. Trabajamos con operadores
-                que quieren una ruta más precisa — no más actividad."
+                &ldquo;No trabajamos con cualquier negocio. Trabajamos con operadores
+                que quieren una ruta más precisa — no más actividad.&rdquo;
               </blockquote>
               <div
                 style={{

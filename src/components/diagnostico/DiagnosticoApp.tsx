@@ -97,11 +97,14 @@ export default function DiagnosticoApp() {
       // Never resume mid-processing — it would stall
       const safeScreen =
         saved.screen === 'processing' ? 'question' : saved.screen;
+      // React 18 batches these automatically inside effects
+      /* eslint-disable react-hooks/set-state-in-effect */
       setScreen(safeScreen);
       setQIdx(saved.qIdx ?? 0);
       setAnswers(saved.answers ?? {});
       setScores(saved.scores ?? DEFAULT_SCORES);
       setCompany(saved.company ?? DEFAULT_COMPANY);
+      /* eslint-enable react-hooks/set-state-in-effect */
     } catch {
       // Corrupted state — start fresh
     }
