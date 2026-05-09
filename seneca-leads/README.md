@@ -14,10 +14,31 @@ B2B lead intelligence platform for Colombian SMBs (restaurants, spas, clinics, r
 ## Setup
 
 ```bash
+# 1. Install dependencies
 pnpm install
-cp .env.example .env.local   # fill in keys
+
+# 2. Configure environment
+cp .env.example .env.local   # fill in DATABASE_URL, DIRECT_URL, SERPAPI_KEY (Phase 1)
+
+# 3. Provision Supabase Postgres extensions (one-time, in Supabase SQL editor)
+#    CREATE EXTENSION IF NOT EXISTS vector;
+#    CREATE EXTENSION IF NOT EXISTS pg_trgm;
+#    CREATE EXTENSION IF NOT EXISTS postgis;
+
+# 4. Generate Prisma client + apply schema
 pnpm db:generate
-pnpm db:migrate              # run once Supabase is provisioned
+pnpm db:migrate              # creates the init migration
+
+# 5. Apply cohort views (rename folder to a timestamp first, or psql -f directly)
+psql "$DIRECT_URL" -f packages/db/prisma/migrations/manual_cohort_views/migration.sql
+```
+
+## Phase 1 — runbook
+
+```bash
+pnpm ingest:google           # full Bogotá restaurants sweep
+pnpm ingest:google -- --pages=3   # extra coverage if dedup is heavy
+pnpm ingest:google -- --no-reviews  # skip the second pass (faster, places only)
 ```
 
 ## Phase status
