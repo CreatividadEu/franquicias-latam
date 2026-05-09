@@ -1,0 +1,201 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [pgvector(map: "vector"), pg_trgm, postgis]
+}
+
+model Business {
+  id              String    @id @default(cuid())
+  nit             String?   @unique
+  ruesMatricula   String?   @unique @map("rues_matricula")
+  nameCanonical   String    @map("name_canonical")
+  nameNormalized  String    @map("name_normalized")
+  ciiuPrimary     String?   @map("ciiu_primary")
+  sector          String?
+  city            String?
+  address         String?
+  lat             Float?
+  lng             Float?
+  phone           String?
+  domain          String?
+  igHandle        String?   @map("ig_handle")
+  openedAt        DateTime? @map("opened_at")
+  legalStatus     String?   @map("legal_status")
+
+  aliases         BusinessAlias[]
+  sourceLinks     BusinessSourceLink[]
+  observations    Observation[]
+  reviews         Review[]
+  snapshots       Snapshot[]
+  painClusters    PainCluster[]
+  salesLead       SalesLead?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([sector, city])
+  @@index([nameNormalized])
+  @@index([openedAt])
+  @@map("business")
+}
+
+model BusinessAlias {
+  id          String   @id @default(cuid())
+  businessId  String   @map("business_id")
+  alias       String
+  source      String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, alias, source])
+  @@map("business_alias")
+}
+
+model BusinessSourceLink {
+  id          String   @id @default(cuid())
+  businessId  String   @map("business_id")
+  source      String
+  sourceId    String   @map("source_id")
+  url         String?
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([source, sourceId])
+  @@index([businessId])
+  @@map("business_source_link")
+}
+
+model Observation {
+  id          String    @id @default(cuid())
+  businessId  String?   @map("business_id")
+  source      String
+  sourceId    String    @map("source_id")
+  payload     Json
+  observedAt  DateTime  @map("observed_at")
+  business    Business? @relation(fields: [businessId], references: [id])
+
+  @@unique([source, sourceId, observedAt])
+  @@index([businessId, source])
+  @@map("observation")
+}
+
+model Review {
+  id            String                       @id @default(cuid())
+  businessId    String                       @map("business_id")
+  source        String
+  externalId    String                       @map("external_id")
+  rating        Float
+  textOriginal  String                       @map("text_original") @db.Text
+  language      String?
+  postedAt      DateTime                     @map("posted_at")
+  sentiment     Float?
+  embedding     Unsupported("vector(1536)")?
+  business      Business                     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([source, externalId])
+  @@index([businessId, postedAt])
+  @@map("review")
+}
+
+model Snapshot {
+  id                 String   @id @default(cuid())
+  businessId         String   @map("business_id")
+  date               DateTime @db.Date
+  googleReviewCount  Int?     @map("google_review_count")
+  googleRating       Float?   @map("google_rating")
+  igFollowers        Int?     @map("ig_followers")
+  igPostCount        Int?     @map("ig_post_count")
+  igEngagementRate   Float?   @map("ig_engagement_rate")
+  rappiPresent       Boolean? @map("rappi_present")
+  rappiReviewCount   Int?     @map("rappi_review_count")
+  rappiRating        Float?   @map("rappi_rating")
+  business           Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, date])
+  @@index([date])
+  @@map("snapshot")
+}
+
+model PainCluster {
+  id           String                       @id @default(cuid())
+  businessId   String                       @map("business_id")
+  centroid     Unsupported("vector(1536)")?
+  reviewCount  Int                          @map("review_count")
+  avgRating    Float                        @map("avg_rating")
+  business     Business                     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  extractions  PainExtraction[]
+  reviewLinks  ReviewClusterLink[]
+  createdAt    DateTime                     @default(now())
+
+  @@index([businessId])
+  @@map("pain_cluster")
+}
+
+model ReviewClusterLink {
+  id         String      @id @default(cuid())
+  reviewId   String      @map("review_id")
+  clusterId  String      @map("cluster_id")
+  cluster    PainCluster @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, clusterId])
+  @@map("review_cluster_link")
+}
+
+model PainExtraction {
+  id                  String      @id @default(cuid())
+  clusterId           String      @map("cluster_id")
+  category            String
+  subcategory         String?
+  severity            Int
+  frequencyInSample   Float       @map("frequency_in_sample")
+  evidenceCount       Int         @map("evidence_count")
+  representativeQuote String      @map("representative_quote") @db.Text
+  solutionHint        String?     @map("solution_hint") @db.Text
+  modelVersion        String      @map("model_version")
+  cluster             PainCluster @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  createdAt           DateTime    @default(now())
+
+  @@index([category])
+  @@map("pain_extraction")
+}
+
+model SalesLead {
+  id                String    @id @default(cuid())
+  businessId        String    @unique @map("business_id")
+  cohort            String
+  tractionScore     Float     @map("traction_score")
+  painScore         Float     @map("pain_score")
+  fitScore          Float     @map("fit_score")
+  estRevenueLow     BigInt?   @map("est_revenue_low")
+  estRevenueHigh    BigInt?   @map("est_revenue_high")
+  revenueConfidence Float?    @map("revenue_confidence")
+  serviceAngle      String?   @map("service_angle") @db.Text
+  status            String    @default("new")
+  notes             String?   @db.Text
+  contactedAt       DateTime? @map("contacted_at")
+  business          Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([cohort, fitScore])
+  @@index([status])
+  @@map("sales_lead")
+}
+
+model ErReviewQueue {
+  id           String    @id @default(cuid())
+  businessAId  String    @map("business_a_id")
+  businessBId  String    @map("business_b_id")
+  score        Float
+  signals      Json
+  decision     String    @default("pending")
+  decidedAt    DateTime? @map("decided_at")
+  createdAt    DateTime  @default(now())
+
+  @@index([decision])
+  @@map("er_review_queue")
+}
