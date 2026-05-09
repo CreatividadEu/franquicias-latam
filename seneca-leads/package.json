@@ -1,0 +1,49 @@
+{
+  "name": "seneca-leads",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "db:migrate": "pnpm -F @seneca/db prisma migrate dev",
+    "db:studio": "pnpm -F @seneca/db prisma studio",
+    "db:generate": "pnpm -F @seneca/db prisma generate",
+    "ingest:google": "tsx scripts/ingest-google.ts",
+    "ingest:rues": "tsx scripts/ingest-rues.ts",
+    "ingest:instagram": "tsx scripts/ingest-instagram.ts",
+    "ingest:rappi": "tsx scripts/ingest-rappi.ts",
+    "resolve:entities": "tsx scripts/resolve-entities.ts",
+    "extract:pains": "tsx scripts/extract-pains.ts",
+    "score:leads": "tsx scripts/score-leads.ts",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.10.0",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "tsx": "^4.19.0",
+    "turbo": "^2.1.0",
+    "typescript": "^5.6.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
