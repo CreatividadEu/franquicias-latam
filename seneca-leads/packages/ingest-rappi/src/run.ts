@@ -2,18 +2,21 @@ import { formatInTimeZone } from 'date-fns-tz';
 import type { Prisma } from '@seneca/db';
 import { prisma } from '@seneca/db';
 import { childLogger, bogotaTz, normalizeBusinessName } from '@seneca/shared';
-import { launchContext, distanceMeters, jitter } from './browser.js';
 import { searchRappi, type RappiCandidate } from './search.js';
 
 const log = childLogger({ module: 'ingest-rappi' });
 
 const TRIGRAM_THRESHOLD = 0.45;
-const GEO_THRESHOLD_METERS = 500;
+const BOGOTA_DEFAULT_LAT = 4.6486; // Zona G centroid
+const BOGOTA_DEFAULT_LNG = -74.0539;
 
 export interface RunRappiIngestInput {
+  /** Smoke-test cap. */
   limit?: number;
-  headless?: boolean;
   consecutiveErrorLimit?: number;
+  /** Base delay between API calls. Spec: 3s ± 0.75s jitter. */
+  baseDelayMs?: number;
+  jitterMs?: number;
 }
 
 export interface RunRappiIngestResult {
@@ -47,12 +50,19 @@ function trigramSimilarity(a: string, b: string): number {
   return union === 0 ? 0 : inter / union;
 }
 
+async function jitter(baseMs: number, jitterMs: number): Promise<void> {
+  const wait = baseMs + Math.floor(Math.random() * jitterMs * 2 - jitterMs);
+  await new Promise((r) => setTimeout(r, Math.max(0, wait)));
+}
+
 export async function runRappiIngest(
   input: RunRappiIngestInput = {},
 ): Promise<RunRappiIngestResult> {
   const startedAt = Date.now();
   const today = todayBogotaDate();
   const consecutiveErrorLimit = input.consecutiveErrorLimit ?? 4;
+  const baseDelay = input.baseDelayMs ?? 3000;
+  const jitterAmount = input.jitterMs ?? 750;
 
   const businesses = await prisma.business.findMany({
     where: { sector: 'restaurant' },
@@ -69,7 +79,6 @@ export async function runRappiIngest(
 
   log.info({ total: businesses.length }, 'starting Rappi ingest');
 
-  const ctx = await launchContext({ headless: input.headless ?? true });
   let matched = 0;
   let unmatched = 0;
   let errors = 0;
@@ -77,57 +86,53 @@ export async function runRappiIngest(
   let abortedReason: string | undefined;
   let scanned = 0;
 
-  try {
-    for (const b of businesses) {
-      if (consecutive >= consecutiveErrorLimit) {
-        abortedReason = `consecutive errors hit limit (${consecutiveErrorLimit})`;
-        log.error({ matched, unmatched, errors }, abortedReason);
-        break;
-      }
-
-      scanned++;
-      try {
-        const candidates = await searchRappi(ctx, b.nameCanonical);
-        consecutive = 0;
-        const best = pickBestCandidate(candidates, b);
-
-        await persistRappi(b.id, best, candidates, today);
-        if (best) {
-          matched++;
-        } else {
-          unmatched++;
-        }
-
-        log.info(
-          {
-            scanned,
-            total: businesses.length,
-            name: b.nameCanonical,
-            matched: !!best,
-            store: best?.storeId,
-            rating: best?.rating,
-            reviews: best?.reviewCount,
-          },
-          'rappi scan',
-        );
-      } catch (err) {
-        errors++;
-        consecutive++;
-        log.error(
-          {
-            source: 'rappi',
-            sourceId: b.id,
-            name: b.nameCanonical,
-            error: err instanceof Error ? err.message : String(err),
-          },
-          'rappi search failed',
-        );
-      }
-
-      await jitter(3000, 750);
+  for (const b of businesses) {
+    if (consecutive >= consecutiveErrorLimit) {
+      abortedReason = `consecutive errors hit limit (${consecutiveErrorLimit})`;
+      log.error({ matched, unmatched, errors }, abortedReason);
+      break;
     }
-  } finally {
-    await ctx.close().catch(() => undefined);
+
+    scanned++;
+    try {
+      const candidates = await searchRappi(b.nameCanonical, {
+        lat: b.lat ?? BOGOTA_DEFAULT_LAT,
+        lng: b.lng ?? BOGOTA_DEFAULT_LNG,
+      });
+      consecutive = 0;
+      const best = pickBestCandidate(candidates, b);
+
+      await persistRappi(b.id, best, candidates, today);
+      if (best) matched++;
+      else unmatched++;
+
+      log.info(
+        {
+          scanned,
+          total: businesses.length,
+          name: b.nameCanonical,
+          matched: !!best,
+          storeId: best?.storeId,
+          brandName: best?.brandName,
+          sim: best ? trigramSimilarity(b.nameNormalized, normalizeBusinessName(best.brandName)).toFixed(2) : undefined,
+        },
+        'rappi scan',
+      );
+    } catch (err) {
+      errors++;
+      consecutive++;
+      log.error(
+        {
+          source: 'rappi',
+          sourceId: b.id,
+          name: b.nameCanonical,
+          error: err instanceof Error ? err.message : String(err),
+        },
+        'rappi search failed',
+      );
+    }
+
+    await jitter(baseDelay, jitterAmount);
   }
 
   return {
@@ -143,25 +148,17 @@ export async function runRappiIngest(
 
 function pickBestCandidate(
   candidates: RappiCandidate[],
-  business: { nameNormalized: string; lat: number | null; lng: number | null },
+  business: { nameNormalized: string },
 ): RappiCandidate | null {
   let best: { c: RappiCandidate; score: number } | null = null;
   for (const c of candidates) {
-    const nameNorm = normalizeBusinessName(c.name);
+    if (c.vertical !== 'restaurants') continue;
+    const nameNorm = normalizeBusinessName(c.brandName);
     const sim = trigramSimilarity(business.nameNormalized, nameNorm);
     if (sim < TRIGRAM_THRESHOLD) continue;
-
-    let geoOk = true;
-    if (business.lat != null && business.lng != null && c.lat != null && c.lng != null) {
-      const d = distanceMeters(
-        { lat: business.lat, lng: business.lng },
-        { lat: c.lat, lng: c.lng },
-      );
-      geoOk = d <= GEO_THRESHOLD_METERS;
-    }
-    if (!geoOk) continue;
-
-    if (!best || sim > best.score) best = { c, score: sim };
+    // Tiebreak on Rappi's own relevance score when sims are close.
+    const composite = sim * 0.85 + Math.min(c.relevance / 10, 1) * 0.15;
+    if (!best || composite > best.score) best = { c, score: composite };
   }
   return best?.c ?? null;
 }
@@ -187,18 +184,16 @@ async function persistRappi(
       },
     });
     if (best) {
-      if (best.storeId) {
-        await tx.businessSourceLink.upsert({
-          where: { source_sourceId: { source: 'rappi', sourceId: best.storeId } },
-          create: {
-            businessId,
-            source: 'rappi',
-            sourceId: best.storeId,
-            url: best.url ?? null,
-          },
-          update: { url: best.url ?? null },
-        });
-      }
+      await tx.businessSourceLink.upsert({
+        where: { source_sourceId: { source: 'rappi', sourceId: best.storeId } },
+        create: {
+          businessId,
+          source: 'rappi',
+          sourceId: best.storeId,
+          url: `https://www.rappi.com.co/restaurantes/${best.storeId}`,
+        },
+        update: { url: `https://www.rappi.com.co/restaurantes/${best.storeId}` },
+      });
       await tx.snapshot.upsert({
         where: { businessId_date: { businessId, date: today } },
         create: {
