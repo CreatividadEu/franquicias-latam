@@ -39,12 +39,16 @@ export async function runInstagramIngest(
   // Pull the most recent google_places observation per business so we can
   // mine the website / description for an IG handle.
   const businesses = await prisma.business.findMany({
-    where: { igHandle: null },
+    // No igHandle filter: businesses with an existing handle (set during
+    // Google Places ingest from website/description regex) are also
+    // included so we can fetch their profiles; businesses without a handle
+    // attempt cheap derivation from the cached Google observation.
     orderBy: { createdAt: 'asc' },
     ...(input.limit ? { take: input.limit } : {}),
     select: {
       id: true,
       domain: true,
+      igHandle: true,
       observations: {
         where: { source: 'google_places' },
         orderBy: { observedAt: 'desc' },
@@ -59,16 +63,20 @@ export async function runInstagramIngest(
   const businessByHandle = new Map<string, string>(); // handle -> businessId
   let derivedHandles = 0;
   for (const b of businesses) {
-    const payload = b.observations[0]?.payload as PlaceObservationPayload | null | undefined;
-    const candidates = deriveHandleCandidates({
-      domain: b.domain,
-      observationPayload: payload ?? null,
-    });
-    if (candidates.length === 0) continue;
+    let handle = b.igHandle?.toLowerCase() ?? null;
+    if (!handle) {
+      const payload = b.observations[0]?.payload as
+        | PlaceObservationPayload
+        | null
+        | undefined;
+      const candidates = deriveHandleCandidates({
+        domain: b.domain,
+        observationPayload: payload ?? null,
+      });
+      if (candidates.length === 0) continue;
+      handle = candidates[0]!;
+    }
     derivedHandles++;
-    // Use the first derived candidate; the Apify Instagram Search actor for
-    // unmatched businesses is a Phase 2.5 follow-up.
-    const handle = candidates[0]!;
     if (!businessByHandle.has(handle)) businessByHandle.set(handle, b.id);
   }
 
