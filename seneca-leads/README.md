@@ -25,12 +25,22 @@ cp .env.example .env.local   # fill in DATABASE_URL, DIRECT_URL, SERPAPI_KEY (Ph
 #    CREATE EXTENSION IF NOT EXISTS pg_trgm;
 #    CREATE EXTENSION IF NOT EXISTS postgis;
 
-# 4. Generate Prisma client + apply schema
-pnpm db:generate
-pnpm db:migrate              # creates the init migration
+# 4. Sync schema to Supabase
+#    db push works around the shadow-DB drift Supabase causes with its
+#    pre-installed extensions. Use migrate dev for incremental changes
+#    after this initial sync.
+set -a; source .env.local; set +a
+pnpm -F @seneca/db exec prisma db push --skip-generate
+pnpm -F @seneca/db exec prisma generate
 
-# 5. Apply cohort views (rename folder to a timestamp first, or psql -f directly)
-psql "$DIRECT_URL" -f packages/db/prisma/migrations/manual_cohort_views/migration.sql
+# 5. Apply cohort views
+pnpm -F @seneca/db exec prisma db execute \
+  --file prisma/sql/cohort_views.sql \
+  --schema prisma/schema.prisma
+
+# 6. Verify
+pnpm exec tsx scripts/verify-db.ts
+# Expected: 11 tables, v_cohort_new_winner + v_cohort_mature_painful, vector/pg_trgm/postgis active
 ```
 
 ## Phase 1 — runbook

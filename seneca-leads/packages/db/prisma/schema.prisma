@@ -7,7 +7,7 @@ datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
   directUrl  = env("DIRECT_URL")
-  extensions = [pgvector(map: "vector"), pg_trgm, postgis]
+  extensions = [pgvector(map: "vector"), pg_trgm, postgis, pg_stat_statements, pgcrypto, uuid_ossp(map: "uuid-ossp")]
 }
 
 model Business {
