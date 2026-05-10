@@ -8,6 +8,13 @@ const log = childLogger({ module: 'serpapi' });
 const SERPAPI_BASE = 'https://serpapi.com/search.json';
 const queue = new PQueue({ concurrency: 2, intervalCap: 1, interval: 250 });
 
+// Quota guard: after this many consecutive 429s across the whole queue, we
+// assume monthly quota is exhausted and abort. The first call after success
+// resets the counter.
+const QUOTA_EXHAUSTED_THRESHOLD = 6;
+let consecutive429 = 0;
+let quotaExhausted = false;
+
 export const SerpGpsSchema = z
   .object({
     latitude: z.number().nullable().optional(),
@@ -100,6 +107,10 @@ interface FetchOptions {
 }
 
 async function rawFetch<T>(opts: FetchOptions, schema: z.ZodSchema<T>): Promise<T> {
+  if (quotaExhausted) {
+    throw new AbortError('SerpAPI quota exhausted — refusing further calls');
+  }
+
   const url = new URL(SERPAPI_BASE);
   for (const [k, v] of Object.entries(opts.params)) {
     url.searchParams.set(k, v);
@@ -110,25 +121,55 @@ async function rawFetch<T>(opts: FetchOptions, schema: z.ZodSchema<T>): Promise<
     headers: { Accept: 'application/json' },
   });
 
-  if (res.status === 429 || res.status >= 500) {
+  if (res.status === 429) {
+    consecutive429++;
+    const headers: Record<string, string> = {};
+    res.headers.forEach((v, k) => {
+      headers[k] = v;
+    });
+    if (consecutive429 >= QUOTA_EXHAUSTED_THRESHOLD) {
+      quotaExhausted = true;
+      log.error(
+        { consecutive429, threshold: QUOTA_EXHAUSTED_THRESHOLD },
+        'SerpAPI returned 429 too many times in a row — assuming quota exhausted, aborting',
+      );
+      throw new AbortError(
+        `SerpAPI 429 ×${consecutive429} consecutive — quota likely exhausted`,
+      );
+    }
+    log.warn(
+      {
+        status: 429,
+        consecutive429,
+        headers,
+        params: { ...opts.params, api_key: '[redacted]' },
+      },
+      'SerpAPI 429',
+    );
+    throw new Error('SerpAPI 429');
+  }
+
+  if (res.status >= 500) {
+    consecutive429 = 0;
     const headers: Record<string, string> = {};
     res.headers.forEach((v, k) => {
       headers[k] = v;
     });
     log.warn(
       { status: res.status, headers, params: { ...opts.params, api_key: '[redacted]' } },
-      'SerpAPI transient error',
+      'SerpAPI 5xx',
     );
-    const err = new Error(`SerpAPI ${res.status}`);
-    throw err;
+    throw new Error(`SerpAPI ${res.status}`);
   }
 
   if (!res.ok) {
+    consecutive429 = 0;
     const body = await res.text();
     log.error({ status: res.status, body: body.slice(0, 500) }, 'SerpAPI permanent error');
     throw new AbortError(`SerpAPI ${res.status}: ${body.slice(0, 200)}`);
   }
 
+  consecutive429 = 0;
   const json = (await res.json()) as unknown;
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
