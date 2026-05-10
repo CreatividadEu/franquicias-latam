@@ -1,0 +1,5 @@
+# Sibling monorepo (B2B lead intelligence) — has its own pnpm workspace,
+# its own deploy target, and is unrelated to the franquicias-latam Next.js
+# app that Vercel builds. Excluding it keeps the Vercel context smaller
+# and prevents accidental scanning.
+seneca-leads/
