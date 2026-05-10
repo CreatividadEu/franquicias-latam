@@ -10,11 +10,12 @@ import { prisma } from '@seneca/db';
 async function main(): Promise<void> {
   const limitArg = process.argv.find((a) => a.startsWith('--limit='));
   const limit = limitArg ? Number(limitArg.split('=')[1]) : undefined;
-  const headless = !process.argv.includes('--headed');
+  const delayArg = process.argv.find((a) => a.startsWith('--delay='));
+  const baseDelayMs = delayArg ? Number(delayArg.split('=')[1]) : undefined;
 
   const result = await runRuesIngest({
     ...(limit !== undefined ? { limit } : {}),
-    headless,
+    ...(baseDelayMs !== undefined ? { baseDelayMs } : {}),
   });
 
   console.log('\n=== RUES ingest summary ===');

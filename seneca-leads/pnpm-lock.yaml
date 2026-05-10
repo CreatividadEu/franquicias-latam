@@ -162,18 +162,6 @@ importers:
       '@seneca/shared':
         specifier: workspace:*
         version: link:../shared
-      p-queue:
-        specifier: ^8.0.1
-        version: 8.1.1
-      playwright:
-        specifier: ^1.49.0
-        version: 1.59.1
-      playwright-extra:
-        specifier: ^4.3.6
-        version: 4.3.6(playwright-core@1.59.1)(playwright@1.59.1)
-      puppeteer-extra-plugin-stealth:
-        specifier: ^2.11.2
-        version: 2.11.2(playwright-extra@4.3.6(playwright-core@1.59.1)(playwright@1.59.1))
 
   packages/pain-extractor:
     dependencies:

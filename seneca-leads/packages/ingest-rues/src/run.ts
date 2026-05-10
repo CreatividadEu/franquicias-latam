@@ -1,21 +1,24 @@
 import type { Prisma } from '@seneca/db';
 import { prisma } from '@seneca/db';
 import { childLogger } from '@seneca/shared';
-import { launchContext, jitter } from './browser.js';
 import { searchRues } from './search.js';
 import { decideMatch } from './match.js';
 
 const log = childLogger({ module: 'ingest-rues' });
 
+async function jitter(baseMs: number, jitterMs: number): Promise<void> {
+  const wait = baseMs + Math.floor(Math.random() * jitterMs * 2 - jitterMs);
+  await new Promise((r) => setTimeout(r, Math.max(0, wait)));
+}
+
 export interface RunRuesIngestInput {
   /** If set, stop after this many businesses (smoke-test mode). */
   limit?: number;
-  /** Department filter passed to RUES search; defaults to 'BOGOTA D.C.' */
-  department?: string;
-  /** Headless toggle; default true. Pass false to watch in a real browser. */
-  headless?: boolean;
-  /** Hard ceiling on consecutive CAPTCHA / error events before aborting. */
+  /** Hard ceiling on consecutive errors before aborting. */
   consecutiveErrorLimit?: number;
+  /** Pacing between API calls. Spec: 1 req per 4s ± 1s jitter. */
+  baseDelayMs?: number;
+  jitterMs?: number;
 }
 
 export interface RunRuesIngestResult {
@@ -52,7 +55,9 @@ export async function runRuesIngest(
 
   log.info({ total: candidates.length }, 'starting RUES ingest');
 
-  const ctx = await launchContext({ headless: input.headless ?? true });
+  const baseDelay = input.baseDelayMs ?? 4000;
+  const jitterAmount = input.jitterMs ?? 1000;
+
   const counters = {
     scanned: 0,
     autoAccepted: 0,
@@ -73,9 +78,7 @@ export async function runRuesIngest(
 
       counters.scanned++;
       try {
-        const results = await searchRues(ctx, business.nameCanonical, {
-          department: input.department ?? 'BOGOTA D.C.',
-        });
+        const results = await searchRues(business.nameCanonical);
         counters.consecutiveErrors = 0;
 
         const decision = decideMatch(
@@ -99,6 +102,8 @@ export async function runRuesIngest(
             decision: decision.kind,
             score: decision.best?.score?.toFixed(2),
             name: business.nameCanonical,
+            matricula: decision.best?.candidate.matricula,
+            nit: decision.best?.candidate.nit,
           },
           'RUES result',
         );
@@ -117,10 +122,10 @@ export async function runRuesIngest(
         );
       }
 
-      await jitter(4000, 1000);
+      await jitter(baseDelay, jitterAmount);
     }
   } finally {
-    await ctx.close().catch(() => undefined);
+    // No browser to close — fetch-based client.
   }
 
   return {
