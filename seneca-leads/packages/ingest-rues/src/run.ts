@@ -221,7 +221,10 @@ async function persistDecision(
 }
 
 function parseRuesDate(s: string): Date | null {
-  // Common RUES formats: DD/MM/YYYY or YYYY-MM-DD
+  if (!s) return null;
+  // RUES Elasticsearch returns YYYYMMDD with no separators (e.g. "19940907").
+  const compact = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (compact) return new Date(`${compact[1]}-${compact[2]}-${compact[3]}T00:00:00.000Z`);
   const dmy = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if (dmy) return new Date(`${dmy[3]}-${dmy[2]}-${dmy[1]}T00:00:00.000Z`);
   const ymd = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
