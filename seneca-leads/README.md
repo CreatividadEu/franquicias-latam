@@ -94,13 +94,83 @@ are bounced back to `/login` with `?error=not_allowed&email=…`.
    green, sign in at `https://<your-domain>/login` from an email present in
    `ALLOWED_EMAILS`.
 
+## Phase 5 — workers + bot (`apps/workers`, `apps/bot`)
+
+### Telegram bot (`apps/bot`)
+
+Surfaces leads + lets you update status from your phone.
+
+```bash
+pnpm -F @seneca/bot dev     # long-polling, watch mode
+pnpm -F @seneca/bot start   # production
+```
+
+Commands once running: `/top [n]`, `/cohort <name> [n]`, `/lead <id>`,
+`/status <id> <new|qualified|contacted|won|lost>`, `/help`. The dossier
+reply includes inline buttons for the four status transitions, so a touch
+updates the lead without typing.
+
+**Auth.** Numeric Telegram user IDs in `TELEGRAM_ALLOWED_USER_IDS`. DM
+[@userinfobot](https://t.me/userinfobot) to find yours. Anything off-list
+gets a polite refusal and a server-side warn log.
+
+**Get the bot token.** DM [@BotFather](https://t.me/BotFather) in Telegram
+→ `/newbot` → paste the returned token into `TELEGRAM_BOT_TOKEN`.
+
+### Workers (`apps/workers`)
+
+BullMQ over Upstash Redis. One queue (`seneca-jobs`) with named jobs.
+
+```bash
+pnpm -F @seneca/workers dev    # watch mode + auto-restart
+pnpm -F @seneca/workers start  # production
+# Manual enqueue (skip waiting for the cron):
+pnpm -F @seneca/workers enqueue score:leads
+```
+
+| Job | Schedule (UTC) | Bogotá-local | Notes |
+| --- | --- | --- | --- |
+| `refresh:google-places` | `0 8 * * 0` | Sun 03:00 | SerpAPI re-ingest, ~$2/run |
+| `refresh:rues` | `15 8 * * 0` | Sun 03:15 | RUES backfill |
+| `refresh:rappi` | `30 8 * * 0` | Sun 03:30 | Rappi presence |
+| `refresh:instagram` | `45 8 1 * *` | 1st of month 03:45 | Apify, gated |
+| `resolve:entities` | `0 8 * * *` | Daily 03:00 | OpenAI embeddings |
+| `extract:pains` | `20 8 * * *` | Daily 03:20 | Haiku 4.5 |
+| `estimate:revenue` | `40 8 * * *` | Daily 03:40 | Sector heuristic |
+| `score:leads` | `50 8 * * *` | Daily 03:50 | Cohort assignment |
+| `notify:new-leads` | `0 12-22 * * *` | Hourly 07–17 | Telegram push |
+
+**Get the Redis URL.** Create an Upstash Redis database → *Database details*
+→ *TCP / Redis* → copy the `rediss://default:<password>@<host>.upstash.io:6379`
+string into `REDIS_URL`. (The REST URL fields in `.env.example` are kept
+for future Edge-side rate-limit counters but workers use TCP.)
+
+### Deploy
+
+Both apps are long-running Node processes — they won't fit on Vercel's
+serverless model (5-minute execution cap, no persistent state). Pick one:
+
+- **Fly.io** — one machine each (`bot` + `workers`), `flyctl deploy` from
+  each app dir. Both are tiny — `shared-cpu-1x@256mb` is sufficient.
+- **Railway** — two services pointing at `apps/bot` and `apps/workers`.
+- **Render** — two Background Workers. Same deal.
+
+Build command for each: `pnpm install --frozen-lockfile && pnpm -F
+@seneca/<app> start`. The workspace install pulls all dependencies; no
+build step needed since both apps run via tsx.
+
+Pass through the env vars from `.env.local` to the hosting provider. The
+bot needs `DATABASE_URL`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USER_IDS`;
+the workers add `REDIS_URL` and every ingest provider key
+(`SERPAPI_KEY`, `APIFY_TOKEN`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`).
+
 ## Phase status
 
 - [x] **Phase 1** — Foundation + Google Places ingest
 - [x] **Phase 2** — RUES + Instagram + Rappi
 - [x] **Phase 3** — Entity resolution + pain extraction + scoring + revenue
 - [x] **Phase 4** — Dashboard (`apps/web`)
-- [ ] **Phase 5** — Workers + Telegram bot
+- [x] **Phase 5** — Workers + Telegram bot
 
 ## Scripts
 

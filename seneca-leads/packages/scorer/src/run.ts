@@ -28,19 +28,6 @@ interface CohortViewRow {
   id: string;
 }
 
-interface BusinessRow {
-  id: string;
-  nameCanonical: string;
-  sector: string | null;
-  city: string | null;
-  snapshots: Array<{
-    rappiPresent: boolean | null;
-    igEngagementRate: number | null;
-    googleReviewCount: number | null;
-    googleRating: number | null;
-  }>;
-}
-
 interface ReviewSlice {
   rating: number;
   postedAt: Date;

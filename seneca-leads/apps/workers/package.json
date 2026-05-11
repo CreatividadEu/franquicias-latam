@@ -3,11 +3,30 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "enqueue": "tsx src/cli.ts",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@seneca/db": "workspace:*",
-    "@seneca/shared": "workspace:*"
+    "@seneca/entity-resolver": "workspace:*",
+    "@seneca/ingest-google": "workspace:*",
+    "@seneca/ingest-instagram": "workspace:*",
+    "@seneca/ingest-rappi": "workspace:*",
+    "@seneca/ingest-rues": "workspace:*",
+    "@seneca/pain-extractor": "workspace:*",
+    "@seneca/revenue-estimator": "workspace:*",
+    "@seneca/scorer": "workspace:*",
+    "@seneca/shared": "workspace:*",
+    "bullmq": "^5.34.0",
+    "dotenv": "^16.4.7",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   }
 }

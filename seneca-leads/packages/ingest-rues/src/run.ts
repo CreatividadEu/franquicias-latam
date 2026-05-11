@@ -3,6 +3,7 @@ import { prisma } from '@seneca/db';
 import { childLogger } from '@seneca/shared';
 import { searchRues } from './search.js';
 import { decideMatch } from './match.js';
+import type { RuesCandidate } from './match.js';
 
 const log = childLogger({ module: 'ingest-rues' });
 
@@ -143,7 +144,7 @@ export async function runRuesIngest(
 async function persistDecision(
   businessId: string,
   decision: ReturnType<typeof decideMatch>,
-  rawCandidates: import('./match.js').RuesCandidate[],
+  rawCandidates: RuesCandidate[],
 ): Promise<void> {
   const observedAt = new Date();
 

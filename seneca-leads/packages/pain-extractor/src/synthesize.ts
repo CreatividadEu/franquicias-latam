@@ -92,7 +92,10 @@ Write the service-angle paragraph now.`;
           system: SYSTEM_PROMPT,
           messages: [{ role: 'user', content: userPrompt }],
         });
-        if (res.stop_reason === 'refusal') {
+        // The Anthropic SDK type no longer lists "refusal" in stop_reason
+        // (refusals now surface via separate fields), but we keep the
+        // defensive check in case the API returns it for older models.
+        if ((res.stop_reason as string) === 'refusal') {
           log.warn(
             { business: input.nameCanonical },
             'Sonnet refused synthesis — skipping',
