@@ -5,7 +5,14 @@ on:
     branches:
       - main
       - develop
+    # Skip when the push only touches the sibling Seneca Leads monorepo —
+    # it has its own pnpm workspace, deps, and tooling, and is unrelated
+    # to the parent franquicias-latam Next.js app this CI lints/builds.
+    paths-ignore:
+      - 'seneca-leads/**'
   pull_request:
+    paths-ignore:
+      - 'seneca-leads/**'
 
 jobs:
   quality:
