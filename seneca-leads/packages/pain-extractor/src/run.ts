@@ -137,20 +137,23 @@ export async function runPainExtractor(
         // Sort most negative first for the prompt (lowest rating first).
         const sorted = [...members].sort((a, b) => a.rating - b.rating);
 
-        // Insert PainCluster (raw SQL for the vector column).
-        const created = await prisma.$queryRaw<Array<{ id: string }>>`
-          INSERT INTO pain_cluster (id, business_id, centroid, review_count, avg_rating, created_at)
-          VALUES (
-            'pc_' || substr(md5(random()::text || clock_timestamp()::text), 1, 22),
-            ${biz.id},
-            ${vectorLiteral(c)}::vector,
-            ${members.length},
-            ${avgRating},
-            NOW()
-          )
-          RETURNING id
+        // Insert PainCluster via Prisma's typed client (lets it handle the
+        // cuid + createdAt), then set the centroid (pgvector column) via
+        // raw UPDATE since Prisma marks the column Unsupported.
+        const createdCluster = await prisma.painCluster.create({
+          data: {
+            businessId: biz.id,
+            reviewCount: members.length,
+            avgRating,
+          },
+          select: { id: true },
+        });
+        const clusterId = createdCluster.id;
+        await prisma.$executeRaw`
+          UPDATE pain_cluster
+          SET centroid = ${vectorLiteral(c)}::vector
+          WHERE id = ${clusterId}
         `;
-        const clusterId = created[0]!.id;
         counters.clustersCreated++;
 
         // Link reviews to the cluster.

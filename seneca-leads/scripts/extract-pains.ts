@@ -1,5 +1,7 @@
 import { config } from 'dotenv';
-config({ path: '.env.local' });
+// override: true so an empty ANTHROPIC_API_KEY in the user's shell (common
+// dev safety habit) doesn't shadow the real key in .env.local.
+config({ path: '.env.local', override: true });
 
 import { runPainExtractor } from '@seneca/pain-extractor';
 import { logger } from '@seneca/shared';
