@@ -1,11 +1,19 @@
 import Link from 'next/link';
-import { LayoutDashboard, Users, AlertTriangle, Activity, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Users,
+  AlertTriangle,
+  Activity,
+  Building2,
+  LogOut,
+} from 'lucide-react';
 import { getCurrentUser, isEmailAllowed } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Overview', icon: LayoutDashboard },
+  { href: '/businesses', label: 'Businesses', icon: Building2 },
   { href: '/leads', label: 'Leads', icon: Users },
   { href: '/pains', label: 'Pains', icon: AlertTriangle },
   { href: '/ingestion', label: 'Ingestion', icon: Activity },
