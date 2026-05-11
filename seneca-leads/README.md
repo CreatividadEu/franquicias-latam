@@ -51,12 +51,55 @@ pnpm ingest:google -- --pages=3   # extra coverage if dedup is heavy
 pnpm ingest:google -- --no-reviews  # skip the second pass (faster, places only)
 ```
 
+## Phase 4 — dashboard (`apps/web`)
+
+```bash
+# Local dev
+pnpm -F @seneca/web dev          # http://localhost:3000
+
+# Production build (run before each deploy)
+pnpm -F @seneca/web build
+pnpm -F @seneca/web start
+```
+
+### Auth
+
+Magic-link via Supabase Auth + an explicit email allow-list checked in
+middleware (`ALLOWED_EMAILS`, comma-separated). Unrecognized signed-in users
+are bounced back to `/login` with `?error=not_allowed&email=…`.
+
+### Required env vars
+
+| Var | Where | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | Vercel + local | Pooled (pgbouncer) Postgres URL — server runtime reads |
+| `DIRECT_URL` | Vercel + local | Direct Postgres URL for Prisma migrate |
+| `NEXT_PUBLIC_SUPABASE_URL` | Vercel + local | Supabase project URL (client + server) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel + local | Supabase anon key |
+| `ALLOWED_EMAILS` | Vercel + local | Comma-separated allow-list, e.g. `dseneor@franquiciaslatam.co` |
+
+### Deploy to Vercel
+
+1. **Import** the repo into Vercel, set the **Root Directory** to
+   `seneca-leads/apps/web`. Framework preset: Next.js. Build command and
+   install command can stay on the defaults (Vercel detects pnpm and runs
+   `pnpm install` then `next build`).
+2. **Environment variables** — copy the five vars above from your local
+   `.env.local` into the Vercel project (Production + Preview).
+3. **Supabase Auth redirect** — in the Supabase dashboard,
+   *Authentication → URL Configuration*, add the deployed Vercel domain
+   (and the preview wildcard if you want previews to auth) to the redirect
+   allow-list, with `/auth/callback` as the path.
+4. **First deploy** — push to the branch wired to Vercel. After it goes
+   green, sign in at `https://<your-domain>/login` from an email present in
+   `ALLOWED_EMAILS`.
+
 ## Phase status
 
 - [x] **Phase 1** — Foundation + Google Places ingest
-- [ ] **Phase 2** — RUES + Instagram + Rappi
-- [ ] **Phase 3** — Entity resolution + pain extraction + scoring + revenue
-- [ ] **Phase 4** — Dashboard (`apps/web`)
+- [x] **Phase 2** — RUES + Instagram + Rappi
+- [x] **Phase 3** — Entity resolution + pain extraction + scoring + revenue
+- [x] **Phase 4** — Dashboard (`apps/web`)
 - [ ] **Phase 5** — Workers + Telegram bot
 
 ## Scripts
