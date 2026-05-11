@@ -1,2 +1,5 @@
-// @seneca/entity-resolver — placeholder; implemented in a later phase.
-export {};
+export * from './embed.js';
+export * from './pairs.js';
+export * from './score.js';
+export * from './merge.js';
+export * from './run.js';
