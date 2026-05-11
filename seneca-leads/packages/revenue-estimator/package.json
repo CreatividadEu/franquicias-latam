@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@seneca/db": "workspace:*",
-    "@seneca/shared": "workspace:*"
+    "@seneca/shared": "workspace:*",
+    "simple-statistics": "^7.8.3"
   }
 }
