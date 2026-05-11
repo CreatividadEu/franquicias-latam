@@ -59,7 +59,11 @@ export default function LandingFranchisesListPage() {
     }
   }, []);
 
+  // Initial load. loadFranchises itself sets state (setLoading + setFranchises),
+  // which the new react-compiler lint flags — but a "fetch on mount" effect is
+  // the legitimate pattern here.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadFranchises();
   }, [loadFranchises]);
 

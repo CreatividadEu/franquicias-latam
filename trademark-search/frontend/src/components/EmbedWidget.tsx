@@ -50,10 +50,14 @@ export default function EmbedWidget({
     []
   );
 
+  // Auto-run the embedded search when initialQuery/initialFilters change.
+  // executeSearch sets state (loading, results, error) which the new
+  // react-compiler lint flags — "fetch on prop change" is the intended pattern.
   useEffect(() => {
     if (initialQuery.trim().length < 2) {
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void executeSearch(initialQuery.trim(), initialFilters, 1);
   }, [executeSearch, initialFilters, initialQuery]);
 

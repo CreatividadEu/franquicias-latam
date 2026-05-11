@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import type { LeadModuleData } from "@/lib/franchise-mapper";
 
@@ -61,10 +61,16 @@ export function QualificationForm({
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [interestCount, setInterestCount] = useState(module.publicInterestCount);
-
-  useEffect(() => {
+  // React-canonical "reset on prop change" pattern: track the previous prop
+  // value and reset local state during render when it changes.
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const [prevPublicInterestCount, setPrevPublicInterestCount] = useState(
+    module.publicInterestCount,
+  );
+  if (module.publicInterestCount !== prevPublicInterestCount) {
+    setPrevPublicInterestCount(module.publicInterestCount);
     setInterestCount(module.publicInterestCount);
-  }, [module.publicInterestCount]);
+  }
 
   const set = (field: keyof FormState) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,

@@ -10,7 +10,11 @@ interface MatrixRainProps {
 export default function MatrixRain({ intensity = 1 }: MatrixRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const intensityRef = useRef(intensity);
-  intensityRef.current = intensity;
+  // Keep the ref in sync with the prop without retriggering the canvas
+  // setup effect. Writing during render is flagged by react-hooks/refs.
+  useEffect(() => {
+    intensityRef.current = intensity;
+  }, [intensity]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

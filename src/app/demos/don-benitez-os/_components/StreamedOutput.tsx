@@ -31,8 +31,12 @@ export function StreamedOutput({
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
+    // Reset before starting a new stream. The react-compiler lint flags this
+    // cascade, but it's the intended behaviour for "stream on prop change".
+    /* eslint-disable react-hooks/set-state-in-effect */
     setText("");
     setStatus("streaming");
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     (async () => {
       try {
