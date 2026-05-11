@@ -11,3 +11,4 @@ test-results/
 *.tsbuildinfo
 coverage/
 .cache/
+.vercel

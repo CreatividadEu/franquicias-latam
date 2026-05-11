@@ -20,7 +20,10 @@ export default async function IngestionPage() {
     _max: { observedAt: true },
     _min: { observedAt: true },
   });
-  const bySource = new Map(counts.map((c) => [c.source, c]));
+  type SourceCount = (typeof counts)[number];
+  const bySource = new Map<string, SourceCount>(
+    counts.map((c: SourceCount) => [c.source, c]),
+  );
 
   const recentErrors = await prisma.observation.findMany({
     where: { sourceId: { startsWith: 'reject:' } },

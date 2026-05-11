@@ -83,7 +83,7 @@ export default async function LeadsPage(props: { searchParams: Promise<SearchPar
             className="h-9 rounded-md border border-border bg-background-elevated px-3 text-sm"
           >
             <option value="">All cohorts</option>
-            {cohortCounts.map((c) => (
+            {cohortCounts.map((c: (typeof cohortCounts)[number]) => (
               <option key={c.cohort} value={c.cohort}>
                 {c.cohort} ({c._count._all})
               </option>
@@ -95,7 +95,7 @@ export default async function LeadsPage(props: { searchParams: Promise<SearchPar
             className="h-9 rounded-md border border-border bg-background-elevated px-3 text-sm"
           >
             <option value="">All status</option>
-            {statusCounts.map((s) => (
+            {statusCounts.map((s: (typeof statusCounts)[number]) => (
               <option key={s.status} value={s.status}>
                 {s.status} ({s._count._all})
               </option>
@@ -133,7 +133,7 @@ export default async function LeadsPage(props: { searchParams: Promise<SearchPar
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leads.map((lead) => {
+                {leads.map((lead: (typeof leads)[number]) => {
                   const snap = lead.business.snapshots[0];
                   return (
                     <TableRow key={lead.id}>

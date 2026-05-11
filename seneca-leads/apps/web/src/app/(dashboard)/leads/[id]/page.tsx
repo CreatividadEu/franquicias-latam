@@ -38,7 +38,12 @@ export default async function LeadDossierPage(props: { params: Promise<{ id: str
 
   const b = lead.business;
   const latest = b.snapshots[b.snapshots.length - 1];
-  const allPains = b.painClusters.flatMap((c) => c.extractions);
+  // Explicit element types on the Prisma-result callbacks below — Vercel's
+  // build-time tsc is stricter than the workspace one and won't infer the
+  // included-relation shapes correctly without them.
+  type Cluster = (typeof b.painClusters)[number];
+  type Snapshot = (typeof b.snapshots)[number];
+  const allPains = b.painClusters.flatMap((c: Cluster) => c.extractions);
 
   // External-source link map (Google place_id, Rappi store_id, RUES matricula)
   const linkBy: Record<string, string | null> = {};
@@ -51,7 +56,7 @@ export default async function LeadDossierPage(props: { params: Promise<{ id: str
   const googleLink = linkBy['google_places'];
   const rappiLink = linkBy['rappi'];
 
-  const trends = b.snapshots.map((s) => ({
+  const trends = b.snapshots.map((s: Snapshot) => ({
     date: s.date.toISOString().slice(0, 10),
     reviews: s.googleReviewCount ?? 0,
     rating: s.googleRating ?? 0,
@@ -170,7 +175,7 @@ export default async function LeadDossierPage(props: { params: Promise<{ id: str
             </p>
           ) : (
             <ol className="space-y-4">
-              {allPains.map((p) => (
+              {allPains.map((p: (typeof allPains)[number]) => (
                 <li key={p.id} className="space-y-1.5">
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <Badge variant="accent">{p.category}</Badge>

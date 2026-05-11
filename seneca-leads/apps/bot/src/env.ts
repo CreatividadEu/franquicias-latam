@@ -1,6 +1,14 @@
 // Centralised env validation. Loaded once at startup so command handlers
 // can rely on the parsed values without re-reading process.env every call.
-import 'dotenv/config';
+//
+// Load .env.local from the workspace root, not the package's cwd — keeps
+// secrets in a single source-of-truth file shared with the dashboard and
+// the ingest scripts (matches the pattern in scripts/*.ts).
+import { config as loadDotenv } from 'dotenv';
+import { resolve } from 'node:path';
+loadDotenv({ path: resolve(__dirname, '../../../.env.local'), override: false });
+loadDotenv({ override: false }); // fall through to .env in cwd too
+
 import { childLogger } from '@seneca/shared';
 
 const log = childLogger({ component: 'bot:env' });

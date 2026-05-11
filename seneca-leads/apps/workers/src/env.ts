@@ -1,6 +1,13 @@
 // Worker env validation. Loaded once at startup; throws on missing required
 // vars so the process fails loud rather than silently never enqueueing.
-import 'dotenv/config';
+//
+// Load .env.local from the workspace root, not the package's cwd — see
+// apps/bot/src/env.ts for the same pattern.
+import { config as loadDotenv } from 'dotenv';
+import { resolve } from 'node:path';
+loadDotenv({ path: resolve(__dirname, '../../../.env.local'), override: false });
+loadDotenv({ override: false });
+
 import { childLogger } from '@seneca/shared';
 
 const log = childLogger({ component: 'workers:env' });

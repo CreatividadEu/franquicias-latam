@@ -84,7 +84,7 @@ export default async function OverviewPage() {
             {cohortBreakdown.length === 0 ? (
               <p className="text-sm text-foreground-subtle">No leads yet.</p>
             ) : (
-              cohortBreakdown.map((c) => (
+              cohortBreakdown.map((c: (typeof cohortBreakdown)[number]) => (
                 <div key={c.cohort} className="flex items-center justify-between">
                   <Badge variant={c.cohort.includes('mature_painful') ? 'warning' : 'accent'}>
                     {c.cohort}
@@ -101,7 +101,7 @@ export default async function OverviewPage() {
             <CardTitle>Sector breakdown</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {sectorBreakdown.map((s) => (
+            {sectorBreakdown.map((s: (typeof sectorBreakdown)[number]) => (
               <div key={s.sector ?? 'unknown'} className="flex items-center justify-between">
                 <span className="text-sm text-foreground">{s.sector ?? 'unknown'}</span>
                 <span className="text-sm tabular-nums text-foreground-muted">{s._count._all}</span>
@@ -118,7 +118,7 @@ export default async function OverviewPage() {
             {topPainCategories.length === 0 ? (
               <p className="text-sm text-foreground-subtle">No pains extracted yet.</p>
             ) : (
-              topPainCategories.map((p) => (
+              topPainCategories.map((p: (typeof topPainCategories)[number]) => (
                 <div key={p.category} className="flex items-center justify-between gap-3">
                   <span className="text-sm text-foreground truncate">{p.category}</span>
                   <span className="text-xs text-foreground-muted tabular-nums">
@@ -140,7 +140,7 @@ export default async function OverviewPage() {
             {topLeads.length === 0 ? (
               <p className="text-sm text-foreground-subtle">No leads yet — run the scorer.</p>
             ) : (
-              topLeads.map((l) => (
+              topLeads.map((l: (typeof topLeads)[number]) => (
                 <Link
                   key={l.id}
                   href={`/leads/${l.id}`}
