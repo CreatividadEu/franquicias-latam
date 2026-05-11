@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@seneca/db": "workspace:*",
-    "@seneca/shared": "workspace:*"
+    "@seneca/shared": "workspace:*",
+    "openai": "^4.77.0"
   }
 }

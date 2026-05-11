@@ -198,6 +198,9 @@ importers:
       '@seneca/shared':
         specifier: workspace:*
         version: link:../shared
+      openai:
+        specifier: ^4.77.0
+        version: 4.104.0(zod@3.25.76)
 
   packages/shared:
     dependencies:
