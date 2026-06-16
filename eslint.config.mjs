@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Sibling monorepo with its own pnpm workspace, deps, and tooling.
+    "seneca-leads/**",
   ]),
 ]);
 

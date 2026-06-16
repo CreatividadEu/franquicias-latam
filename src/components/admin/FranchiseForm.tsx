@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -304,22 +305,35 @@ export function FranchiseForm({
   const previewHref =
     isEditing && form.id ? `/franquicia/${buildFranchiseSlug(form.name, form.id)}` : null;
 
-  useEffect(() => {
+  // React-canonical "reset on prop change" pattern: track the previous prop
+  // value and reset local state during render when it changes. This replaces
+  // the setState-in-useEffect anti-pattern.
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const [prevInitialSectors, setPrevInitialSectors] = useState(initialSectors);
+  if (initialSectors !== prevInitialSectors) {
+    setPrevInitialSectors(initialSectors);
     setAvailableSectors(initialSectors);
-  }, [initialSectors]);
-
-  useEffect(() => {
+  }
+  const [prevInitialCountries, setPrevInitialCountries] = useState(initialCountries);
+  if (initialCountries !== prevInitialCountries) {
+    setPrevInitialCountries(initialCountries);
     setAvailableCountries(initialCountries);
-  }, [initialCountries]);
-
-  useEffect(() => {
+  }
+  // Reset form fields when the dialog opens with new initialData. Parent already
+  // remounts via `key`, so initialData rarely changes mid-mount, but `open` can
+  // toggle without remount — reset on either transition.
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (initialData !== prevInitialData || open !== prevOpen) {
+    setPrevInitialData(initialData);
+    setPrevOpen(open);
     setForm(cloneFormData(initialData));
     setError(null);
     setFieldErrors({});
     setActiveTab("landing");
     setCountryPickerOpen(false);
     setCountrySearch("");
-  }, [initialData, open]);
+  }
 
   useEffect(() => {
     if (!open) {
@@ -372,11 +386,12 @@ export function FranchiseForm({
     };
   }, [open]);
 
-  useEffect(() => {
-    if (!countryPickerOpen) {
-      setCountrySearch("");
-    }
-  }, [countryPickerOpen]);
+  // Clear search when the picker closes. Wrapped instead of a useEffect so
+  // it runs in the event handler — no setState-in-effect cascade.
+  const handleCountryPickerOpenChange = useCallback((next: boolean) => {
+    setCountryPickerOpen(next);
+    if (!next) setCountrySearch("");
+  }, []);
 
   const selectedCountries = useMemo(() => {
     const orderMap = new Map(
@@ -908,7 +923,7 @@ export function FranchiseForm({
                 </label>
                 <PopoverPrimitive.Root
                   open={countryPickerOpen}
-                  onOpenChange={setCountryPickerOpen}
+                  onOpenChange={handleCountryPickerOpenChange}
                 >
                   <PopoverPrimitive.Trigger asChild>
                     <div

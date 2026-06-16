@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Loader2, Search, SlidersHorizontal } from "lucide-react";
 
 import FiltersPanel from "./FiltersPanel";
@@ -27,14 +27,19 @@ export default function SearchBox({
   const [query, setQuery] = useState(initialQuery);
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
   const [showFilters, setShowFilters] = useState(Boolean(initialFilters.clase || initialFilters.estado));
-
-  useEffect(() => {
+  // React-canonical "reset on prop change" pattern: track the previous prop
+  // value and reset local state during render when it changes.
+  // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  const [prevInitialQuery, setPrevInitialQuery] = useState(initialQuery);
+  if (initialQuery !== prevInitialQuery) {
+    setPrevInitialQuery(initialQuery);
     setQuery(initialQuery);
-  }, [initialQuery]);
-
-  useEffect(() => {
+  }
+  const [prevInitialFilters, setPrevInitialFilters] = useState(initialFilters);
+  if (initialFilters !== prevInitialFilters) {
+    setPrevInitialFilters(initialFilters);
     setFilters(initialFilters);
-  }, [initialFilters]);
+  }
 
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {

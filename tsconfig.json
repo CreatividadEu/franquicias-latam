@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "trademark-search"]
+  "exclude": ["node_modules", "trademark-search", "seneca-leads"]
 }

@@ -2,6 +2,9 @@ import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { ChatbotContainer } from "@/components/chatbot/ChatbotContainer";
 
+// Hits the DB at request time — can't be statically prerendered.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Quiz - Franquicias LATAM",
   description: "Encuentra la franquicia ideal para ti en Latinoamerica",

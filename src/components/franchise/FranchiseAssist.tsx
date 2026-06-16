@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,65 +32,75 @@ export function FranchiseAssist({
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  // Monotonic counter for message IDs. Pure (just a ref), so the
+  // react-hooks/purity lint doesn't flag it the way Date.now() does.
+  const messageIdRef = useRef(0);
+  const nextId = useCallback((role: "user" | "assistant") => {
+    messageIdRef.current += 1;
+    return `${role}-${messageIdRef.current}`;
+  }, []);
 
   const suggestedQuestions = useMemo(
     () => initialQuestions.filter(Boolean).slice(0, 3),
     [initialQuestions]
   );
 
-  const submitQuestion = async (question: string) => {
-    const trimmed = question.trim();
-    if (!trimmed || loading) return;
+  const submitQuestion = useCallback(
+    async (question: string) => {
+      const trimmed = question.trim();
+      if (!trimmed || loading) return;
 
-    const userMessage: AssistMessage = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: trimmed,
-    };
+      const userMessage: AssistMessage = {
+        id: nextId("user"),
+        role: "user",
+        content: trimmed,
+      };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setLoading(true);
+      setMessages((prev) => [...prev, userMessage]);
+      setInput("");
+      setLoading(true);
 
-    try {
-      const response = await fetch("/api/franchise-bot/ask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          franchiseId,
-          message: trimmed,
-        }),
-      });
+      try {
+        const response = await fetch("/api/franchise-bot/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            franchiseId,
+            message: trimmed,
+          }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "No se pudo responder");
+        if (!response.ok) {
+          throw new Error(data.error || "No se pudo responder");
+        }
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: nextId("assistant"),
+            role: "assistant",
+            content: data.reply || fallbackMessage,
+          },
+        ]);
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: nextId("assistant"),
+            role: "assistant",
+            content: fallbackMessage,
+          },
+        ]);
+      } finally {
+        setLoading(false);
       }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: data.reply || fallbackMessage,
-        },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: fallbackMessage,
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [fallbackMessage, franchiseId, loading, nextId],
+  );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
