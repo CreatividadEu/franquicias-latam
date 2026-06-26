@@ -300,7 +300,7 @@ export default function HomePage() {
               </Link>
               <a
                 href="#proceso"
-                className="inline-flex items-center justify-center rounded-2xl border border-orange-500 bg-orange-500 px-7 sm:px-8 py-4 text-[17px] font-bold tracking-tight text-white shadow-[0_12px_30px_-22px_rgba(249,115,22,0.42)] transition-all duration-200 hover:-translate-y-[1px] hover:border-orange-600 hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(249,115,22,0.2)] sm:text-[18px]"
+                className="inline-flex items-center justify-center rounded-2xl border border-orange-500 bg-orange-500 px-7 sm:px-8 py-4 text-[17px] font-bold tracking-tight text-black shadow-[0_12px_30px_-22px_rgba(249,115,22,0.42)] transition-all duration-200 hover:-translate-y-[1px] hover:border-orange-600 hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(249,115,22,0.2)] sm:text-[18px]"
               >
                 Franquiciar mi Negocio
               </a>
