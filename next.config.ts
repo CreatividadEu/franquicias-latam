@@ -7,10 +7,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**" },
     ],
   },
-  // Redirect the Colombia vanity domain to the /co market section. Fires only
-  // when the request Host is franquiciascolombia.com (or its www), so it has no
-  // effect on the primary franquiciaslatam.com domain. Requires the domain to
-  // be attached to this Vercel project (see deploy notes).
+  // Redirect the country vanity domains to their market sections. Each rule
+  // fires only when the request Host matches, so they have no effect on the
+  // primary franquiciaslatam.com domain. Each domain must be attached to this
+  // Vercel project (see deploy notes).
   async redirects() {
     return [
       {
@@ -23,6 +23,18 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         has: [{ type: "host", value: "www.franquiciascolombia.com" }],
         destination: "https://franquiciaslatam.com/co",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "franquiciasecuador.com" }],
+        destination: "https://franquiciaslatam.com/ec",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.franquiciasecuador.com" }],
+        destination: "https://franquiciaslatam.com/ec",
         permanent: true,
       },
     ];
