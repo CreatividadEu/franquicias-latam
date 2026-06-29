@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { buildFranchiseSlug } from "@/lib/franchiseSlug";
+import { formatCurrency } from "@/lib/utils";
 import type { MatchedFranchise } from "@/types";
 
 import { LatamDepthBackground } from "@/components/LatamDepthBackground";
@@ -10,30 +11,28 @@ import { FranchiseCard } from "@/components/franchise/FranchiseCard";
 import { ClientLogoMarquee } from "@/components/home/ClientLogoMarquee";
 import { ProgramInstitutionalLogosRow } from "@/components/home/ProgramInstitutionalLogosRow";
 
-import { COP_PER_USD, formatCOP } from "./_lib/format";
-
 // ── Metadata / international SEO ───────────────────────────────────────────────
 // hreflang lists the market pages that exist today (/co, /ec) plus root. Keep
 // these reciprocal across /co and /ec as more markets ship.
 export const metadata: Metadata = {
-  title: "Franquicias en Colombia | Franquicias LATAM",
+  title: "Franquicias en Ecuador | Franquicias LATAM",
   description:
-    "Encuentra y desarrolla franquicias en Colombia con Franquicias LATAM. Marcas colombianas consolidadas, modelos validados y acompañamiento experto.",
+    "Encuentra y desarrolla franquicias en Ecuador con Franquicias LATAM. Marcas consolidadas, modelos validados y acompañamiento experto.",
   alternates: {
-    canonical: "https://franquiciaslatam.com/co",
+    canonical: "https://franquiciaslatam.com/ec",
     languages: {
-      "es-CO": "https://franquiciaslatam.com/co",
       "es-EC": "https://franquiciaslatam.com/ec",
+      "es-CO": "https://franquiciaslatam.com/co",
       "es-419": "https://franquiciaslatam.com",
       "x-default": "https://franquiciaslatam.com",
     },
   },
   openGraph: {
-    title: "Franquicias en Colombia | Franquicias LATAM",
+    title: "Franquicias en Ecuador | Franquicias LATAM",
     description:
-      "Marcas colombianas y modelos de franquicia listos para expandir.",
-    url: "https://franquiciaslatam.com/co",
-    locale: "es_CO",
+      "Marcas y modelos de franquicia listos para expandir en Ecuador.",
+    url: "https://franquiciaslatam.com/ec",
+    locale: "es_EC",
     type: "website",
   },
 };
@@ -41,7 +40,7 @@ export const metadata: Metadata = {
 // Reads from Supabase at request time — keep it out of the static build.
 export const dynamic = "force-dynamic";
 
-const COLOMBIA_COUNTRY_CODE = "CO";
+const ECUADOR_COUNTRY_CODE = "EC";
 
 // CTA styles mirror the main landing exactly (one accent: the site's blue
 // gradient; neutral secondary matching the navbar pill).
@@ -53,14 +52,14 @@ const SECONDARY_CTA_CLASS =
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 // Same query pattern as lib/matching.ts: load active franchises with sector +
-// coverage, filtered to Colombia via the FranchiseCoverage→Country relation,
+// coverage, filtered to Ecuador via the FranchiseCoverage→Country relation,
 // then map to the shared MatchedFranchise shape the card already consumes.
-async function getColombiaFranchises(): Promise<MatchedFranchise[]> {
+async function getEcuadorFranchises(): Promise<MatchedFranchise[]> {
   const franchises = await prisma.franchise.findMany({
     where: {
       active: true,
       coverageCountries: {
-        some: { country: { code: COLOMBIA_COUNTRY_CODE } },
+        some: { country: { code: ECUADOR_COUNTRY_CODE } },
       },
     },
     include: { sector: true },
@@ -85,8 +84,8 @@ async function getColombiaFranchises(): Promise<MatchedFranchise[]> {
 
 const TRUST_ITEMS = [
   {
-    title: "Operación local en Colombia",
-    body: "Latinoamericana de Franquicias SAS, con sede en Bogotá: contratos, expansión y acompañamiento bajo marco colombiano.",
+    title: "Operación local en Ecuador",
+    body: "Acompañamiento en el mercado ecuatoriano con la red de Franquicias LATAM: contratos, expansión y soporte de principio a fin.",
   },
   {
     title: "Red LATAM + Iberia",
@@ -94,16 +93,17 @@ const TRUST_ITEMS = [
   },
   {
     title: "Respaldo institucional",
-    body: "Programa validado y reconocido por el BID, Naciones Unidas y MinTIC por su impacto empresarial.",
+    body: "Programa validado y reconocido por organismos como el BID y Naciones Unidas por su impacto empresarial.",
   },
 ];
 
 // ── Page ───────────────────────────────────────────────────────────────
-export default async function ColombiaPage() {
-  const franchises = await getColombiaFranchises();
+export default async function EcuadorPage() {
+  const franchises = await getEcuadorFranchises();
 
-  // Approximate local-currency entry ticket, derived from the real minimum USD
-  // investment across Colombian franchises (shown as an estimate, never a quote).
+  // Ecuador's official currency is the US dollar, so the franchise investment
+  // figures are already in local currency — show the exact USD entry ticket
+  // (no conversion / approximation needed).
   const entryTicketUsd = franchises.length
     ? Math.min(...franchises.map((f) => f.investmentMin))
     : null;
@@ -118,26 +118,25 @@ export default async function ColombiaPage() {
         <section className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mx-auto max-w-4xl text-center">
             <div className="mb-4 inline-block sm:mb-6">
-              <span className="section-pill">Franquicias LATAM · Colombia</span>
+              <span className="section-pill">Franquicias LATAM · Ecuador</span>
             </div>
 
             <h1 className="mb-4 text-4xl font-bold leading-[0.97] sm:mb-6 sm:text-5xl md:text-6xl lg:text-7xl">
-              Franquicias en Colombia,
+              Franquicias en Ecuador,
               <br className="hidden sm:block" /> con alcance regional.
             </h1>
 
             <p className="mx-auto mb-6 max-w-3xl px-2 text-lg leading-relaxed text-gray-900 sm:mb-8 sm:text-xl md:text-2xl">
-              Marcas colombianas consolidadas y modelos validados. Operamos desde
-              Bogotá con la red de Franquicias LATAM en toda Latinoamérica e
-              Iberia.
+              Marcas consolidadas y modelos validados, respaldados por la red de
+              Franquicias LATAM en toda Latinoamérica e Iberia.
             </p>
 
             <div className="mb-8 flex flex-col justify-center gap-3 px-2 sm:mb-12 sm:flex-row sm:gap-4">
               <Link href="/quiz" className={PRIMARY_CTA_CLASS}>
                 Encontrar mi franquicia
               </Link>
-              <a href="#franquicias-co" className={SECONDARY_CTA_CLASS}>
-                Ver franquicias en Colombia
+              <a href="#franquicias-ec" className={SECONDARY_CTA_CLASS}>
+                Ver franquicias en Ecuador
               </a>
             </div>
 
@@ -150,49 +149,42 @@ export default async function ColombiaPage() {
         </section>
       </LatamDepthBackground>
 
-      {/* ─── Franquicias destacadas en Colombia ─── */}
+      {/* ─── Franquicias destacadas en Ecuador ─── */}
       <section
-        id="franquicias-co"
+        id="franquicias-ec"
         className="scroll-mt-28 bg-transparent py-16 sm:py-20 lg:py-24 sm:scroll-mt-36"
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mx-auto mb-10 max-w-3xl text-center sm:mb-14">
-            <span className="section-label mb-3 block sm:mb-4">Colombia</span>
+            <span className="section-label mb-3 block sm:mb-4">Ecuador</span>
             <h2 className="mb-4 text-3xl font-bold sm:text-4xl md:text-5xl">
-              Franquicias destacadas en Colombia
+              Franquicias destacadas en Ecuador
             </h2>
             <p className="px-2 text-base text-gray-900 sm:text-lg">
-              Marcas con operación y cobertura en Colombia, listas para evaluar
+              Marcas con operación y cobertura en Ecuador, listas para evaluar
               según tu perfil de inversión.
             </p>
             {entryTicketUsd !== null && (
               <p className="mt-4 text-sm font-semibold text-gray-900">
-                Inversión desde ≈ {formatCOP(entryTicketUsd * COP_PER_USD)}
-                <span className="align-super text-[0.65em]">*</span>
+                Inversión desde {formatCurrency(entryTicketUsd)}
               </p>
             )}
           </div>
 
           {franchises.length > 0 ? (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
-                {franchises.map((franchise) => (
-                  <FranchiseCard key={franchise.id} franchise={franchise} />
-                ))}
-              </div>
-              <p className="mx-auto mt-6 max-w-3xl text-center text-xs text-gray-500">
-                * Equivalencia aproximada en COP a una TRM indicativa; las cifras
-                de cada marca se confirman en su ficha.
-              </p>
-            </>
+            <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
+              {franchises.map((franchise) => (
+                <FranchiseCard key={franchise.id} franchise={franchise} />
+              ))}
+            </div>
           ) : (
             <div className="glass-card mx-auto max-w-2xl rounded-2xl p-8 text-center sm:p-10">
               <span className="section-label mb-3 block">Próximamente</span>
               <h3 className="mb-3 text-2xl font-bold sm:text-3xl">
-                Nuevas franquicias para Colombia, en camino
+                Nuevas franquicias para Ecuador, en camino
               </h3>
               <p className="mb-6 text-sm text-gray-900 sm:text-base">
-                Estamos sumando marcas con cobertura en Colombia. Completa el quiz
+                Estamos sumando marcas con cobertura en Ecuador. Completa el quiz
                 y te conectamos con las opciones que mejor encajen con tu perfil.
               </p>
               <Link href="/quiz" className={PRIMARY_CTA_CLASS}>
@@ -211,8 +203,8 @@ export default async function ColombiaPage() {
               Operación local, alcance regional
             </h2>
             <p className="px-2 text-base text-gray-900 sm:text-lg">
-              Una entidad colombiana respaldada por la red de Franquicias LATAM en
-              Latinoamérica e Iberia.
+              Una operación enfocada en Ecuador, respaldada por la red de
+              Franquicias LATAM en Latinoamérica e Iberia.
             </p>
           </div>
 
@@ -245,7 +237,7 @@ export default async function ColombiaPage() {
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6">
           <h2 className="mb-4 text-3xl font-bold sm:mb-6 sm:text-4xl md:text-5xl lg:text-6xl">
             ¿Listo para tu franquicia
-            <br className="hidden sm:block" /> en Colombia?
+            <br className="hidden sm:block" /> en Ecuador?
           </h2>
           <p className="mx-auto mb-8 max-w-2xl text-base text-gray-300 sm:mb-12 sm:text-lg lg:text-xl">
             Ya sea que busques invertir o franquiciar tu negocio, nuestra
