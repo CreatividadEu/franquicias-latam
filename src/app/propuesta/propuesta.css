@@ -132,4 +132,10 @@ body:has(.prop-root) > a[href^="https://wa.me/"] {
   .prop-scroll-hint {
     animation: none !important;
   }
+
+  /* Cinturón y tirantes: ningún scroll animado dentro de la experiencia
+     (los saltos programáticos ya usan behavior "instant"). */
+  .prop-root * {
+    scroll-behavior: auto !important;
+  }
 }

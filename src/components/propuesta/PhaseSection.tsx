@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import { fadeUp, phaseReveal, VIEWPORT_ONCE } from "./motion";
 
@@ -33,10 +33,12 @@ export function PhaseSection({
   layout = "split",
   children,
 }: PhaseSectionProps) {
-  const reduced = useReducedMotion();
-  const noMotion = reduced
-    ? { initial: "visible" as const }
-    : { initial: "hidden" as const, whileInView: "visible" as const, viewport: VIEWPORT_ONCE };
+  // MotionConfig reducedMotion="user" degrada el slide/scale a solo fade.
+  const noMotion = {
+    initial: "hidden" as const,
+    whileInView: "visible" as const,
+    viewport: VIEWPORT_ONCE,
+  };
 
   return (
     <section

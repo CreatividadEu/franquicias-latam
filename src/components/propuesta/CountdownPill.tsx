@@ -31,8 +31,10 @@ export function CountdownPill({
           Cupo {mesObjetivo} ·{" "}
           <span style={{ color: "var(--acc)" }}>{descuentoPct}% dcto</span>
           {" · "}
+          {/* formatRestante devuelve placeholder del mismo ancho antes
+             del primer tick — la pill no salta al hidratar */}
           <span className="tabular-nums text-fl-text">
-            {countdown.ready ? `termina en ${formatRestante(countdown)}` : "termina pronto"}
+            termina en {formatRestante(countdown)}
           </span>
         </span>
       )}

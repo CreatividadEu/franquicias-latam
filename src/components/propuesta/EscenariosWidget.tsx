@@ -1,8 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import type { Escenario } from "@/lib/propuestas/types";
 import { CountUp } from "./CountUp";
 import { EASE_OUT, SPRING_SNAPPY } from "./motion";
@@ -38,10 +38,10 @@ type EscenariosWidgetProps = {
  */
 export function EscenariosWidget({ escenarios }: EscenariosWidgetProps) {
   const gradId = useId();
-  const reduced = useReducedMotion();
   const [selId, setSelId] = useState(
     () => escenarios.find((e) => e.destacado)?.id ?? escenarios[0]?.id ?? "",
   );
+  const radioRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const sel = escenarios.find((e) => e.id === selId) ?? escenarios[0];
 
   const anos = useMemo(
@@ -76,27 +76,49 @@ export function EscenariosWidget({ escenarios }: EscenariosWidgetProps) {
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:p-7">
-      {/* Segmented control */}
+      {/* Segmented control — patrón radio APG: roving tabindex + flechas */}
       <div
         role="radiogroup"
         aria-label="Ruta de expansión"
+        onKeyDown={(ev) => {
+          const idx = escenarios.findIndex((e) => e.id === sel.id);
+          let next = -1;
+          if (ev.key === "ArrowRight" || ev.key === "ArrowDown") {
+            next = (idx + 1) % escenarios.length;
+          } else if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") {
+            next = (idx - 1 + escenarios.length) % escenarios.length;
+          } else if (ev.key === "Home") {
+            next = 0;
+          } else if (ev.key === "End") {
+            next = escenarios.length - 1;
+          }
+          if (next >= 0) {
+            ev.preventDefault();
+            setSelId(escenarios[next].id);
+            radioRefs.current[next]?.focus();
+          }
+        }}
         className="flex w-full gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1"
       >
-        {escenarios.map((e) => {
+        {escenarios.map((e, i) => {
           const activo = e.id === sel.id;
           return (
             <button
               key={e.id}
+              ref={(el) => {
+                radioRefs.current[i] = el;
+              }}
               type="button"
               role="radio"
               aria-checked={activo}
+              tabIndex={activo ? 0 : -1}
               onClick={() => setSelId(e.id)}
               className="relative flex-1 rounded-full px-2 py-2 text-xs font-semibold tracking-tight text-fl-muted transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--acc)] sm:text-sm"
               style={activo ? { color: "var(--acc)" } : undefined}
             >
               {activo ? (
                 <motion.span
-                  layoutId={reduced ? undefined : "esc-thumb"}
+                  layoutId="esc-thumb"
                   className="absolute inset-0 rounded-full border bg-white/[0.06]"
                   style={{ borderColor: "rgb(var(--acc-rgb) / 0.4)" }}
                   transition={SPRING_SNAPPY}
@@ -165,7 +187,7 @@ export function EscenariosWidget({ escenarios }: EscenariosWidgetProps) {
             <motion.path
               d={geo.area}
               fill={`url(#${gradId})`}
-              initial={reduced ? false : { opacity: 0 }}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
             />
@@ -175,14 +197,14 @@ export function EscenariosWidget({ escenarios }: EscenariosWidgetProps) {
               stroke="var(--acc)"
               strokeWidth="2.5"
               strokeLinecap="round"
-              initial={reduced ? false : { pathLength: 0 }}
+              initial={{ pathLength: 0 }}
               animate={{ pathLength: 1 }}
               transition={{ duration: 0.9, ease: EASE_OUT }}
             />
             {geo.pts.slice(1).map((p, i) => (
               <motion.g
                 key={i}
-                initial={reduced ? false : { opacity: 0, scale: 0.5 }}
+                initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.35, delay: 0.25 + i * 0.18 }}
                 style={{ transformOrigin: `${p.x}px ${p.y}px` }}
@@ -203,7 +225,7 @@ export function EscenariosWidget({ escenarios }: EscenariosWidgetProps) {
           </g>
         </svg>
         <div
-          className="mt-1 flex justify-between text-[10px] font-medium uppercase tracking-[0.12em] text-fl-muted/70"
+          className="mt-1 flex justify-between text-[10px] font-medium uppercase tracking-[0.12em] text-fl-muted"
           aria-hidden="true"
         >
           <span>Hoy</span>

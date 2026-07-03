@@ -23,6 +23,15 @@ export function formatCOPMillones(n: number): string {
   return `$${num} M`;
 }
 
+/**
+ * Mes de inflexión efectivo para el modelo de 12 meses: entero en [1..12].
+ * Headline, chart y cifra de caja liberada usan ESTE valor para no
+ * contradecirse cuando la config trae valores fuera de rango.
+ */
+export function mesInflexionEfectivo(mesInflexion: number): number {
+  return Math.min(Math.max(Math.round(mesInflexion), 1), 12);
+}
+
 /** 28.400.000 → "28,4 M" · 950.000 → "950 K" */
 export function formatCompact(n: number): string {
   if (Math.abs(n) >= 1_000_000) {

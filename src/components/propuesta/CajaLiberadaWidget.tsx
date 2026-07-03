@@ -2,7 +2,7 @@
 
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import { useId, useMemo, useRef, useState } from "react";
-import { formatCOPMillones } from "@/lib/propuestas/format";
+import { formatCOPMillones, mesInflexionEfectivo } from "@/lib/propuestas/format";
 import type { ProposalFinanzas } from "@/lib/propuestas/types";
 import { CountUp } from "./CountUp";
 import { EASE_OUT } from "./motion";
@@ -54,15 +54,24 @@ export function CajaLiberadaWidget({ finanzas }: CajaLiberadaWidgetProps) {
   const modelo = useMemo(() => {
     const vHoy = (ventas * utilidadActualPct) / 100;
     const vOpt = (ventas * utilidadOptimizadaPct) / 100;
-    const mi = Math.min(Math.max(mesInflexion, 2), 12);
+    // Mismo clamp que usa el headline de la fase — chart, cifra y copy
+    // cuentan la misma historia (mi=1 → optimizado desde el mes 1).
+    const mi = mesInflexionEfectivo(mesInflexion);
     const yMax = vOpt * 1.35;
     const yDe = (v: number) => PAD_T + (1 - v / yMax) * (H - PAD_T - PAD_B);
 
     const yHoy = yDe(vHoy);
     const yOpt = yDe(vOpt);
     const pathHoy = `M ${xDe(1)} ${yHoy} L ${xDe(12)} ${yHoy}`;
-    const pathFlatam = `M ${xDe(1)} ${yHoy} L ${xDe(mi - 1)} ${yHoy} L ${xDe(mi)} ${yOpt} L ${xDe(12)} ${yOpt}`;
-    const areaCaja = `M ${xDe(mi - 1)} ${yHoy} L ${xDe(mi)} ${yOpt} L ${xDe(12)} ${yOpt} L ${xDe(12)} ${yHoy} Z`;
+    const pathFlatam =
+      mi === 1
+        ? `M ${xDe(1)} ${yOpt} L ${xDe(12)} ${yOpt}`
+        : `M ${xDe(1)} ${yHoy} L ${xDe(mi - 1)} ${yHoy} L ${xDe(mi)} ${yOpt} L ${xDe(12)} ${yOpt}`;
+    const areaCaja =
+      mi === 1
+        ? `M ${xDe(1)} ${yHoy} L ${xDe(1)} ${yOpt} L ${xDe(12)} ${yOpt} L ${xDe(12)} ${yHoy} Z`
+        : `M ${xDe(mi - 1)} ${yHoy} L ${xDe(mi)} ${yOpt} L ${xDe(12)} ${yOpt} L ${xDe(12)} ${yHoy} Z`;
+    // Meses completos a nivel optimizado dentro de la ventana de 12.
     const cajaLiberada = (vOpt - vHoy) * (13 - mi);
 
     return { vHoy, vOpt, yHoy, yOpt, pathHoy, pathFlatam, areaCaja, cajaLiberada, mi };
@@ -125,7 +134,7 @@ export function CajaLiberadaWidget({ finanzas }: CajaLiberadaWidgetProps) {
           <motion.path
             d={modelo.areaCaja}
             fill={`url(#${gradId})`}
-            initial={reduced ? false : { opacity: 0 }}
+            initial={{ opacity: 0 }}
             animate={revealed ? { opacity: 1 } : undefined}
             transition={{ duration: 0.7, delay: 1.0, ease: "easeOut" }}
           />
@@ -138,7 +147,7 @@ export function CajaLiberadaWidget({ finanzas }: CajaLiberadaWidgetProps) {
             strokeWidth="2"
             strokeDasharray="2 6"
             strokeLinecap="round"
-            initial={reduced ? false : { opacity: 0 }}
+            initial={{ opacity: 0 }}
             animate={revealed ? { opacity: 1 } : undefined}
             transition={{ duration: 0.5, delay: 0.15 }}
           />
@@ -151,7 +160,7 @@ export function CajaLiberadaWidget({ finanzas }: CajaLiberadaWidgetProps) {
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            initial={reduced ? false : { pathLength: 0 }}
+            initial={{ pathLength: 0 }}
             animate={revealed ? { pathLength: 1 } : undefined}
             transition={{ duration: 1.3, delay: 0.35, ease: EASE_OUT }}
           />
@@ -166,7 +175,7 @@ export function CajaLiberadaWidget({ finanzas }: CajaLiberadaWidgetProps) {
               stroke="rgba(255,255,255,0.22)"
               strokeWidth="1"
               strokeDasharray="3 5"
-              initial={reduced ? false : { opacity: 0 }}
+              initial={{ opacity: 0 }}
               animate={revealed ? { opacity: 1 } : undefined}
               transition={{ duration: 0.5, delay: 1.3 }}
             />
@@ -179,7 +188,7 @@ export function CajaLiberadaWidget({ finanzas }: CajaLiberadaWidgetProps) {
           <motion.span
             className="absolute bottom-2 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/10 bg-fl-base px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-fl-muted"
             style={{ left: `${(xDe(payback) / W) * 100}%` }}
-            initial={reduced ? false : { opacity: 0 }}
+            initial={{ opacity: 0 }}
             animate={revealed ? { opacity: 1 } : undefined}
             transition={{ duration: 0.5, delay: 1.3 }}
           >
@@ -190,7 +199,7 @@ export function CajaLiberadaWidget({ finanzas }: CajaLiberadaWidgetProps) {
 
       {/* Eje X en HTML, cada label anclado a su posición real */}
       <div
-        className="relative mt-1 h-4 text-[10px] font-medium uppercase tracking-[0.12em] text-fl-muted/70"
+        className="relative mt-1 h-4 text-[10px] font-medium uppercase tracking-[0.12em] text-fl-muted"
         aria-hidden="true"
       >
         {[1, 4, 8, 12].map((m) => (

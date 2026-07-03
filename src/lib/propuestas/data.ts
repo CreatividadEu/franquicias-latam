@@ -21,8 +21,22 @@ export function resolveDeadline(
  * (default, sin DB); si no está, intenta la tabla `proposals` de
  * Supabase (misma shape, guardada como jsonb en `data`).
  */
+/** ¿La ventana de la oferta ya cerró? (evaluado por request en el server) */
+export function deadlineVencido(deadline: Date): boolean {
+  return deadline.getTime() <= Date.now();
+}
+
+const SLUG_VALIDO = /^[a-z0-9-]{1,80}$/;
+
 export async function getProposal(slug: string): Promise<Proposal | null> {
-  const local = PROPOSAL_REGISTRY[slug];
+  // Own-property + formato: sin esto, slugs como "constructor" o
+  // "__proto__" devuelven valores heredados del prototipo y revientan.
+  if (!SLUG_VALIDO.test(slug)) {
+    return null;
+  }
+  const local = Object.hasOwn(PROPOSAL_REGISTRY, slug)
+    ? PROPOSAL_REGISTRY[slug]
+    : undefined;
   if (local) {
     return local;
   }

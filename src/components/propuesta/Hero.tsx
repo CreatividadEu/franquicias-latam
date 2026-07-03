@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { EASE_OUT } from "./motion";
@@ -17,15 +17,13 @@ type HeroProps = {
  * título personalizado y la puerta de entrada a las 5 fases.
  */
 export function Hero({ cliente, industria, logoUrl, onComenzar }: HeroProps) {
-  const reduced = useReducedMotion();
-  const enter = (delay: number) =>
-    reduced
-      ? {}
-      : {
-          initial: { opacity: 0, y: 20 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.6, delay, ease: EASE_OUT },
-        };
+  // MotionConfig reducedMotion="user" (raíz) degrada el transform y deja
+  // solo el fade — sin branch de render, sin hydration mismatch.
+  const enter = (delay: number) => ({
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6, delay, ease: EASE_OUT },
+  });
 
   return (
     <section
@@ -108,8 +106,8 @@ export function Hero({ cliente, industria, logoUrl, onComenzar }: HeroProps) {
           <motion.button
             type="button"
             onClick={onComenzar}
-            whileHover={reduced ? undefined : { y: -2 }}
-            whileTap={reduced ? undefined : { scale: 0.97 }}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
             className="inline-flex min-h-[52px] items-center gap-2 rounded-full px-8 py-4 text-sm font-semibold text-fl-base transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--acc)]"
             style={{
               background: "var(--acc)",

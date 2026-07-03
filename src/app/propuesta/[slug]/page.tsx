@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProposalExperience } from "@/components/propuesta/ProposalExperience";
-import { getProposal, resolveDeadline } from "@/lib/propuestas/data";
+import {
+  deadlineVencido,
+  getProposal,
+  resolveDeadline,
+} from "@/lib/propuestas/data";
 
 type Params = Promise<{ slug: string }>;
 type SearchParams = Promise<{ k?: string }>;
@@ -48,7 +52,16 @@ export default async function PropuestaPage({
     notFound();
   }
 
-  const deadlineIso = resolveDeadline(proposal).toISOString();
+  const deadline = resolveDeadline(proposal);
+  const deadlineIso = deadline.toISOString();
 
-  return <ProposalExperience proposal={proposal} deadlineIso={deadlineIso} />;
+  return (
+    <ProposalExperience
+      proposal={proposal}
+      deadlineIso={deadlineIso}
+      // Resuelto por request (ruta dinámica): una propuesta vencida
+      // renderiza el estado expirado desde el primer frame.
+      initialExpired={deadlineVencido(deadline)}
+    />
+  );
 }

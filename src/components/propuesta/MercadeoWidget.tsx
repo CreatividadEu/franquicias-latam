@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Eye, Landmark, Play } from "lucide-react";
 import Image from "next/image";
 import { CountUp } from "@/components/propuesta/CountUp";
@@ -117,11 +117,9 @@ function Conector() {
 function VideoCard({
   video,
   index,
-  reduced,
 }: {
   video: VideoCredencial;
   index: number;
-  reduced: boolean;
 }) {
   const inner = (
     <>
@@ -175,10 +173,10 @@ function VideoCard({
         rel="noreferrer"
         aria-label={`Ver video: ${video.titulo}`}
         className="group block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--acc)]"
-        variants={reduced ? undefined : fadeUp}
+        variants={fadeUp}
         custom={index}
-        whileHover={reduced ? undefined : { y: -2 }}
-        whileTap={reduced ? undefined : { scale: 0.97 }}
+        whileHover={{ y: -2 }}
+        whileTap={{ scale: 0.97 }}
       >
         {inner}
       </motion.a>
@@ -188,7 +186,7 @@ function VideoCard({
   return (
     <motion.div
       className="group"
-      variants={reduced ? undefined : fadeUp}
+      variants={fadeUp}
       custom={index}
     >
       {inner}
@@ -197,7 +195,6 @@ function VideoCard({
 }
 
 export function MercadeoWidget({ videos }: { videos?: VideoCredencial[] }) {
-  const reduced = useReducedMotion();
   const lista = videos && videos.length > 0 ? videos : DEFAULT_VIDEOS;
 
   return (
@@ -205,7 +202,7 @@ export function MercadeoWidget({ videos }: { videos?: VideoCredencial[] }) {
       {/* Bloque 1 — Diagrama del sistema */}
       <motion.section
         aria-label="Sistema de venta de franquicias"
-        initial={reduced ? false : "hidden"}
+        initial="hidden"
         whileInView="visible"
         viewport={VIEWPORT_ONCE}
         variants={fadeUp}
@@ -237,7 +234,7 @@ export function MercadeoWidget({ videos }: { videos?: VideoCredencial[] }) {
       {/* Bloque 2 — Credenciales */}
       <motion.section
         aria-label="Credenciales institucionales"
-        initial={reduced ? false : "hidden"}
+        initial="hidden"
         whileInView="visible"
         viewport={VIEWPORT_ONCE}
         variants={fadeUp}
@@ -275,7 +272,7 @@ export function MercadeoWidget({ videos }: { videos?: VideoCredencial[] }) {
       {/* Bloque 3 — Prueba social en video */}
       <motion.section
         aria-label="Videos con alcance real"
-        initial={reduced ? false : "hidden"}
+        initial="hidden"
         whileInView="visible"
         viewport={VIEWPORT_ONCE}
         variants={fadeUp}
@@ -290,7 +287,7 @@ export function MercadeoWidget({ videos }: { videos?: VideoCredencial[] }) {
               key={`${video.handle}-${video.titulo}`}
               video={video}
               index={i}
-              reduced={reduced ?? false}
+             
             />
           ))}
         </div>

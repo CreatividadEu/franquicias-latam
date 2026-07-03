@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 export type CountdownState = {
   /** false hasta el primer tick en cliente (SSR-safe, sin hydration mismatch) */
@@ -9,7 +9,6 @@ export type CountdownState = {
   dias: number;
   horas: number;
   minutos: number;
-  segundos: number;
   /** Fracción restante de la ventana total (para anillos de progreso), 0..1 */
   fraccion: number;
 };
@@ -20,20 +19,34 @@ const INITIAL: CountdownState = {
   dias: 0,
   horas: 0,
   minutos: 0,
-  segundos: 0,
   fraccion: 1,
+};
+
+const EXPIRED: CountdownState = {
+  ready: true,
+  expired: true,
+  dias: 0,
+  horas: 0,
+  minutos: 0,
+  fraccion: 0,
 };
 
 /**
  * Countdown anclado a un deadline FIJO por cliente (ISO). Se calcula el
  * restante contra ese timestamp → no se reinicia al refrescar.
- * `createdAtIso` define la ventana total para el anillo de progreso.
+ * `initialExpired` viene resuelto del server para que una propuesta ya
+ * vencida renderice el estado expirado desde el primer frame (sin flash
+ * de oferta activa). Solo setea estado cuando cambia algo visible
+ * (minutos), no en cada tick.
  */
 export function useCountdown(
   deadlineIso: string,
   createdAtIso?: string,
+  initialExpired = false,
 ): CountdownState {
-  const [state, setState] = useState<CountdownState>(INITIAL);
+  const [state, setState] = useState<CountdownState>(
+    initialExpired ? EXPIRED : INITIAL,
+  );
 
   useEffect(() => {
     const deadline = new Date(deadlineIso).getTime();
@@ -43,35 +56,50 @@ export function useCountdown(
     const tick = () => {
       const restante = deadline - Date.now();
       if (restante <= 0) {
-        setState({ ...INITIAL, ready: true, expired: true, fraccion: 0 });
+        setState(EXPIRED);
+        // Deadline fijo: expirado es terminal, no hay nada más que contar.
+        window.clearInterval(id);
         return;
       }
-      setState({
+      const next: CountdownState = {
         ready: true,
         expired: false,
         dias: Math.floor(restante / 86_400_000),
         horas: Math.floor(restante / 3_600_000) % 24,
         minutos: Math.floor(restante / 60_000) % 60,
-        segundos: Math.floor(restante / 1_000) % 60,
         fraccion:
           Number.isFinite(ventana) && ventana > 0
             ? Math.min(1, Math.max(0, restante / ventana))
             : 1,
-      });
+      };
+      // Nada visible cambia dentro del mismo minuto: devolver prev hace
+      // que React se salte el re-render (el tick corre cada segundo solo
+      // para no atrasarse hasta 59s en el cambio de minuto).
+      setState((prev) =>
+        prev.ready === next.ready &&
+        prev.expired === next.expired &&
+        prev.dias === next.dias &&
+        prev.horas === next.horas &&
+        prev.minutos === next.minutos
+          ? prev
+          : next,
+      );
     };
 
-    tick();
+    // El interval se crea antes del tick inicial para que `id` exista
+    // cuando tick necesite cancelarlo (expiración inmediata).
     const id = window.setInterval(tick, 1_000);
+    tick();
     return () => window.clearInterval(id);
   }, [deadlineIso, createdAtIso]);
 
   return state;
 }
 
-/** "6d 23h 12m" — con padding para no saltar de ancho. */
+/** "6d 23h 12m" — placeholder del mismo ancho antes del primer tick. */
 export function formatRestante(c: CountdownState): string {
   if (!c.ready) {
-    return "—";
+    return "–d ––h ––m";
   }
   if (c.expired) {
     return "0d 00h 00m";

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { Scale } from "lucide-react";
 import { CountUp } from "@/components/propuesta/CountUp";
 import { EASE_OUT, fadeUp, VIEWPORT_ONCE } from "@/components/propuesta/motion";
@@ -32,12 +32,11 @@ const formatMarcas = (n: number) =>
   "+" + new Intl.NumberFormat("es-CO").format(Math.round(n));
 
 export function LegalWidget() {
-  const reduced = useReducedMotion();
 
   return (
     <motion.section
       aria-label="Blindaje legal de su marca"
-      initial={reduced ? false : "hidden"}
+      initial="hidden"
       whileInView="visible"
       viewport={VIEWPORT_ONCE}
       variants={fadeUp}
@@ -47,7 +46,7 @@ export function LegalWidget() {
         <div className="flex flex-col items-center gap-8 md:flex-row md:gap-12">
           {/* Perímetro de protección */}
           <motion.div
-            initial={reduced ? false : "hidden"}
+            initial="hidden"
             whileInView="visible"
             viewport={VIEWPORT_ONCE}
             className="relative aspect-square w-full max-w-[300px] shrink-0 sm:max-w-[340px]"
@@ -123,7 +122,7 @@ export function LegalWidget() {
 
           {/* Indicadores */}
           <motion.div
-            initial={reduced ? false : "hidden"}
+            initial="hidden"
             whileInView="visible"
             viewport={VIEWPORT_ONCE}
             className="flex w-full flex-1 flex-col items-center gap-6 text-center md:items-start md:text-left"

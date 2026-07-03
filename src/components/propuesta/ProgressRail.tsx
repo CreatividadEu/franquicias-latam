@@ -36,9 +36,9 @@ export function ProgressRail({
       {visible ? (
         <motion.nav
           aria-label="Progreso de la propuesta"
-          initial={reduced ? false : { opacity: 0, x: -8 }}
+          initial={{ opacity: 0, x: -8 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={reduced ? undefined : { opacity: 0, x: -8 }}
+          exit={{ opacity: 0, x: -8 }}
           transition={{ duration: 0.35 }}
           className="fixed left-0.5 top-1/2 z-40 -translate-y-1/2 sm:left-4"
         >
@@ -66,7 +66,7 @@ export function ProgressRail({
                   </button>
                   {activo ? (
                     <motion.span
-                      initial={reduced ? false : { opacity: 0, x: -6 }}
+                      initial={{ opacity: 0, x: -6 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={reduced ? { duration: 0 } : SPRING_SNAPPY}
                       className="pointer-events-none absolute left-6 hidden whitespace-nowrap rounded-full border border-white/10 bg-fl-base/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-fl-muted backdrop-blur-md md:block"

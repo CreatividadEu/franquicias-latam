@@ -12,7 +12,10 @@ export default async function OpengraphImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const proposal = await getProposal(slug);
+  const resolved = await getProposal(slug);
+  // La ruta OG no recibe ?k=: si la propuesta está protegida con
+  // accessKey, renderizamos la versión genérica (sin nombre ni oferta).
+  const proposal = resolved && !resolved.accessKey ? resolved : null;
   const cliente = proposal?.cliente ?? "su marca";
   const acc = proposal?.acento ?? "#00F0FF";
 

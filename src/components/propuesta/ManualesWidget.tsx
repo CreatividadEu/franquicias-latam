@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import {
   BookOpen,
   ChevronsUpDown,
@@ -42,14 +42,21 @@ const COLS_DESKTOP: Record<number, string> = {
   4: "sm:grid-cols-4",
 };
 
+type ManualesWidgetProps = {
+  modulos?: ModuloManual[];
+  /** Para la línea de evidencia ("La rotación en F&B…"); genérica si falta */
+  industria?: string;
+};
+
 /**
  * FASE 03 — Stack de manuales: cartas apiladas con leve rotación que se
  * despliegan en fila (desktop, hover o clic) o columna (móvil, tap).
- * Solo transform/opacity; degrada a estado final con reduced-motion.
+ * El contenido vive FUERA del botón (accesible a lectores de pantalla);
+ * el toggle es un botón aparte. MotionConfig reducedMotion="user" hace
+ * que el despliegue sea instantáneo bajo prefers-reduced-motion.
  */
-export function ManualesWidget({ modulos }: { modulos?: ModuloManual[] }) {
+export function ManualesWidget({ modulos, industria }: ManualesWidgetProps) {
   const items = modulos && modulos.length > 0 ? modulos : MODULOS_DEFAULT;
-  const reduced = useReducedMotion();
 
   const [pinned, setPinned] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -63,11 +70,9 @@ export function ManualesWidget({ modulos }: { modulos?: ModuloManual[] }) {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  // Con reduced-motion el estado final es el abanico desplegado (estático).
-  const open = reduced ? true : pinned || hovered;
+  const open = pinned || hovered;
   const center = Math.floor((items.length - 1) / 2);
   const stackedName = isDesktop ? "stackedRow" : "stackedCol";
-  const deckTransition = reduced ? { duration: 0 } : SPRING;
 
   /**
    * Celda exterior: cada carta viaja (en % de su propio tamaño, las celdas
@@ -94,17 +99,11 @@ export function ManualesWidget({ modulos }: { modulos?: ModuloManual[] }) {
     open: { rotate: 0, scale: 1, y: 0 },
   };
 
-  const inViewProps = reduced
-    ? { initial: "visible" as const }
-    : {
-        initial: "hidden" as const,
-        whileInView: "visible" as const,
-        viewport: VIEWPORT_ONCE,
-      };
-
   return (
     <motion.div
-      {...inViewProps}
+      initial="hidden"
+      whileInView="visible"
+      viewport={VIEWPORT_ONCE}
       variants={fadeUp}
       className="w-full rounded-3xl border border-white/10 bg-white/[0.03] p-4 sm:p-6"
     >
@@ -118,90 +117,76 @@ export function ManualesWidget({ modulos }: { modulos?: ModuloManual[] }) {
         </span>
       </div>
 
-      {/* Mazo interactivo */}
+      {/* Mazo: contenido real, fuera del botón. Click/hover despliegan. */}
+      <div
+        id="manuales-deck"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onClick={() => setPinned((v) => !v)}
+        className={cn(
+          "grid auto-rows-fr grid-cols-1",
+          COLS_DESKTOP[items.length] ?? "sm:grid-cols-3",
+        )}
+      >
+        {items.map((mod, i) => {
+          const Icon = ICONS[i % ICONS.length];
+          return (
+            <motion.div
+              key={mod.nombre}
+              custom={i}
+              variants={cellVariants}
+              initial={false}
+              animate={open ? "open" : stackedName}
+              transition={SPRING}
+              style={{ zIndex: items.length - i }}
+              className="relative p-1.5 sm:p-2"
+            >
+              <motion.div
+                custom={i}
+                variants={cardVariants}
+                initial={false}
+                animate={open ? "open" : stackedName}
+                transition={SPRING}
+                whileHover={{ y: -2 }}
+                className="flex h-full min-h-[8.5rem] flex-col justify-between gap-4 rounded-2xl border border-white/10 bg-[#0f1526] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.45)] sm:min-h-[11rem] sm:p-5"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[rgb(var(--acc-rgb)/0.35)] bg-[rgb(var(--acc-rgb)/0.12)] text-[var(--acc)]">
+                    <Icon
+                      className="h-5 w-5"
+                      strokeWidth={1.75}
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fl-muted">
+                    Manual {String(i + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight text-fl-text sm:text-lg">
+                    {mod.nombre}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-fl-muted">
+                    {mod.descripcion}
+                  </p>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Toggle accesible: botón real, aparte del contenido */}
       <motion.button
         type="button"
         aria-expanded={open}
-        aria-label={
-          open
-            ? "Apilar los módulos de manuales"
-            : "Desplegar los módulos de manuales"
-        }
-        onClick={() => {
-          if (!reduced) {
-            setPinned((v) => !v);
-          }
-        }}
-        onHoverStart={() => setHovered(true)}
-        onHoverEnd={() => setHovered(false)}
-        whileHover={reduced ? undefined : { y: -2 }}
-        whileTap={reduced ? undefined : { scale: 0.97 }}
-        className="block w-full cursor-pointer rounded-2xl text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--acc)]"
+        aria-controls="manuales-deck"
+        onClick={() => setPinned((v) => !v)}
+        whileTap={{ scale: 0.97 }}
+        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full pb-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-fl-muted hover:text-fl-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--acc)]"
       >
-        <div
-          className={cn(
-            "grid auto-rows-fr grid-cols-1",
-            COLS_DESKTOP[items.length] ?? "sm:grid-cols-3",
-          )}
-        >
-          {items.map((mod, i) => {
-            const Icon = ICONS[i % ICONS.length];
-            return (
-              <motion.div
-                key={mod.nombre}
-                custom={i}
-                variants={cellVariants}
-                initial={false}
-                animate={open ? "open" : stackedName}
-                transition={deckTransition}
-                style={{ zIndex: items.length - i }}
-                className="relative p-1.5 sm:p-2"
-              >
-                <motion.div
-                  custom={i}
-                  variants={cardVariants}
-                  initial={false}
-                  animate={open ? "open" : stackedName}
-                  transition={deckTransition}
-                  whileHover={reduced ? undefined : { y: -2 }}
-                  className="flex h-full min-h-[8.5rem] flex-col justify-between gap-4 rounded-2xl border border-white/10 bg-[#0f1526] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.45)] sm:min-h-[11rem] sm:p-5"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[rgb(var(--acc-rgb)/0.35)] bg-[rgb(var(--acc-rgb)/0.12)] text-[var(--acc)]">
-                      <Icon
-                        className="h-5 w-5"
-                        strokeWidth={1.75}
-                        aria-hidden="true"
-                      />
-                    </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fl-muted">
-                      Manual {String(i + 1).padStart(2, "0")}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold tracking-tight text-fl-text sm:text-lg">
-                      {mod.nombre}
-                    </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-fl-muted">
-                      {mod.descripcion}
-                    </p>
-                  </div>
-                </motion.div>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Afordancia del toggle (sin sentido bajo reduced-motion) */}
-        {reduced ? null : (
-          <span
-            aria-hidden="true"
-            className="mt-3 flex items-center justify-center gap-1.5 pb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-fl-muted"
-          >
-            <ChevronsUpDown className="h-3.5 w-3.5" strokeWidth={2} />
-            {open ? "Toque para apilar" : "Toque para desplegar"}
-          </span>
-        )}
+        <ChevronsUpDown className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+        {open ? "Toque para apilar" : "Toque para desplegar"}
       </motion.button>
 
       {/* Evidencia bajo el stack */}
@@ -229,8 +214,8 @@ export function ManualesWidget({ modulos }: { modulos?: ModuloManual[] }) {
             De caos a <span className="text-[var(--acc)]">estándar</span>.
           </p>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-fl-muted">
-            La rotación en F&B deja de dictar su operación: menos errores y
-            costos desde el día uno.
+            La rotación{industria ? ` en ${industria}` : ""} deja de dictar su
+            operación: menos errores y costos desde el día uno.
           </p>
         </motion.div>
 

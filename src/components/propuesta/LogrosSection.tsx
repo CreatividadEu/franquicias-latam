@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { Play } from "lucide-react";
 import type { ReactNode } from "react";
@@ -22,12 +22,10 @@ const formatMarcas = (n: number) =>
 
 function ProofCard({
   index,
-  reduced,
   className,
   children,
 }: {
   index: number;
-  reduced: boolean;
   className?: string;
   children: ReactNode;
 }) {
@@ -35,10 +33,10 @@ function ProofCard({
     <motion.div
       variants={fadeUp}
       custom={index}
-      initial={reduced ? false : "hidden"}
+      initial="hidden"
       whileInView="visible"
       viewport={VIEWPORT_ONCE}
-      whileHover={reduced ? undefined : { y: -2 }}
+      whileHover={{ y: -2 }}
       className={cn(
         "group flex flex-col rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition-colors duration-300 hover:border-white/15 hover:bg-white/[0.05]",
         className,
@@ -58,7 +56,6 @@ function CardLabel({ children }: { children: ReactNode }) {
 }
 
 export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
-  const reduced = useReducedMotion() ?? false;
   const video = videos?.[0] ?? YATRA_FALLBACK;
 
   const videoInner = (
@@ -115,7 +112,7 @@ export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
         <motion.div
           variants={fadeUp}
           custom={0}
-          initial={reduced ? false : "hidden"}
+          initial="hidden"
           whileInView="visible"
           viewport={VIEWPORT_ONCE}
         >
@@ -132,7 +129,7 @@ export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
         {/* Grid de prueba social */}
         <div className="mt-12 grid grid-cols-1 gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {/* 1 — Marcas protegidas */}
-          <ProofCard index={1} reduced={reduced}>
+          <ProofCard index={1}>
             <CardLabel>Legal</CardLabel>
             <div className="mt-5 flex-1">
               <CountUp
@@ -150,7 +147,7 @@ export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
           </ProofCard>
 
           {/* 2 — Convocatorias de innovación */}
-          <ProofCard index={2} reduced={reduced}>
+          <ProofCard index={2}>
             <CardLabel>Innovación</CardLabel>
             <div className="mt-5 flex-1">
               <span className="text-4xl font-bold tracking-tight text-fl-text sm:text-5xl">
@@ -166,7 +163,7 @@ export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
           </ProofCard>
 
           {/* 3 — Video / líderes de industria */}
-          <ProofCard index={3} reduced={reduced}>
+          <ProofCard index={3}>
             <CardLabel>Mercadeo</CardLabel>
             <div className="mt-5">
               <p className="text-2xl font-bold tracking-tight text-fl-text">
@@ -182,8 +179,8 @@ export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Ver video: ${video.titulo}`}
-                whileHover={reduced ? undefined : { y: -2 }}
-                whileTap={reduced ? undefined : { scale: 0.97 }}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.97 }}
                 className="mt-5 block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--acc)]"
               >
                 {videoInner}
@@ -194,7 +191,7 @@ export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
           </ProofCard>
 
           {/* 4 — Prensa */}
-          <ProofCard index={4} reduced={reduced} className="lg:col-span-1">
+          <ProofCard index={4} className="lg:col-span-1">
             <CardLabel>Prensa</CardLabel>
             <div className="mt-5 flex flex-1 items-center">
               <Image
@@ -213,7 +210,7 @@ export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
           {/* 5 — Sellos */}
           <ProofCard
             index={5}
-            reduced={reduced}
+           
             className="sm:col-span-1 lg:col-span-2"
           >
             <CardLabel>Sellos</CardLabel>
@@ -250,7 +247,7 @@ export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
         <motion.p
           variants={fadeUp}
           custom={6}
-          initial={reduced ? false : "hidden"}
+          initial="hidden"
           whileInView="visible"
           viewport={VIEWPORT_ONCE}
           className="mt-10 text-sm leading-relaxed text-fl-muted"

@@ -1,8 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { CalendarDays, Check, MessageCircle } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { registrarIntencion } from "@/lib/propuestas/actions";
 import type { Proposal } from "@/lib/propuestas/types";
 import { fadeUp, VIEWPORT_ONCE } from "./motion";
@@ -11,6 +11,8 @@ import type { CountdownState } from "./useCountdown";
 type CierreSectionProps = {
   proposal: Proposal;
   countdown: CountdownState;
+  /** Días de la ventana real (deadline - createdAt), para el copy */
+  diasVentana: number;
 };
 
 type EstadoCta = "idle" | "done" | "error";
@@ -24,10 +26,22 @@ function waLink(whatsapp: string, mensaje: string): string {
  * Al expirar oculta el descuento con gracia y cambia el CTA a
  * "Solicitar disponibilidad". Nunca un estado roto.
  */
-export function CierreSection({ proposal, countdown }: CierreSectionProps) {
-  const reduced = useReducedMotion();
+export function CierreSection({
+  proposal,
+  countdown,
+  diasVentana,
+}: CierreSectionProps) {
   const [estado, setEstado] = useState<EstadoCta>("idle");
   const [pending, startTransition] = useTransition();
+  const successRef = useRef<HTMLDivElement>(null);
+
+  // El botón desaparece al confirmar: llevar el foco al mensaje de éxito
+  // para que teclado y lector de pantalla aterricen en la confirmación.
+  useEffect(() => {
+    if (estado === "done") {
+      successRef.current?.focus();
+    }
+  }, [estado]);
 
   const { mesObjetivo, descuentoPct, cliente, whatsapp, calUrl, slug } =
     proposal;
@@ -43,13 +57,11 @@ export function CierreSection({ proposal, countdown }: CierreSectionProps) {
     });
   };
 
-  const noMotion = reduced
-    ? { initial: "visible" as const }
-    : {
-        initial: "hidden" as const,
-        whileInView: "visible" as const,
-        viewport: VIEWPORT_ONCE,
-      };
+  const noMotion = {
+    initial: "hidden" as const,
+    whileInView: "visible" as const,
+    viewport: VIEWPORT_ONCE,
+  };
 
   const tiles: { valor: number; label: string }[] = [
     { valor: countdown.dias, label: "días" },
@@ -102,7 +114,7 @@ export function CierreSection({ proposal, countdown }: CierreSectionProps) {
         >
           {expired
             ? "Podemos revisar disponibilidad para el siguiente ciclo. Solicítela y le respondemos el mismo día."
-            : `Confirme su cupo para ${mesObjetivo} en los próximos 7 días y obtenga ${descuentoPct}% de descuento. Arrancamos de inmediato con la recolección de información.`}
+            : `Confirme su cupo para ${mesObjetivo} en los próximos ${diasVentana} ${diasVentana === 1 ? "día" : "días"} y obtenga ${descuentoPct}% de descuento. Arrancamos de inmediato con la recolección de información.`}
         </motion.p>
 
         {/* Countdown grande — anclado al deadline fijo, no se reinicia */}
@@ -156,7 +168,11 @@ export function CierreSection({ proposal, countdown }: CierreSectionProps) {
           className="mt-10 flex w-full max-w-md flex-col items-center gap-3 sm:flex-row sm:justify-center"
         >
           {estado === "done" ? (
-            <div className="w-full rounded-2xl border px-5 py-4 text-left"
+            <div
+              ref={successRef}
+              role="status"
+              tabIndex={-1}
+              className="w-full rounded-2xl border px-5 py-4 text-left outline-none"
               style={{
                 borderColor: "rgb(var(--acc-rgb) / 0.35)",
                 background: "rgb(var(--acc-rgb) / 0.08)",
@@ -188,8 +204,8 @@ export function CierreSection({ proposal, countdown }: CierreSectionProps) {
                 type="button"
                 onClick={confirmar}
                 disabled={pending}
-                whileHover={reduced || pending ? undefined : { y: -2 }}
-                whileTap={reduced || pending ? undefined : { scale: 0.97 }}
+                whileHover={pending ? undefined : { y: -2 }}
+                whileTap={pending ? undefined : { scale: 0.97 }}
                 className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full px-8 py-4 text-sm font-semibold text-fl-base transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--acc)] disabled:opacity-60 sm:w-auto"
                 style={{
                   background: "var(--acc)",
@@ -207,8 +223,8 @@ export function CierreSection({ proposal, countdown }: CierreSectionProps) {
                   href={calUrl}
                   target="_blank"
                   rel="noreferrer"
-                  whileHover={reduced ? undefined : { y: -2 }}
-                  whileTap={reduced ? undefined : { scale: 0.97 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
                   className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.03] px-8 py-4 text-sm font-medium text-fl-text hover:border-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--acc)] sm:w-auto"
                 >
                   <CalendarDays className="h-4 w-4" aria-hidden="true" />
@@ -220,7 +236,7 @@ export function CierreSection({ proposal, countdown }: CierreSectionProps) {
         </motion.div>
 
         {estado === "error" ? (
-          <p className="mt-4 max-w-md text-sm text-fl-muted">
+          <p role="status" className="mt-4 max-w-md text-sm text-fl-muted">
             No pudimos registrar su confirmación en este momento.
             {whatsapp ? (
               <>
@@ -248,7 +264,7 @@ export function CierreSection({ proposal, countdown }: CierreSectionProps) {
           {...noMotion}
           variants={fadeUp}
           custom={5}
-          className="mt-12 text-[11px] font-medium uppercase tracking-[0.18em] text-fl-muted/60"
+          className="mt-12 text-[11px] font-medium uppercase tracking-[0.18em] text-fl-muted"
         >
           Franquicias LATAM · Propuesta privada para {cliente}
         </motion.p>
