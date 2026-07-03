@@ -82,7 +82,11 @@ export function ProposalExperience({
     <div className="prop-root relative" style={vars}>
       <div
         ref={containerRef}
-        className="h-dvh snap-y snap-proximity overflow-y-auto overscroll-contain scroll-smooth md:snap-mandatory"
+        // snap-proximity (no mandatory): Chrome re-evalúa el snap-target con
+        // cambios tardíos de layout y con mandatory puede re-anclar fases lejos
+        // durante la carga — proximity mantiene el snap por mundos sin pelear
+        // con el scroll programático de "Comenzar" / rail.
+        className="h-dvh snap-y snap-proximity overflow-y-auto overscroll-contain scroll-smooth"
       >
         <Hero
           cliente={proposal.cliente}
@@ -147,7 +151,12 @@ export function ProposalExperience({
         <CierreSection proposal={proposal} countdown={countdown} />
       </div>
 
-      <ProgressRail items={FASES} activeId={activeId} onJump={jump} />
+      <ProgressRail
+        items={FASES}
+        activeId={activeId}
+        visible={activeId !== "inicio"}
+        onJump={jump}
+      />
       <CountdownPill
         countdown={countdown}
         mesObjetivo={proposal.mesObjetivo}

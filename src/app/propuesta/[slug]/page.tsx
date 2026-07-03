@@ -8,13 +8,18 @@ type SearchParams = Promise<{ k?: string }>;
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Params;
+  searchParams: SearchParams;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const { k } = await searchParams;
   const proposal = await getProposal(slug);
-  if (!proposal) {
-    return { title: "Propuesta no encontrada" };
+  // notFound() aquí (antes del streaming) para que el status HTTP sea 404;
+  // en el page llegaría tarde y la respuesta ya salió como 200.
+  if (!proposal || (proposal.accessKey && k !== proposal.accessKey)) {
+    notFound();
   }
   return {
     title: `Hecho a medida para ${proposal.cliente} — Franquicias LATAM`,

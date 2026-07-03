@@ -28,7 +28,11 @@ mantienen tal cual.
 
 - Todas las propuestas llevan `robots: noindex`.
 - `accessKey: "abc123"` → la URL exige `?k=abc123` (si no, 404).
-- Slug inexistente → 404.
+- Slug inexistente → página 404. Nota: el status HTTP queda en 200
+  porque el `loading.tsx` raíz del app fuerza streaming (el status se
+  compromete antes de que corra `notFound()`); el usuario ve el 404 y
+  la página va con noindex, así que no tiene efecto práctico en un
+  link privado.
 
 ## Countdown / oferta
 

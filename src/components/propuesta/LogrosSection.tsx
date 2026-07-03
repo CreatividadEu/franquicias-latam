@@ -166,11 +166,7 @@ export function LogrosSection({ videos }: { videos?: VideoCredencial[] }) {
           </ProofCard>
 
           {/* 3 — Video / líderes de industria */}
-          <ProofCard
-            index={3}
-            reduced={reduced}
-            className="sm:col-span-2 lg:col-span-1"
-          >
+          <ProofCard index={3} reduced={reduced}>
             <CardLabel>Mercadeo</CardLabel>
             <div className="mt-5">
               <p className="text-2xl font-bold tracking-tight text-fl-text">

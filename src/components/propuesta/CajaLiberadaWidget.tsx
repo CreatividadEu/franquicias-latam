@@ -173,10 +173,11 @@ export function CajaLiberadaWidget({ finanzas }: CajaLiberadaWidgetProps) {
           ) : null}
         </svg>
 
-        {/* Label del payback en HTML para que no se encoja en móvil */}
+        {/* Label del payback en HTML para que no se encoja en móvil.
+           Abajo del chart: arriba chocaría con la leyenda y el rail. */}
         {payback ? (
           <motion.span
-            className="absolute -top-1 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/10 bg-fl-base px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-fl-muted"
+            className="absolute bottom-2 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/10 bg-fl-base px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-fl-muted"
             style={{ left: `${(xDe(payback) / W) * 100}%` }}
             initial={reduced ? false : { opacity: 0 }}
             animate={revealed ? { opacity: 1 } : undefined}
@@ -187,16 +188,29 @@ export function CajaLiberadaWidget({ finanzas }: CajaLiberadaWidgetProps) {
         ) : null}
       </div>
 
-      {/* Eje X en HTML */}
+      {/* Eje X en HTML, cada label anclado a su posición real */}
       <div
-        className="mt-1 flex justify-between text-[10px] font-medium uppercase tracking-[0.12em] text-fl-muted/70"
+        className="relative mt-1 h-4 text-[10px] font-medium uppercase tracking-[0.12em] text-fl-muted/70"
         aria-hidden="true"
       >
-        <span>Mes 1</span>
-        <span className="hidden sm:inline">Mes 4</span>
-        <span>Mes {modelo.mi} · inflexión</span>
-        <span className="hidden sm:inline">Mes 9</span>
-        <span>Mes 12</span>
+        {[1, 4, 8, 12].map((m) => (
+          <span
+            key={m}
+            className="absolute whitespace-nowrap"
+            style={
+              m === 1
+                ? { left: 0 }
+                : m === 12
+                  ? { right: 0 }
+                  : {
+                      left: `${(xDe(m) / W) * 100}%`,
+                      transform: "translateX(-50%)",
+                    }
+            }
+          >
+            Mes {m}
+          </span>
+        ))}
       </div>
 
       {/* Slider: recalcula todo en vivo */}
