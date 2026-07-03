@@ -9,6 +9,84 @@ import type { Proposal } from "./types";
  * si el slug existe en ambos lados.
  */
 export const PROPOSAL_REGISTRY: Record<string, Proposal> = {
+  "pampa-malbec": {
+    slug: "pampa-malbec",
+    cliente: "Pampa Malbec",
+    industria: "F&B · Cali",
+    acento: "#F25C6E", // malbec, aclarado para leerse sobre el dark base
+
+    // Ejemplo financiero ilustrativo (COP) — editable con el cliente.
+    finanzas: {
+      ventasMensuales: 220_000_000,
+      utilidadActualPct: 12,
+      utilidadOptimizadaPct: 22,
+      mesInflexion: 2,
+      paybackMeses: 3,
+    },
+
+    escenarios: [
+      {
+        id: "conservador",
+        nombre: "Conservador",
+        descripcion: "Crecimiento orgánico, franquiciados selectos.",
+        unidadesPorAno: [2, 4, 8],
+        paybackMeses: 30,
+        regaliaPct: 5,
+      },
+      {
+        id: "base",
+        nombre: "Base",
+        descripcion: "El equilibrio entre velocidad y control de marca.",
+        unidadesPorAno: [3, 8, 16],
+        paybackMeses: 24,
+        regaliaPct: 5,
+        destacado: true,
+      },
+      {
+        id: "agresivo",
+        nombre: "Agresivo",
+        descripcion: "Expansión multi-ciudad con capital de socios.",
+        unidadesPorAno: [4, 12, 26],
+        paybackMeses: 18,
+        regaliaPct: 6,
+      },
+    ],
+
+    inversion: {
+      totalUsd: 12_000,
+      cupoUsd: 2_500,
+    },
+
+    mesObjetivo: "Agosto",
+    descuentoPct: 10,
+    createdAt: "2026-07-03T17:00:00.000Z",
+    // deadline: createdAt + 7 días (10 de julio) — ventana del 10% dcto.
+
+    whatsapp: "+34695126804",
+    calUrl: "https://cal.franquiciaslatam.com/estrategia",
+    unlisted: true,
+
+    videosMercadeo: [
+      {
+        titulo: "Sebastián Yatra — la marca detrás del artista",
+        handle: "@sebastianyatra",
+        vistas: 28_400_000,
+      },
+      {
+        titulo: "Cómo franquiciar su negocio en Colombia",
+        handle: "@daniel.seneor",
+        vistas: 3_200_000,
+        href: "https://www.instagram.com/daniel.seneor/reel/C-gvgRRCMtg/",
+      },
+      {
+        titulo: "Líderes de industria: expansión en LATAM",
+        handle: "@lauranegron.oficiall",
+        vistas: 1_800_000,
+        href: "https://www.instagram.com/lauranegron.oficiall/reel/DMgU-V7yuJt/",
+      },
+    ],
+  },
+
   "la-clasica": {
     slug: "la-clasica",
     cliente: "La Clásica",
@@ -52,6 +130,11 @@ export const PROPOSAL_REGISTRY: Record<string, Proposal> = {
         regaliaPct: 6,
       },
     ],
+
+    inversion: {
+      totalUsd: 12_000,
+      cupoUsd: 2_500,
+    },
 
     mesObjetivo: "Agosto",
     descuentoPct: 10,

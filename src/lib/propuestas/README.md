@@ -17,7 +17,11 @@ y cupo con fecha límite. Módulo autocontenido:
    `descuentoPct` y `createdAt` (ISO del día que crea la propuesta).
    Opcionales: `logoUrl`, `industria`, `acento` (hex), `deadline`
    (default: `createdAt` + 7 días), `whatsapp` (E.164), `calUrl`,
-   `unlisted`, `accessKey`, `videosMercadeo`, `modulosManuales`.
+   `unlisted`, `accessKey`, `videosMercadeo`, `modulosManuales`,
+   `inversion` (`{ totalUsd, cupoUsd }` — sección de precio: total en
+   3 pagos, cupo = pago 1; pagado dentro de la ventana del deadline
+   aplica `descuentoPct` sobre el total; pago 2 al mes del cupo y
+   pago 3 treinta días después).
 3. Visite `/propuesta/{slug}`. Listo.
 
 Los números son **placeholders ilustrativos configurables por cliente**;

@@ -49,6 +49,19 @@ export type ModuloManual = {
   descripcion: string;
 };
 
+/**
+ * Inversión de la consultoría (sección de precio). El total se paga en
+ * 3 pagos: el cupo (pago 1), un segundo pago al mes del cupo y un
+ * tercero 30 días después. Si el cupo se paga dentro de la ventana del
+ * deadline, aplica `descuentoPct` sobre el monto total.
+ */
+export type ProposalInversion = {
+  /** Monto total de la consultoría (USD, antes de IVA), p.ej. 12000 */
+  totalUsd: number;
+  /** Pago para separar el cupo (USD, antes de IVA), p.ej. 2500 */
+  cupoUsd: number;
+};
+
 export type Proposal = {
   /** /propuesta/[slug] */
   slug: string;
@@ -65,6 +78,9 @@ export type Proposal = {
 
   /** FASE 2 — hasta 3 modelos */
   escenarios: Escenario[];
+
+  /** Sección de inversión (total + 3 pagos); opcional por cliente */
+  inversion?: ProposalInversion;
 
   /** Oferta / urgencia */
   mesObjetivo: string; // "Agosto"

@@ -32,6 +32,11 @@ export function mesInflexionEfectivo(mesInflexion: number): number {
   return Math.min(Math.max(Math.round(mesInflexion), 1), 12);
 }
 
+/** 12000 → "USD 12.000" (es-CO, sin decimales). */
+export function formatUsd(n: number): string {
+  return `USD ${new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(n)}`;
+}
+
 /** 28.400.000 → "28,4 M" · 950.000 → "950 K" */
 export function formatCompact(n: number): string {
   if (Math.abs(n) >= 1_000_000) {

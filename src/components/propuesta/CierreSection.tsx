@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CalendarDays, Check, MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { registrarIntencion } from "@/lib/propuestas/actions";
+import { formatUsd } from "@/lib/propuestas/format";
 import type { Proposal } from "@/lib/propuestas/types";
 import { fadeUp, VIEWPORT_ONCE } from "./motion";
 import type { CountdownState } from "./useCountdown";
@@ -114,8 +115,23 @@ export function CierreSection({
         >
           {expired
             ? "Podemos revisar disponibilidad para el siguiente ciclo. Solicítela y le respondemos el mismo día."
-            : `Confirme su cupo para ${mesObjetivo} en los próximos ${diasVentana} ${diasVentana === 1 ? "día" : "días"} y obtenga ${descuentoPct}% de descuento. Arrancamos de inmediato con la recolección de información.`}
+            : `Confirme su cupo para ${mesObjetivo} en los próximos ${diasVentana} ${diasVentana === 1 ? "día" : "días"} y obtenga ${descuentoPct}% de descuento sobre el total. Arrancamos de inmediato con la recolección de información.`}
         </motion.p>
+
+        {proposal.inversion && !expired ? (
+          <motion.p
+            {...noMotion}
+            variants={fadeUp}
+            custom={2}
+            className="mt-3 text-sm font-medium text-fl-muted"
+          >
+            El cupo se separa con{" "}
+            <span className="font-bold text-fl-text">
+              {formatUsd(proposal.inversion.cupoUsd)} + IVA
+            </span>{" "}
+            — el primero de 3 pagos.
+          </motion.p>
+        ) : null}
 
         {/* Countdown grande — anclado al deadline fijo, no se reinicia */}
         {!expired ? (

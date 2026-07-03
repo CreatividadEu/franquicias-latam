@@ -10,6 +10,7 @@ import { CountdownPill } from "./CountdownPill";
 import { EscenariosWidget } from "./EscenariosWidget";
 import { FloatingCta } from "./FloatingCta";
 import { Hero } from "./Hero";
+import { InversionSection } from "./InversionSection";
 import { LegalWidget } from "./LegalWidget";
 import { LogrosSection } from "./LogrosSection";
 import { ManualesWidget } from "./ManualesWidget";
@@ -29,7 +30,13 @@ const FASES: RailItem[] = [
 
 // Estático a nivel de módulo: como dep del effect del observer, un array
 // nuevo por render lo destruiría y reconstruiría en cada tick.
-const SECTION_IDS = ["inicio", ...FASES.map((f) => f.id), "logros", "cierre"];
+const SECTION_IDS = [
+  "inicio",
+  ...FASES.map((f) => f.id),
+  "logros",
+  "inversion",
+  "cierre",
+];
 
 const ACENTO_DEFAULT = "#00F0FF"; // token fl-teal del repo
 
@@ -172,6 +179,15 @@ export function ProposalExperience({
           </PhaseSection>
 
           <LogrosSection videos={proposal.videosMercadeo} />
+
+          {proposal.inversion ? (
+            <InversionSection
+              inversion={proposal.inversion}
+              descuentoPct={proposal.descuentoPct}
+              countdown={countdown}
+              diasVentana={diasVentana}
+            />
+          ) : null}
 
           <CierreSection
             proposal={proposal}
