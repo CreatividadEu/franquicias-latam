@@ -1,0 +1,135 @@
+/* ── Sandbox de Propuesta — estilos de ruta ─────────────────────────
+   Todo scoped a .prop-root (o gated por body:has(.prop-root)) para no
+   tocar nada global. Solo transform/opacity en animaciones. */
+
+/* El WhatsAppWidget global (anchor wa.me hijo directo de body) compite
+   con el CTA flotante de la propuesta — se oculta solo en esta ruta. */
+body:has(.prop-root) > a[href^="https://wa.me/"] {
+  display: none;
+}
+
+.prop-root {
+  background: #0a0f1e;
+  color: #f0f0f5;
+}
+
+/* Aurora del hero: deriva lenta, solo transform. */
+@keyframes prop-aurora {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2%, -3%, 0) scale(1.06);
+  }
+}
+
+.prop-aurora {
+  animation: prop-aurora 16s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Grano finísimo sobre el fondo oscuro. */
+.prop-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  mix-blend-mode: overlay;
+  opacity: 0.06;
+}
+
+/* Flujo en líneas SVG (diagrama de sistema, perímetro legal). */
+@keyframes prop-dash-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.prop-flow {
+  animation: prop-dash-flow 1.4s linear infinite;
+}
+
+/* Punto de estado latiendo (equipo legal en tiempo real). */
+@keyframes prop-pulse-dot {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+.prop-pulse-dot {
+  animation: prop-pulse-dot 2.2s ease-in-out infinite;
+}
+
+/* Hint de scroll del hero. */
+@keyframes prop-scroll-hint {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+}
+
+.prop-scroll-hint {
+  animation: prop-scroll-hint 2s ease-in-out infinite;
+}
+
+/* Slider del widget financiero. */
+.prop-range {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  outline: none;
+  cursor: pointer;
+}
+
+.prop-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--acc, #00f0ff);
+  border: 3px solid #0a0f1e;
+  box-shadow: 0 0 0 1px rgb(var(--acc-rgb, 0 240 255) / 0.5);
+  transition: transform 0.15s ease-out;
+}
+
+.prop-range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.prop-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--acc, #00f0ff);
+  border: 3px solid #0a0f1e;
+  box-shadow: 0 0 0 1px rgb(var(--acc-rgb, 0 240 255) / 0.5);
+  transition: transform 0.15s ease-out;
+}
+
+.prop-range:focus-visible {
+  outline: 2px solid var(--acc, #00f0ff);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prop-aurora,
+  .prop-flow,
+  .prop-pulse-dot,
+  .prop-scroll-hint {
+    animation: none !important;
+  }
+}
