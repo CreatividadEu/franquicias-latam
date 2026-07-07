@@ -6,13 +6,9 @@ import {
   useRef,
   type FormEvent,
 } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import type { SectorOption } from "@/types";
-import { fetchJsonSafely } from "@/lib/safeApiJson";
-import { LatamDepthBackground } from "@/components/LatamDepthBackground";
-import { ClientLogoMarquee } from "@/components/home/ClientLogoMarquee";
+import { HomeHeroMidnight } from "@/components/home/HomeHeroMidnight";
 import {
   HomeHeroFranchise,
   MethodologyStrip,
@@ -20,7 +16,6 @@ import {
 import { CalendlyCTASection } from "@/components/home/CalendlyCTASection";
 import { StoikaShowcaseSection } from "@/components/home/StoikaShowcaseSection";
 import { WorkCarousel } from "@/components/home/WorkCarousel";
-import { HomeSiteNavbar } from "@/components/site/HomeSiteNavbar";
 import { HomeSiteFooter } from "@/components/site/HomeSiteFooter";
 
 const countries = [
@@ -67,35 +62,21 @@ const faqs = [
 ];
 
 export default function HomePage() {
-  const router = useRouter();
   const [activeView, setActiveView] = useState("quiz");
   const [openFaqs, setOpenFaqs] = useState<Set<number>>(new Set());
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [hasRevealed, setHasRevealed] = useState(false);
-  const [runFirstNudge, setRunFirstNudge] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
     typeof window !== "undefined"
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
       : false
   );
-  const cardRef = useRef<HTMLDivElement | null>(null);
   const [tottoStatsVisible, setTottoStatsVisible] = useState(() =>
     typeof window !== "undefined" && typeof IntersectionObserver === "undefined"
   );
   const tottoStatsRef = useRef<HTMLDivElement | null>(null);
   const tottoStatsReady = prefersReducedMotion || tottoStatsVisible;
-
-  // Hero quiz embed
-  const [heroSectors, setHeroSectors] = useState<SectorOption[]>([]);
-  const [heroSelected, setHeroSelected] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetchJsonSafely<{ sectors: SectorOption[] }>("/api/sectors")
-      .then((data) => setHeroSectors(data.sectors))
-      .catch(console.error);
-  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -104,53 +85,6 @@ export default function HomePage() {
     mediaQuery.addEventListener("change", onChange);
     return () => mediaQuery.removeEventListener("change", onChange);
   }, []);
-
-  useEffect(() => {
-    if (
-      prefersReducedMotion ||
-      hasRevealed ||
-      heroSectors.length === 0 ||
-      !cardRef.current
-    ) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setHasRevealed(true);
-            observer.disconnect();
-          }
-        });
-      },
-      { threshold: 0.35 }
-    );
-
-    observer.observe(cardRef.current);
-    return () => observer.disconnect();
-  }, [hasRevealed, heroSectors.length, prefersReducedMotion]);
-
-  useEffect(() => {
-    if (prefersReducedMotion || hasRevealed) return;
-    const fallback = window.setTimeout(() => {
-      setHasRevealed(true);
-    }, 1200);
-    return () => window.clearTimeout(fallback);
-  }, [hasRevealed, prefersReducedMotion]);
-
-  useEffect(() => {
-    if (prefersReducedMotion || runFirstNudge || heroSectors.length === 0) {
-      return;
-    }
-
-    const timer = window.setTimeout(
-      () => setRunFirstNudge(true),
-      hasRevealed ? 350 : 1200
-    );
-
-    return () => window.clearTimeout(timer);
-  }, [hasRevealed, heroSectors.length, prefersReducedMotion, runFirstNudge]);
 
   useEffect(() => {
     if (prefersReducedMotion || tottoStatsVisible || !tottoStatsRef.current) {
@@ -170,23 +104,6 @@ export default function HomePage() {
     observer.observe(tottoStatsRef.current);
     return () => observer.disconnect();
   }, [prefersReducedMotion, tottoStatsVisible]);
-
-  const toggleHeroSector = (id: string) => {
-    setHeroSelected((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
-  };
-
-  const handleHeroSubmit = () => {
-    const names = heroSectors
-      .filter((s) => heroSelected.includes(s.id))
-      .map((s) => `${s.emoji} ${s.name}`);
-    const params = new URLSearchParams({
-      sectors: heroSelected.join(","),
-      sectorNames: names.join(","),
-    });
-    router.push(`/quiz?${params.toString()}`);
-  };
 
   useEffect(() => {
     if (!isVideoOpen) {
@@ -263,139 +180,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen text-[#171717]">
-      <HomeSiteNavbar />
+      <HomeHeroMidnight />
 
-      {/* ─── Hero Section ─── */}
-      <LatamDepthBackground
-        intensity="normal"
-        className="min-h-[70vh] pt-12 sm:pt-16 lg:pt-20 pb-16 sm:pb-24 lg:pb-32"
-      >
-        <section id="diagnostico" className="max-w-7xl mx-auto scroll-mt-28 px-4 sm:px-6 sm:scroll-mt-36">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-block mb-4 sm:mb-6">
-              <span className="section-pill">
-                Crece con Nosotros
-              </span>
-            </div>
-
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-[0.945]">
-              Tu franquicia ideal
-              <br className="hidden sm:block" /> en minutos.
-            </h1>
-
-            <p className="text-lg sm:text-xl md:text-2xl text-gray-900 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-2">
-              Desarrollamos y Vendemos las Mejores Franquicias.
-              <br className="hidden sm:block" />
-              <strong className="text-gray-900 font-semibold">
-                ¿Cómo quieres crecer hoy?
-              </strong>
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 px-2">
-              <Link
-                href="/quiz"
-                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 px-7 sm:px-8 py-4 text-[17px] font-bold tracking-tight text-white shadow-[0_18px_40px_-18px_rgba(59,130,246,0.75)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_28px_60px_-22px_rgba(59,130,246,0.95)] active:translate-y-0 active:shadow-[0_14px_30px_-20px_rgba(59,130,246,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(59,130,246,0.28)] sm:text-[18px]"
-              >
-                Invertir en Franquicias
-              </Link>
-              <a
-                href="#proceso"
-                className="inline-flex items-center justify-center rounded-2xl border border-orange-500 bg-orange-500 px-7 sm:px-8 py-4 text-[17px] font-bold tracking-tight text-black shadow-[0_12px_30px_-22px_rgba(249,115,22,0.42)] transition-all duration-200 hover:-translate-y-[1px] hover:border-orange-600 hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(249,115,22,0.2)] sm:text-[18px]"
-              >
-                Franquiciar mi Negocio
-              </a>
-            </div>
-
-            <p className="text-base sm:text-lg text-gray-900 font-extrabold mb-6 sm:mb-8">
-              Más de 750 franquicias líderes desarrolladas.
-            </p>
-
-            {/* Logo Carousel (Client logos) */}
-            <ClientLogoMarquee className="mb-8 sm:mb-12" />
-
-            {/* Interactive Quiz Embed */}
-            <div className="relative z-40 max-w-3xl mx-auto mt-8 sm:mt-12 lg:mt-16">
-              <div
-                ref={cardRef}
-                className="hero-image hero-quiz-glass rounded-xl sm:rounded-2xl px-[1.77rem] py-[2.06rem] sm:px-[2.36rem] sm:py-[2.66rem]"
-              >
-                <p className="text-center text-sm text-gray-900 mb-1">
-                  Paso 1 de 5
-                </p>
-                <h3 className="text-center text-lg sm:text-xl font-semibold mb-1">
-                  ¿En qué sectores te interesa invertir?
-                </h3>
-                {heroSelected.length === 0 && (
-                  <p className="text-center text-[0.90rem] text-gray-900 mb-4">
-                    Empieza seleccionando uno o más sectores 👇
-                  </p>
-                )}
-
-                {heroSectors.length === 0 ? (
-                  <div className="flex justify-center py-8">
-                    <div className="w-6 h-6 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                      {heroSectors.map((sector, index) => {
-                        const isSelected = heroSelected.includes(sector.id);
-                        const shouldHideBeforeReveal =
-                          !hasRevealed && !prefersReducedMotion;
-                        const shouldNudge =
-                          index === 0 &&
-                          runFirstNudge &&
-                          !prefersReducedMotion;
-                        return (
-                          <button
-                            key={sector.id}
-                            data-first-option={index === 0 ? "true" : undefined}
-                            onClick={() => toggleHeroSector(sector.id)}
-                            className={`quiz-option-button flex items-center gap-2 px-3 sm:px-4 py-3 rounded-lg border-2 text-left ${
-                              isSelected
-                                ? "bg-[#EEF3FF] border-[#2F5BFF] text-neutral-900 ring-1 ring-[#2F5BFF]/25"
-                                : "bg-white border-gray-200 text-gray-900 hover:bg-gray-50"
-                            } ${
-                              shouldHideBeforeReveal
-                                ? "opacity-0 translate-y-3 [filter:blur(1px)] pointer-events-none"
-                                : "opacity-100 translate-y-0 [filter:blur(0px)] pointer-events-auto"
-                            } ${shouldNudge ? "quiz-option-nudge-pulse" : ""}`}
-                            style={{
-                              transitionDelay:
-                                hasRevealed && !prefersReducedMotion
-                                  ? `${index * 60}ms`
-                                  : "0ms",
-                            }}
-                          >
-                            <span className="text-lg sm:text-xl">{sector.emoji}</span>
-                            <span className="text-sm font-medium">{sector.name}</span>
-                            {isSelected && (
-                              <span className="ml-auto w-4 h-4 rounded-full bg-[#2F5BFF] flex items-center justify-center flex-shrink-0">
-                                <svg className="w-2.5 h-2.5 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path d="M5 13l4 4L19 7" />
-                                </svg>
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {heroSelected.length > 0 && (
-                      <button
-                        onClick={handleHeroSubmit}
-                        className="w-full mt-4 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold rounded-xl py-4 shadow-sm active:scale-[0.98] transition-all"
-                      >
-                        Continuar ({heroSelected.length} seleccionado{heroSelected.length > 1 ? "s" : ""})
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      </LatamDepthBackground>
 
       <HomeHeroFranchise />
 
