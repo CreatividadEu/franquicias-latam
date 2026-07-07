@@ -221,7 +221,7 @@ export function HomeHeroMidnight() {
         <h1 className="mn-h1 mt-8 sm:mt-9">
           La próxima gran franquicia
           <br />
-          de LATAM <span className="mn-grad">es la tuya.</span>
+          <span className="mn-grad">es la tuya.</span>
         </h1>
 
         {/* Subtitle */}
