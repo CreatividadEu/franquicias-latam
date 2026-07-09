@@ -452,7 +452,7 @@ export function HomeDecisionFork() {
                     key={logo.alt}
                     logo={logo}
                     delay={`${i * 0.6}s`}
-                    height={i === 0 ? 28 : i === 1 ? 25 : 30}
+                    height={i === 0 ? 56 : i === 1 ? 50 : 60}
                   />
                 ))}
               </span>
@@ -475,7 +475,7 @@ export function HomeDecisionFork() {
                     key={logo.alt}
                     logo={logo}
                     delay={`${i * 0.3}s`}
-                    height={i === 0 ? 28 : 24}
+                    height={i === 0 ? 56 : 48}
                   />
                 ))}
               </span>
