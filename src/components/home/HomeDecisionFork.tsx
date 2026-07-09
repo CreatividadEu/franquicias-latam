@@ -303,7 +303,7 @@ export function HomeDecisionFork() {
             width={480}
             height={120}
             priority
-            className="h-10 w-auto brightness-0 invert sm:h-12"
+            className="h-20 w-auto brightness-0 invert sm:h-24"
           />
         </Link>
 
