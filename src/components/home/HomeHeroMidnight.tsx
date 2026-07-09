@@ -52,7 +52,12 @@ function Arrow({ size = 20, stroke = 2.4 }: { size?: number; stroke?: number }) 
   );
 }
 
-export function HomeHeroMidnight() {
+type HomeHeroMidnightProps = {
+  /** Hide the "Invertir en Franquicias" CTA — used on the franquiciar subdomain (empresarios-only). */
+  showInvertirCta?: boolean;
+};
+
+export function HomeHeroMidnight({ showInvertirCta = true }: HomeHeroMidnightProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [count, setCount] = useState(0);
   const proofRef = useRef<HTMLDivElement | null>(null);
@@ -242,14 +247,16 @@ export function HomeHeroMidnight() {
               Diagnóstico gratis · Respuesta en 48h
             </span>
           </div>
-          <div className="flex w-full flex-col items-center gap-[11px] sm:w-auto">
-            <Link href={HREF.invertir} className="mn-cta-ghost mn-focus">
-              Invertir en Franquicias
-            </Link>
-            <span className="text-[15px] text-[rgba(232,238,255,.5)] sm:text-[17.5px]">
-              Tu match ideal en 2 minutos
-            </span>
-          </div>
+          {showInvertirCta && (
+            <div className="flex w-full flex-col items-center gap-[11px] sm:w-auto">
+              <Link href={HREF.invertir} className="mn-cta-ghost mn-focus">
+                Invertir en Franquicias
+              </Link>
+              <span className="text-[15px] text-[rgba(232,238,255,.5)] sm:text-[17.5px]">
+                Tu match ideal en 2 minutos
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Social proof */}

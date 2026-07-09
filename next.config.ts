@@ -7,6 +7,24 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**" },
     ],
   },
+  // Serve the empresarios funnel at the franquiciar. subdomain by rewriting
+  // its root to /franquiciar — the URL bar keeps showing the subdomain (no
+  // redirect). The subdomain must be attached to this Vercel project and
+  // pointed at it in DNS before this takes effect.
+  async rewrites() {
+    return [
+      {
+        source: "/",
+        has: [{ type: "host", value: "franquiciar.franquiciaslatam.com" }],
+        destination: "/franquiciar",
+      },
+      {
+        source: "/",
+        has: [{ type: "host", value: "www.franquiciar.franquiciaslatam.com" }],
+        destination: "/franquiciar",
+      },
+    ];
+  },
   // Redirect the country vanity domains to their market sections. Each rule
   // fires only when the request Host matches, so they have no effect on the
   // primary franquiciaslatam.com domain. Each domain must be attached to this

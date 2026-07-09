@@ -96,6 +96,7 @@ export default async function FormLeadsPage({
     external_franchise_interest: "Interés externo",
     identified_brand_interest: "Interés marca",
     listing_interest: "Interés listing",
+    home_contact: "Contacto Home",
   };
 
   return (
