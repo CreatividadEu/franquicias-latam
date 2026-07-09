@@ -402,7 +402,7 @@ export function HomeDecisionFork() {
       </header>
 
       {/* ── Contenido principal ──────────────────────────────────────────── */}
-      <main className="relative z-[2] flex flex-col items-center px-4 pb-16 pt-4 text-center sm:px-6 sm:pb-24 lg:pb-28">
+      <main className="relative z-[2] flex flex-col items-center px-4 pb-16 pt-16 text-center sm:px-6 sm:pb-24 sm:pt-24 lg:pb-28 lg:pt-28">
         {/* Cupos capsule */}
         <a href={HREF.franquiciar} className="hdf-badge-outer hdf-focus">
           <div className="hdf-badge-inner">
