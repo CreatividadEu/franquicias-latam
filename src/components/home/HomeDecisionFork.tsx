@@ -47,9 +47,23 @@ const HREF = {
   ia: "https://franquicias.ai",
 };
 
-const NAV_LINKS = [
-  // "franquiciar" is a same-site subdomain move: same-tab navigation, no target="_blank".
-  { label: "Franquiciar mi Negocio", href: HREF.franquiciar, external: false },
+type NavLink = {
+  label: string;
+  href: string;
+  external: boolean;
+  opensEvaluation?: boolean;
+};
+
+const NAV_LINKS: NavLink[] = [
+  // "Franquiciar mi Negocio" abre la Evaluación Privada (el mismo flow que la
+  // tarjeta de empresarios); no navega al subdominio. `href` queda como
+  // fallback accesible.
+  {
+    label: "Franquiciar mi Negocio",
+    href: HREF.franquiciar,
+    external: false,
+    opensEvaluation: true,
+  },
   { label: "Invertir", href: HREF.invertir, external: false },
   { label: "Casos de Éxito", href: HREF.casos, external: false },
   { label: "Franquicias.ia", href: HREF.ia, external: true },
@@ -507,7 +521,16 @@ export function HomeDecisionFork() {
 
         <nav className="hidden items-center gap-9 md:flex">
           {NAV_LINKS.map((link) =>
-            link.external ? (
+            link.opensEvaluation ? (
+              <button
+                key={link.label}
+                type="button"
+                onClick={openEvaluation}
+                className="hdf-navlink hdf-navlink--btn hdf-focus"
+              >
+                {link.label}
+              </button>
+            ) : link.external ? (
               <a
                 key={link.label}
                 href={link.href}
@@ -553,7 +576,19 @@ export function HomeDecisionFork() {
           <div className="absolute inset-x-4 top-[72px] z-30 rounded-2xl border border-white/12 bg-[#0A1226]/95 p-3 shadow-2xl backdrop-blur-xl md:hidden">
             <div className="flex flex-col">
               {NAV_LINKS.map((link) =>
-                link.href.startsWith("#") ? (
+                link.opensEvaluation ? (
+                  <button
+                    key={link.label}
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      openEvaluation();
+                    }}
+                    className="rounded-xl px-4 py-3 text-left text-[16px] font-medium text-[rgba(232,238,255,.9)] hover:bg-white/5"
+                  >
+                    {link.label}
+                  </button>
+                ) : link.href.startsWith("#") ? (
                   <a
                     key={link.label}
                     href={link.href}
@@ -959,6 +994,15 @@ export function HomeDecisionFork() {
         }
         .hdf-navlink:hover {
           color: #ff8a3d;
+        }
+        /* Cuando el navlink es un <button> (abre la Evaluación Privada). */
+        .hdf-navlink--btn {
+          background: none;
+          border: none;
+          padding: 0;
+          font-family: inherit;
+          line-height: inherit;
+          cursor: pointer;
         }
         .hdf-contact-btn {
           position: relative;
