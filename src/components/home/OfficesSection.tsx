@@ -21,10 +21,11 @@ const OFFICES: Office[] = [
   {
     region: "Europa",
     city: "Madrid",
-    building: "Paseo de la Castellana, 77",
+    building: "Paseo de la Castellana 77, Of. 02-113",
     detail: "Distrito financiero",
     timeZone: "Europe/Madrid",
     mapsQuery: "Paseo de la Castellana 77, Madrid",
+    image: "https://luisvidal.com/wp-content/uploads/C77-05-web-2048x1386.jpg",
     accent: "#6EA8FF",
   },
   {
@@ -65,6 +66,57 @@ function useLocalTimes() {
   };
 }
 
+function OfficeCard({ office, time }: { office: Office; time: string }) {
+  const [imgOk, setImgOk] = useState(Boolean(office.image));
+
+  return (
+    <a
+      href={`https://maps.google.com/?q=${encodeURIComponent(office.mapsQuery)}`}
+      target="_blank"
+      rel="noreferrer"
+      className={`hdo-card${imgOk ? " hdo-card--photo" : ""}`}
+      style={{ "--hdo-accent": office.accent } as React.CSSProperties}
+      aria-label={`Oficina de ${office.city}: ${office.building}`}
+    >
+      <span className="hdo-topline" aria-hidden />
+      {office.image && imgOk && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={office.image}
+            alt={`Oficina de ${office.city}`}
+            className="hdo-photo"
+            loading="lazy"
+            onError={() => setImgOk(false)}
+          />
+          <span className="hdo-photo-scrim" aria-hidden />
+        </>
+      )}
+      <span className="hdo-sheen" aria-hidden />
+
+      <div className="hdo-row">
+        <span className="hdo-region">{office.region}</span>
+        <span className="hdo-clock">
+          <span className="hdo-clock-time tabular-nums">{time}</span>
+          <span className="hdo-clock-label">hora local</span>
+        </span>
+      </div>
+
+      <span className="hdo-city">{office.city}</span>
+
+      <div className="hdo-foot">
+        <span className="hdo-building">
+          {office.building}
+          <em>{office.detail}</em>
+        </span>
+        <span className="hdo-maps">
+          Cómo llegar <span aria-hidden>→</span>
+        </span>
+      </div>
+    </a>
+  );
+}
+
 export function OfficesSection() {
   const timeIn = useLocalTimes();
 
@@ -83,49 +135,11 @@ export function OfficesSection() {
 
       <div className="hdo-grid">
         {OFFICES.map((office) => (
-          <a
+          <OfficeCard
             key={office.city}
-            href={`https://maps.google.com/?q=${encodeURIComponent(office.mapsQuery)}`}
-            target="_blank"
-            rel="noreferrer"
-            className="hdo-card"
-            style={{ "--hdo-accent": office.accent } as React.CSSProperties}
-            aria-label={`Oficina de ${office.city}: ${office.building}`}
-          >
-            <span className="hdo-topline" aria-hidden />
-            {office.image && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={office.image}
-                alt=""
-                className="hdo-photo"
-                loading="lazy"
-              />
-            )}
-            <span className="hdo-sheen" aria-hidden />
-
-            <div className="hdo-row">
-              <span className="hdo-region">{office.region}</span>
-              <span className="hdo-clock">
-                <span className="hdo-clock-time tabular-nums">
-                  {timeIn(office.timeZone)}
-                </span>
-                <span className="hdo-clock-label">hora local</span>
-              </span>
-            </div>
-
-            <span className="hdo-city">{office.city}</span>
-
-            <div className="hdo-foot">
-              <span className="hdo-building">
-                {office.building}
-                <em>{office.detail}</em>
-              </span>
-              <span className="hdo-maps">
-                Cómo llegar <span aria-hidden>→</span>
-              </span>
-            </div>
-          </a>
+            office={office}
+            time={timeIn(office.timeZone)}
+          />
         ))}
       </div>
 
@@ -201,13 +215,25 @@ export function OfficesSection() {
           height: 1px;
           background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--hdo-accent) 55%, transparent), transparent);
         }
+        .hdo-card--photo {
+          min-height: 300px;
+        }
         .hdo-photo {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
-          opacity: 0.22;
+          object-position: 50% 32%;
+          opacity: 0.9;
+        }
+        /* Velo para que el texto siga legible sobre la foto */
+        .hdo-photo-scrim {
+          position: absolute;
+          inset: 0;
+          background:
+            linear-gradient(180deg, rgba(5, 8, 15, 0.55) 0%, rgba(5, 8, 15, 0.15) 32%, rgba(5, 8, 15, 0.9) 100%),
+            linear-gradient(90deg, rgba(5, 8, 15, 0.55), transparent 60%);
         }
         .hdo-sheen {
           position: absolute;
