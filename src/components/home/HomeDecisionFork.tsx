@@ -65,6 +65,17 @@ const MARQUEE_LOGOS = [...homeClientLogos, ...homeClientLogos];
 
 const STAT_TARGETS = { stores: 450, countries: 40, sales: 250 };
 
+// ── Typewriter del eyebrow de Empresarios ───────────────────────────────────
+// "Para " queda fijo; las palabras se escriben y se borran, y la última
+// ("Franquiciar tu Negocio") queda fija.
+const TYPE_WORDS = ["microempresas", "startups", "PYMES", "Grandes Empresas"];
+const TYPE_FINAL = "Franquiciar tu Negocio";
+const TYPE_MS = 58;
+const TYPE_JITTER_MS = 26;
+const DELETE_MS = 32;
+const HOLD_WORD_MS = 1050;
+const HOLD_EMPTY_MS = 300;
+
 function Arrow({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true">
@@ -97,7 +108,7 @@ function AwardLogo({
   if (isFullColorBadge) {
     return (
       <span className="hdf-strip-logo-chip" style={{ animationDelay: delay }}>
-        <Image src={logo.src} alt={logo.alt} width={800} height={300} style={{ height: height - 6 }} />
+        <Image src={logo.src} alt={logo.alt} width={800} height={300} style={{ height: height - 10 }} />
       </span>
     );
   }
@@ -111,6 +122,134 @@ function AwardLogo({
       className="hdf-strip-logo"
       style={{ animationDelay: delay, height }}
     />
+  );
+}
+
+function TypewriterEyebrow({ className }: { className: string }) {
+  const rootRef = useRef<HTMLSpanElement | null>(null);
+  const startedRef = useRef(false);
+  const reducedRef = useRef(false);
+  const [typed, setTyped] = useState("");
+  const [running, setRunning] = useState(false);
+  const [done, setDone] = useState(false);
+
+  // Arranca al entrar en viewport (una vez). Con reduced-motion o sin
+  // IntersectionObserver, muestra directamente el estado final; si el
+  // usuario activa reduced-motion a mitad de ciclo, corta al estado final.
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+
+    const finish = () => {
+      setRunning(false);
+      setTyped(TYPE_FINAL);
+      setDone(true);
+    };
+
+    const media =
+      typeof window.matchMedia === "function"
+        ? window.matchMedia("(prefers-reduced-motion: reduce)")
+        : null;
+    reducedRef.current = media?.matches ?? false;
+
+    if (reducedRef.current || typeof IntersectionObserver === "undefined") {
+      const raf = requestAnimationFrame(finish);
+      return () => cancelAnimationFrame(raf);
+    }
+
+    const onMediaChange = () => {
+      reducedRef.current = media?.matches ?? false;
+      if (reducedRef.current) {
+        startedRef.current = true;
+        finish();
+      }
+    };
+    if (media) {
+      if (typeof media.addEventListener === "function") {
+        media.addEventListener("change", onMediaChange);
+      } else {
+        media.addListener(onMediaChange);
+      }
+    }
+
+    // No destructurar solo entries[0]: el navegador puede agrupar la entrada
+    // inicial (false) con el cruce real (true) en una misma entrega.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting) && !startedRef.current) {
+          startedRef.current = true;
+          if (reducedRef.current) {
+            finish();
+          } else {
+            setRunning(true);
+          }
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      if (media) {
+        if (typeof media.removeEventListener === "function") {
+          media.removeEventListener("change", onMediaChange);
+        } else {
+          media.removeListener(onMediaChange);
+        }
+      }
+    };
+  }, []);
+
+  // Ciclo escribe → pausa → borra; la última palabra queda fija.
+  useEffect(() => {
+    if (!running) return;
+    let alive = true;
+    let timer = 0;
+    const sleep = (ms: number) =>
+      new Promise<void>((resolve) => {
+        timer = window.setTimeout(resolve, ms);
+      });
+
+    (async () => {
+      const sequence = [...TYPE_WORDS, TYPE_FINAL];
+      for (const word of sequence) {
+        const isFinal = word === TYPE_FINAL;
+        for (let i = 1; i <= word.length; i++) {
+          if (!alive) return;
+          setTyped(word.slice(0, i));
+          await sleep(TYPE_MS + Math.random() * TYPE_JITTER_MS);
+        }
+        if (!alive) return;
+        if (isFinal) {
+          setDone(true);
+          return;
+        }
+        await sleep(HOLD_WORD_MS);
+        for (let i = word.length - 1; i >= 0; i--) {
+          if (!alive) return;
+          setTyped(word.slice(0, i));
+          await sleep(DELETE_MS);
+        }
+        if (!alive) return;
+        await sleep(HOLD_EMPTY_MS);
+      }
+    })();
+
+    return () => {
+      alive = false;
+      window.clearTimeout(timer);
+    };
+  }, [running]);
+
+  return (
+    <span ref={rootRef} className={className} aria-label={`Para ${TYPE_FINAL}`}>
+      <span aria-hidden="true">
+        {"Para "}
+        {typed}
+        <span className={`hdf-caret${done ? " hdf-caret--done" : ""}`} />
+      </span>
+    </span>
   );
 }
 
@@ -159,8 +298,8 @@ export function HomeDecisionFork() {
     ) => {
       if (!node) return () => {};
       const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting && !startedRef.current) {
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting) && !startedRef.current) {
             startedRef.current = true;
             const start = performance.now();
             const tick = (now: number) => {
@@ -438,7 +577,7 @@ export function HomeDecisionFork() {
         <div className="hdf-cards mt-10 grid w-full max-w-[1120px] gap-6 sm:mt-14">
           <a href={HREF.franquiciar} className="hdf-card hdf-card--orange">
             <span className="hdf-card-topline hdf-card-topline--orange" />
-            <span className="hdf-card-eyebrow hdf-card-eyebrow--orange">Para Empresarios</span>
+            <TypewriterEyebrow className="hdf-card-eyebrow hdf-card-eyebrow--orange" />
             <span className="hdf-card-title">Soy negocio y quiero franquiciar.</span>
             <span className="hdf-card-cta hdf-card-cta--orange">
               Diagnóstico gratis · Respuesta en 48h <Arrow />
@@ -452,7 +591,7 @@ export function HomeDecisionFork() {
                     key={logo.alt}
                     logo={logo}
                     delay={`${i * 0.6}s`}
-                    height={i === 0 ? 28 : i === 1 ? 25 : 30}
+                    height={i === 0 ? 47 : i === 1 ? 44 : 36}
                   />
                 ))}
               </span>
@@ -475,7 +614,7 @@ export function HomeDecisionFork() {
                     key={logo.alt}
                     logo={logo}
                     delay={`${i * 0.3}s`}
-                    height={i === 0 ? 28 : 24}
+                    height={i === 0 ? 47 : 36}
                   />
                 ))}
               </span>
@@ -505,7 +644,7 @@ export function HomeDecisionFork() {
           </div>
 
           {/* Video testimonial */}
-          <div className="mt-3 flex w-full max-w-[780px] flex-col items-center gap-4">
+          <div className="mt-4 flex w-full max-w-[780px] flex-col items-center gap-4">
             <div className="hdf-video-frame">
               <div className="hdf-video-inner">
                 <iframe
@@ -518,7 +657,7 @@ export function HomeDecisionFork() {
               </div>
             </div>
 
-            <div className="mt-3 flex flex-col items-center gap-4 text-center">
+            <div className="mt-2 flex flex-col items-center gap-4 text-center">
               <em className="hdf-eyebrow-serif">Caso de éxito</em>
               <h2 className="hdf-h2">
                 Totto <span className="hdf-grad">×</span> Franquicias LATAM
@@ -931,8 +1070,30 @@ export function HomeDecisionFork() {
           background-image: linear-gradient(100deg, #8fdcec, #e2f8ff, #8fdcec);
           animation-delay: 0.6s;
         }
+        /* En pantallas muy angostas (<350px) la frase final del typewriter
+           ("Para Franquiciar tu Negocio") saltaría a 2 líneas a mitad de la
+           animación; reducimos el cuerpo para que quede en una sola. */
+        @media (max-width: 349px) {
+          .hdf-card-eyebrow {
+            font-size: 16.5px;
+          }
+        }
+        .hdf-caret {
+          display: inline-block;
+          width: 2px;
+          height: 0.92em;
+          margin-left: 3px;
+          vertical-align: -0.08em;
+          border-radius: 1px;
+          background: #ffb877;
+          box-shadow: 0 0 8px rgba(255, 162, 79, 0.8);
+          animation: hdf-caret-blink 1.05s step-end infinite;
+        }
+        .hdf-caret--done {
+          animation: hdf-caret-blink 1.05s step-end 3, hdf-caret-fade 0.5s ease 3.2s forwards;
+        }
         .hdf-card-title {
-          margin-top: 14px;
+          margin-top: 16px;
           font-size: 24px;
           line-height: 1.22;
           font-weight: 600;
@@ -966,9 +1127,9 @@ export function HomeDecisionFork() {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 12px 20px;
+          gap: 14px 20px;
           margin-top: auto;
-          padding-top: 22px;
+          padding-top: 26px;
         }
         .hdf-card-strip-divider {
           width: 100%;
@@ -993,7 +1154,7 @@ export function HomeDecisionFork() {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 14px 24px;
+          gap: 14px 22px;
           min-width: 0;
         }
         .hdf-strip-logo {
@@ -1005,10 +1166,11 @@ export function HomeDecisionFork() {
         .hdf-strip-logo-chip {
           display: inline-flex;
           align-items: center;
-          border-radius: 6px;
-          background: #fff;
-          padding: 3px 7px;
-          opacity: 0.95;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.97);
+          padding: 5px 10px;
+          opacity: 0.96;
+          box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
           animation: hdf-logo-float 4.5s ease-in-out infinite;
         }
         .hdf-strip-logo-chip img {
@@ -1091,7 +1253,7 @@ export function HomeDecisionFork() {
           grid-template-columns: repeat(3, 1fr);
           gap: 18px;
           width: 100%;
-          margin-top: 18px;
+          margin-top: 22px;
         }
         @media (min-width: 640px) {
           .hdf-stats-row {
@@ -1342,6 +1504,20 @@ export function HomeDecisionFork() {
           initial-value: 0deg;
           inherits: false;
         }
+        @keyframes hdf-caret-blink {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0;
+          }
+        }
+        @keyframes hdf-caret-fade {
+          to {
+            opacity: 0;
+          }
+        }
         @keyframes hdf-shine-rotate {
           to {
             --hdf-angle: 360deg;
@@ -1459,6 +1635,9 @@ export function HomeDecisionFork() {
           .hdf-video-frame,
           .hdf-cards {
             animation: none !important;
+          }
+          .hdf-caret {
+            display: none;
           }
         }
       `}</style>
