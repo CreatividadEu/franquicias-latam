@@ -35,6 +35,8 @@ const OFFICES: Office[] = [
     detail: "Oficina privada",
     timeZone: "America/Bogota",
     mapsQuery: "Edificio Flormorado, Bogotá",
+    image:
+      "https://flormorado.com/wp-content/uploads/2022/07/flormorado-plaza-5.jpg",
     accent: "#37E6C3",
   },
 ];
