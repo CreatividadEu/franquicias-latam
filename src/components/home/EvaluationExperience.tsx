@@ -77,6 +77,66 @@ function labelOf(list: { value: string; label: string }[], value: string) {
   return list.find((o) => o.value === value)?.label ?? value;
 }
 
+// Glifo de identidad por programa: rayo (velocidad), capas (estructura),
+// órbita (red completa).
+function ProgramGlyph({ k }: { k: ProgramKey }) {
+  if (k === "bootcamp") {
+    return (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M13 2 4.5 13.5H11L9.5 22 19.5 9.5H12.5L13 2Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  if (k === "development") {
+    return (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M12 3 21 8 12 13 3 8 12 3Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M3 12.5 12 17.5 21 12.5"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M3 17 12 22 21 17"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity=".55"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+      <circle
+        cx="12"
+        cy="12"
+        r="8.8"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        opacity=".55"
+      />
+      <circle cx="19.5" cy="7.5" r="1.7" fill="currentColor" />
+      <circle cx="4.4" cy="16.4" r="1.7" fill="currentColor" />
+      <circle cx="14.5" cy="20.2" r="1.7" fill="currentColor" />
+    </svg>
+  );
+}
+
 // Marquee de clientes en el intro (duplicado para el loop continuo).
 const INTRO_LOGOS = [...homeClientLogos, ...homeClientLogos];
 
@@ -187,6 +247,17 @@ export function EvaluationExperience({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const everOpenedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const calRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToCal = () => {
+    const reduced =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    calRef.current?.scrollIntoView({
+      behavior: reduced ? "auto" : "smooth",
+      block: "start",
+    });
+  };
 
   if (open) everOpenedRef.current = true;
 
@@ -380,6 +451,7 @@ export function EvaluationExperience({
             <em className="hdx-eyebrow">
               {String(step + 1).padStart(2, "0")} /{" "}
               {String(TOTAL_STEPS).padStart(2, "0")}
+              {step === TOTAL_STEPS - 1 ? " · Último paso" : ""}
             </em>
 
             {crumbs.length > 0 && (
@@ -456,7 +528,7 @@ export function EvaluationExperience({
                 <h2 className="hdx-title">
                   {firstName ? (
                     <>
-                      Un gusto, {firstName}. ¿Dónde está{" "}
+                      {firstName}, ¿dónde está{" "}
                       <em className="hdx-serif">tu operación principal?</em>
                     </>
                   ) : (
@@ -571,8 +643,8 @@ export function EvaluationExperience({
             {step === 7 && (
               <>
                 <h2 className="hdx-title">
-                  {firstName ? `Último paso, ${firstName}. ` : ""}¿A dónde
-                  enviamos <em className="hdx-serif">tu evaluación?</em>
+                  {firstName ? `${firstName}, ¿a` : "¿A"} dónde enviamos{" "}
+                  <em className="hdx-serif">tu evaluación?</em>
                 </h2>
                 <input
                   ref={inputRef}
@@ -681,18 +753,38 @@ export function EvaluationExperience({
               es el siguiente:
             </h2>
 
-            <div
-              className="hdx-program"
-              style={{
-                borderColor: rec.accent,
-                boxShadow: `0 30px 90px -30px ${rec.glow}`,
-              }}
-            >
-              <span className="hdx-program-aud" style={{ color: rec.accent }}>
-                {rec.audience}
-              </span>
-              <span className="hdx-program-name">{rec.name}</span>
-              <span className="hdx-program-tag">{rec.tagline}</span>
+            <div className="hdx-programs">
+              {(Object.keys(PROGRAMS) as ProgramKey[]).map((k) => {
+                const p = PROGRAMS[k];
+                const isRec = k === program;
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    className={`hdx-pcard${isRec ? " hdx-pcard--rec" : ""}`}
+                    style={
+                      {
+                        "--pc": p.accent,
+                        "--pg": p.glow,
+                      } as React.CSSProperties
+                    }
+                    onClick={scrollToCal}
+                  >
+                    {isRec && <span className="hdx-pcard-flag">✓ Tu programa</span>}
+                    <span className="hdx-pcard-icon" aria-hidden>
+                      <ProgramGlyph k={k} />
+                    </span>
+                    <span className="hdx-pcard-aud">{p.audience}</span>
+                    <span className="hdx-pcard-name">{p.name}</span>
+                    <span className="hdx-pcard-tag">{p.tagline}</span>
+                    <span className="hdx-pcard-cta">
+                      {isRec
+                        ? "Agendar mi llamada ↓"
+                        : "Compáralo en la llamada"}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             {program === "bootcamp" && (
@@ -706,18 +798,7 @@ export function EvaluationExperience({
               </div>
             )}
 
-            <div className="hdx-others">
-              {(Object.keys(PROGRAMS) as ProgramKey[])
-                .filter((k) => k !== program)
-                .map((k) => (
-                  <span key={k} className="hdx-other">
-                    {PROGRAMS[k].name}
-                    <em> · {PROGRAMS[k].audience}</em>
-                  </span>
-                ))}
-            </div>
-
-            <div className="hdx-cal">
+            <div className="hdx-cal" ref={calRef}>
               <div className="hdx-cal-head">
                 <span className="hdx-cal-title">
                   Reserva tu llamada de evaluación{" "}
@@ -896,6 +977,17 @@ export function EvaluationExperience({
         /* En desktop el paso vive dentro de un panel de vidrio: le da cuerpo
            al formulario en pantallas grandes (en móvil sigue a sangre). */
         @media (min-width: 860px) {
+          /* Dentro del panel el ancho útil es menor: un título algo más
+             contenido evita que las frases se partan a 3 líneas. */
+          .hdx-screen .hdx-title {
+            font-size: clamp(28px, 4.2vw, 41px);
+          }
+          .hdx-screen .hdx-title--sm {
+            font-size: clamp(26px, 3.6vw, 36px);
+          }
+          .hdx-stage .hdx-screen--wide {
+            max-width: 900px;
+          }
           .hdx-screen {
             padding: 44px 52px 40px;
             border-radius: 26px;
@@ -942,6 +1034,8 @@ export function EvaluationExperience({
           line-height: 1.08;
           letter-spacing: -0.025em;
           font-weight: 600;
+          /* Sin huérfanos ni cortes raros: líneas equilibradas. */
+          text-wrap: balance;
         }
         .hdx-title--sm {
           font-size: clamp(26px, 4vw, 38px);
@@ -964,6 +1058,7 @@ export function EvaluationExperience({
           line-height: 1.65;
           color: #b9c6e3;
           max-width: 560px;
+          text-wrap: pretty;
         }
         .hdx-name {
           font-weight: 800;
@@ -1163,35 +1258,116 @@ export function EvaluationExperience({
           font-size: 28px;
         }
 
-        /* Reveal */
-        .hdx-program {
+        /* Reveal: los 3 programas con la misma jerarquía; el recomendado se
+           distingue por flag + acento, no por tamaño. */
+        .hdx-programs {
+          display: grid;
+          gap: 14px;
+          margin-top: 12px;
+        }
+        @media (min-width: 860px) {
+          .hdx-programs {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+          }
+        }
+        .hdx-pcard {
           position: relative;
           display: flex;
           flex-direction: column;
-          gap: 8px;
-          margin-top: 8px;
-          padding: 28px 30px;
-          border-radius: 20px;
-          border: 1px solid;
-          background: rgba(10, 16, 32, 0.8);
-          animation: hdx-program-pop 0.6s cubic-bezier(0.2, 1.25, 0.3, 1) both;
+          align-items: flex-start;
+          gap: 7px;
+          padding: 22px 20px 18px;
+          border-radius: 18px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          /* Fallback para navegadores sin color-mix() */
+          background: rgba(10, 16, 32, 0.75);
+          background:
+            radial-gradient(130% 100% at 50% 0%, color-mix(in srgb, var(--pc) 11%, transparent), transparent 62%),
+            rgba(10, 16, 32, 0.75);
+          color: #f2f5fc;
+          font-family: inherit;
+          text-align: left;
+          cursor: pointer;
+          animation: hdx-program-pop 0.55s cubic-bezier(0.2, 1.25, 0.3, 1) both;
+          transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s, box-shadow 0.3s;
         }
-        .hdx-program-aud {
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.18em;
+        .hdx-pcard:nth-child(2) {
+          animation-delay: 0.08s;
+        }
+        .hdx-pcard:nth-child(3) {
+          animation-delay: 0.16s;
+        }
+        .hdx-pcard:hover {
+          transform: translateY(-4px);
+          border-color: var(--pc);
+          box-shadow: 0 26px 64px -26px var(--pg);
+        }
+        .hdx-pcard--rec {
+          border-color: var(--pc);
+          box-shadow: 0 30px 80px -28px var(--pg), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+        }
+        /* En móvil (columna única) el recomendado va primero. */
+        .hdx-pcard--rec {
+          order: -1;
+        }
+        @media (min-width: 860px) {
+          .hdx-pcard--rec {
+            order: 0;
+          }
+        }
+        .hdx-pcard-flag {
+          position: absolute;
+          top: -11px;
+          left: 16px;
+          padding: 4px 12px;
+          border-radius: 999px;
+          background: var(--pc);
+          color: #06121c;
+          font-size: 10.5px;
+          font-weight: 800;
+          letter-spacing: 0.09em;
           text-transform: uppercase;
+          white-space: nowrap;
         }
-        .hdx-program-name {
-          font-size: clamp(28px, 4.4vw, 40px);
-          font-weight: 600;
-          letter-spacing: -0.025em;
-          line-height: 1.05;
+        .hdx-pcard-icon {
+          display: grid;
+          place-items: center;
+          width: 40px;
+          height: 40px;
+          margin-bottom: 4px;
+          border-radius: 12px;
+          color: var(--pc);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: rgba(255, 255, 255, 0.04);
+          border-color: color-mix(in srgb, var(--pc) 38%, transparent);
+          background: color-mix(in srgb, var(--pc) 10%, transparent);
         }
-        .hdx-program-tag {
-          font-size: 16px;
-          line-height: 1.55;
-          color: #c3d0e9;
+        .hdx-pcard-aud {
+          font-size: 10.5px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--pc);
+        }
+        .hdx-pcard-name {
+          font-size: 19px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          line-height: 1.15;
+        }
+        .hdx-pcard-tag {
+          font-size: 13.5px;
+          line-height: 1.5;
+          color: #b0bfdd;
+          text-wrap: pretty;
+        }
+        .hdx-pcard-cta {
+          margin-top: auto;
+          padding-top: 10px;
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--pc);
         }
         .hdx-ia {
           display: flex;
@@ -1217,23 +1393,6 @@ export function EvaluationExperience({
           box-shadow: 0 0 10px rgba(55, 230, 195, 0.9);
           animation: hdx-node 2s ease-in-out infinite;
         }
-        .hdx-others {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px 22px;
-          margin-top: 18px;
-        }
-        .hdx-other {
-          font-size: 13.5px;
-          font-weight: 600;
-          color: #7d8fb0;
-        }
-        .hdx-other em {
-          font-style: normal;
-          font-weight: 500;
-          color: #5e6f8f;
-        }
-
         /* Intro: marquee de clientes */
         .hdx-intro-proof {
           margin-top: 40px;
@@ -1304,6 +1463,7 @@ export function EvaluationExperience({
           font-size: 13.5px;
           line-height: 1.55;
           color: #b0bfdd;
+          text-wrap: pretty;
         }
 
         /* Reveal: sello + chispas + Calendly embebido */
@@ -1503,7 +1663,7 @@ export function EvaluationExperience({
           .hdx-root--open,
           .hdx-screen,
           .hdx-screen > *,
-          .hdx-program,
+          .hdx-pcard,
           .hdx-aurora,
           .hdx-serif,
           .hdx-node,
@@ -1512,6 +1672,11 @@ export function EvaluationExperience({
           .hdx-crumb,
           .hdx-screen > .hdx-seal {
             animation: none !important;
+          }
+          .hdx-pcard,
+          .hdx-pcard:hover {
+            transform: none;
+            transition: none;
           }
           .hdx-spark {
             display: none;
