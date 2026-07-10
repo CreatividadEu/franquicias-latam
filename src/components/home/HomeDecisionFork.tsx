@@ -660,7 +660,10 @@ export function HomeDecisionFork() {
               </span>
             ) : (
               <>
-                <span ref={evalCtaRef} className="hdf-card-cta hdf-card-cta--orange">
+                <span
+                  ref={evalCtaRef}
+                  className="hdf-card-cta hdf-card-cta--orange hdf-card-cta--live"
+                >
                   Comienza tu Evaluación Privada <ArrowTrail primed />
                 </span>
                 <span
@@ -669,13 +672,13 @@ export function HomeDecisionFork() {
                 >
                   <input
                     className="hdf-eval-input"
-                    placeholder="¿Cómo se llama tu empresa?"
+                    placeholder="Nombre de tu Negocio"
                     value={companySeed}
                     onChange={(e) => setCompanySeed(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") openEvaluation();
                     }}
-                    aria-label="Nombre de tu empresa"
+                    aria-label="Nombre de tu negocio"
                   />
                   <button
                     type="button"
@@ -705,6 +708,7 @@ export function HomeDecisionFork() {
 
           <Link href={HREF.invertir} className="hdf-card hdf-card--cyan">
             <span className="hdf-card-topline hdf-card-topline--cyan" />
+            <span className="hdf-card-sheen" aria-hidden />
             <span className="hdf-card-eyebrow hdf-card-eyebrow--cyan">Para Inversionistas</span>
             <span className="hdf-card-title">Quiero invertir en una franquicia.</span>
             <span className="hdf-card-cta hdf-card-cta--cyan">
@@ -1238,6 +1242,31 @@ export function HomeDecisionFork() {
         .hdf-card-cta--cyan {
           color: #8fdcec;
         }
+        /* Tras el morph, el copy respira con un brillo suave y continuo. */
+        .hdf-card-cta--live {
+          animation: hdf-cta-glow 3.2s ease-in-out 0.4s infinite;
+        }
+        /* Invitación periódica en la tarjeta de Inversionistas: destello
+           diagonal + doble empujón de la flecha, para que no se sienta quieta
+           al lado del morph de Empresarios. */
+        .hdf-card-sheen {
+          position: absolute;
+          inset: 0 auto 0 0;
+          width: 38%;
+          background: linear-gradient(
+            100deg,
+            transparent,
+            rgba(143, 220, 236, 0.08) 45%,
+            rgba(255, 255, 255, 0.06) 55%,
+            transparent
+          );
+          transform: translateX(-170%) skewX(-8deg);
+          animation: hdf-card-sheen-sweep 7s cubic-bezier(0.3, 0.6, 0.2, 1) 2.4s infinite;
+          pointer-events: none;
+        }
+        .hdf-card-cta--cyan svg {
+          animation: hdf-arrow-nudge 7s ease-in-out 2.6s infinite;
+        }
         .hdf-card--action {
           cursor: pointer;
         }
@@ -1276,25 +1305,45 @@ export function HomeDecisionFork() {
           margin-top: 18px;
           animation: hdf-fade-up 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
         }
+        /* En pantallas angostas la cápsula manda: input a todo el ancho y
+           botón debajo (el placeholder no se debe truncar). */
+        @media (max-width: 419px) {
+          .hdf-eval-start {
+            flex-direction: column;
+          }
+          .hdf-eval-btn {
+            justify-content: center;
+          }
+        }
         .hdf-eval-input {
           flex: 1;
           min-width: 0;
           padding: 13px 16px;
           border-radius: 12px;
-          border: 1px solid rgba(255, 138, 61, 0.35);
+          border: 1px solid rgba(255, 138, 61, 0.42);
           background: rgba(255, 255, 255, 0.05);
           color: #f2f5fc;
           font-family: inherit;
           font-size: 15px;
           outline: none;
-          transition: border-color 0.25s, box-shadow 0.25s;
+          /* Reposo con halo tenue: la cápsula es el punto focal de la tarjeta. */
+          box-shadow: 0 0 22px -8px rgba(255, 138, 61, 0.35);
+          transition: border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+          animation: hdf-input-beacon 2.4s ease-in-out 0.75s 3;
         }
         .hdf-eval-input::placeholder {
-          color: #8e9fbe;
+          color: #9aa9c7;
+          transition: color 0.35s ease, text-shadow 0.35s ease;
+          animation: hdf-placeholder-glow 2.4s ease-in-out 0.75s 3;
         }
         .hdf-eval-input:focus {
           border-color: #ff8a3d;
-          box-shadow: 0 0 0 4px rgba(255, 122, 41, 0.14);
+          box-shadow: 0 0 0 4px rgba(255, 122, 41, 0.14), 0 0 30px -6px rgba(255, 138, 61, 0.45);
+          animation: none;
+        }
+        .hdf-eval-input:focus::placeholder {
+          color: #8e9fbe;
+          animation: none;
         }
         .hdf-eval-btn {
           display: inline-flex;
@@ -1833,6 +1882,64 @@ export function HomeDecisionFork() {
             opacity: 1;
           }
         }
+        @keyframes hdf-input-beacon {
+          0%,
+          100% {
+            border-color: rgba(255, 138, 61, 0.42);
+            box-shadow: 0 0 22px -8px rgba(255, 138, 61, 0.35);
+            background: rgba(255, 255, 255, 0.05);
+          }
+          50% {
+            border-color: rgba(255, 170, 105, 0.95);
+            box-shadow: 0 0 0 5px rgba(255, 122, 41, 0.13), 0 0 36px -4px rgba(255, 138, 61, 0.6);
+            background: rgba(255, 138, 61, 0.09);
+          }
+        }
+        @keyframes hdf-placeholder-glow {
+          0%,
+          100% {
+            color: #9aa9c7;
+            text-shadow: 0 0 0 rgba(255, 162, 79, 0);
+          }
+          50% {
+            color: #ffddbd;
+            text-shadow: 0 0 14px rgba(255, 162, 79, 0.55);
+          }
+        }
+        @keyframes hdf-cta-glow {
+          0%,
+          100% {
+            text-shadow: 0 0 0 rgba(255, 150, 80, 0);
+          }
+          50% {
+            text-shadow: 0 0 16px rgba(255, 150, 80, 0.55);
+          }
+        }
+        @keyframes hdf-card-sheen-sweep {
+          0% {
+            transform: translateX(-170%) skewX(-8deg);
+          }
+          30%,
+          100% {
+            transform: translateX(440%) skewX(-8deg);
+          }
+        }
+        @keyframes hdf-arrow-nudge {
+          0%,
+          68%,
+          100% {
+            transform: translateX(0);
+          }
+          76% {
+            transform: translateX(5px);
+          }
+          84% {
+            transform: translateX(1px);
+          }
+          92% {
+            transform: translateX(5px);
+          }
+        }
 
         @media (prefers-reduced-motion: reduce) {
           .hdf-aurora,
@@ -1850,7 +1957,12 @@ export function HomeDecisionFork() {
           .hdf-stat-node,
           .hdf-video-frame,
           .hdf-cards,
-          .hdf-eval-start {
+          .hdf-eval-start,
+          .hdf-eval-input,
+          .hdf-eval-input::placeholder,
+          .hdf-card-cta--live,
+          .hdf-card-sheen,
+          .hdf-card-cta--cyan svg {
             animation: none !important;
           }
           .hdf-arrows svg {

@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { homeClientLogos, type BrandLogo } from "./homeBrandData";
 
 // ── La Evaluación Privada ────────────────────────────────────────────────────
 // Espacio inmersivo de calificación: una pregunta por pantalla, matching a
@@ -53,7 +55,6 @@ const FACTURACION = [
   { value: "300k-1m", label: "USD $300K – $1M" },
   { value: "1m-5m", label: "USD $1M – $5M" },
   { value: "5m+", label: "USD $5M+" },
-  { value: "reservado", label: "Prefiero decirlo en la llamada" },
 ];
 
 const OBJETIVOS = [
@@ -75,6 +76,47 @@ const ROLES = ["Fundador/a", "CEO", "Socio/a", "Director/a", "Otro"];
 function labelOf(list: { value: string; label: string }[], value: string) {
   return list.find((o) => o.value === value)?.label ?? value;
 }
+
+// Marquee de clientes en el intro (duplicado para el loop continuo).
+const INTRO_LOGOS = [...homeClientLogos, ...homeClientLogos];
+
+function logosBy(...alts: string[]): BrandLogo[] {
+  return alts
+    .map((alt) => homeClientLogos.find((l) => l.alt === alt))
+    .filter((l): l is BrandLogo => Boolean(l));
+}
+
+// Referencias de éxito por programa (paso de contacto): que el último paso no
+// se sienta vacío y ancle la decisión con casos reales.
+const PROGRAM_PROOF: Record<ProgramKey, { line: string; logos: BrandLogo[] }> =
+  {
+    bootcamp: {
+      line: "Totto también empezó con una tienda en Bogotá. Hoy: 450 tiendas en más de 40 países.",
+      logos: logosBy("Totto", "Andrés"),
+    },
+    development: {
+      line: "Sodexo, Nutresa y más de 750 marcas estructuraron su expansión con esta metodología.",
+      logos: logosBy("Sodexo", "Nutresa"),
+    },
+    ecosystem: {
+      line: "Las redes más grandes de la región auditan, venden y forman su franquicia con nuestro equipo.",
+      logos: logosBy("Subway", "Mercado Libre", "BID"),
+    },
+  };
+
+// Chispas del cierre (celebración al revelar el programa). Valores
+// deterministas derivados del índice: nada de aleatoriedad en render.
+const BURST_SPARKS = Array.from({ length: 22 }, (_, i) => {
+  const angle = (i / 22) * Math.PI * 2;
+  const dist = 110 + ((i * 53) % 80);
+  return {
+    dx: Math.round(Math.cos(angle) * dist),
+    dy: Math.round(Math.sin(angle) * dist * 0.72) - 36,
+    color: ["#37E6C3", "#6EA8FF", "#FFA24F", "#FFD9B8"][i % 4],
+    delay: (i % 5) * 0.06,
+    size: 5 + ((i * 37) % 5),
+  };
+});
 
 type Answers = {
   empresa: string;
@@ -191,6 +233,24 @@ export function EvaluationExperience({
 
   const program = useMemo(() => recommendProgram(answers), [answers]);
   const rec = PROGRAMS[program];
+  const proof = PROGRAM_PROOF[program];
+  const firstName = answers.nombre.trim().split(/\s+/)[0] ?? "";
+
+  // Rastro de respuestas: mini-chips que se van acumulando bajo el contador
+  // de paso — refuerzo visible de avance.
+  const crumbs = [
+    step > 0 && answers.empresa.trim(),
+    step > 1 &&
+      firstName &&
+      `${firstName}${answers.rol ? ` · ${answers.rol}` : ""}`,
+    step > 2 && answers.ubicacion.trim(),
+    step > 3 && answers.unidades && labelOf(UNIDADES, answers.unidades),
+    step > 4 &&
+      answers.facturacion &&
+      labelOf(FACTURACION, answers.facturacion),
+    step > 5 && answers.objetivo && labelOf(OBJETIVOS, answers.objetivo),
+    step > 6 && answers.horizonte && labelOf(HORIZONTES, answers.horizonte),
+  ].filter((c): c is string => Boolean(c));
 
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answers.email.trim());
   const phoneOk = answers.whatsapp.replace(/\D/g, "").length >= 8;
@@ -293,14 +353,45 @@ export function EvaluationExperience({
             >
               Comenzar <span aria-hidden>→</span>
             </button>
+            <div className="hdx-intro-proof">
+              <span className="hdx-intro-caption">
+                Confiaron en este proceso
+              </span>
+              <div className="hdx-intro-logos" aria-hidden>
+                <div className="hdx-intro-track">
+                  {INTRO_LOGOS.map((logo, i) => (
+                    <Image
+                      key={`${logo.alt}-${i}`}
+                      src={logo.src}
+                      alt=""
+                      width={120}
+                      height={44}
+                      className="hdx-intro-logo"
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
         {phase === "form" && (
           <div className="hdx-screen" key={`step-${step}`}>
             <em className="hdx-eyebrow">
-              {String(step + 1).padStart(2, "0")} / {TOTAL_STEPS}
+              {String(step + 1).padStart(2, "0")} /{" "}
+              {String(TOTAL_STEPS).padStart(2, "0")}
             </em>
+
+            {crumbs.length > 0 && (
+              <div className="hdx-crumbs" aria-hidden>
+                {crumbs.map((c, i) => (
+                  <span key={`${i}-${c}`} className="hdx-crumb">
+                    <i>✓</i>
+                    {c}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {step === 0 && (
               <>
@@ -310,7 +401,7 @@ export function EvaluationExperience({
                 <input
                   ref={inputRef}
                   className="hdx-input"
-                  placeholder="Nombre de la empresa"
+                  placeholder="Nombre de tu Negocio"
                   value={answers.empresa}
                   onChange={(e) => set({ empresa: e.target.value })}
                   onKeyDown={(e) => {
@@ -363,7 +454,17 @@ export function EvaluationExperience({
             {step === 2 && (
               <>
                 <h2 className="hdx-title">
-                  ¿Dónde está tu <em className="hdx-serif">operación principal?</em>
+                  {firstName ? (
+                    <>
+                      Un gusto, {firstName}. ¿Dónde está{" "}
+                      <em className="hdx-serif">tu operación principal?</em>
+                    </>
+                  ) : (
+                    <>
+                      ¿Dónde está tu{" "}
+                      <em className="hdx-serif">operación principal?</em>
+                    </>
+                  )}
                 </h2>
                 <input
                   ref={inputRef}
@@ -470,7 +571,8 @@ export function EvaluationExperience({
             {step === 7 && (
               <>
                 <h2 className="hdx-title">
-                  ¿A dónde enviamos <em className="hdx-serif">tu evaluación?</em>
+                  {firstName ? `Último paso, ${firstName}. ` : ""}¿A dónde
+                  enviamos <em className="hdx-serif">tu evaluación?</em>
                 </h2>
                 <input
                   ref={inputRef}
@@ -501,7 +603,7 @@ export function EvaluationExperience({
                     disabled={!emailOk || !phoneOk || submitting}
                     onClick={submit}
                   >
-                    {submitting ? "Enviando…" : "Ver mi ruta"}{" "}
+                    {submitting ? "Enviando…" : "Ver mi programa"}{" "}
                     <span aria-hidden>→</span>
                   </button>
                 </div>
@@ -509,6 +611,21 @@ export function EvaluationExperience({
                   Tus datos son confidenciales. Los usamos solo para preparar tu
                   evaluación.
                 </p>
+                <div className="hdx-proof">
+                  <div className="hdx-proof-logos">
+                    {proof.logos.map((logo) => (
+                      <Image
+                        key={logo.alt}
+                        src={logo.src}
+                        alt={logo.alt}
+                        width={120}
+                        height={44}
+                        className="hdx-proof-logo"
+                      />
+                    ))}
+                  </div>
+                  <p className="hdx-proof-line">{proof.line}</p>
+                </div>
               </>
             )}
           </div>
@@ -522,18 +639,46 @@ export function EvaluationExperience({
               <span className="hdx-node" />
             </div>
             <em className="hdx-serif hdx-computing-text">
-              Analizando tu perfil…
+              {answers.empresa.trim()
+                ? `Analizando el perfil de ${answers.empresa.trim()}…`
+                : "Analizando tu perfil…"}
             </em>
           </div>
         )}
 
         {phase === "reveal" && (
-          <div className="hdx-screen" key="reveal">
-            <em className="hdx-eyebrow">
-              {answers.empresa || "Tu marca"} · Evaluación completada
-            </em>
+          <div className="hdx-screen hdx-screen--wide" key="reveal">
+            <div className="hdx-burst" aria-hidden>
+              {BURST_SPARKS.map((s, i) => (
+                <span
+                  key={i}
+                  className="hdx-spark"
+                  style={
+                    {
+                      "--dx": `${s.dx}px`,
+                      "--dy": `${s.dy}px`,
+                      "--dl": `${s.delay}s`,
+                      width: s.size,
+                      height: s.size,
+                      background: s.color,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+            </div>
+            <div className="hdx-seal">
+              <span className="hdx-seal-check" aria-hidden>
+                ✓
+              </span>
+              Evaluación completada
+            </div>
             <h2 className="hdx-title hdx-title--sm">
-              Tu ruta recomendada <em className="hdx-serif">existe.</em>
+              <strong className="hdx-name">{firstName || "Listo"}</strong>, el
+              programa ideal para{" "}
+              <em className="hdx-serif">
+                {answers.empresa.trim() || "tu negocio"}
+              </em>{" "}
+              es el siguiente:
             </h2>
 
             <div
@@ -572,15 +717,28 @@ export function EvaluationExperience({
                 ))}
             </div>
 
-            <a
-              href={EVAL_CALL_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="hdx-cta hdx-cta--big"
-            >
-              Reservar mi llamada de evaluación (10 min){" "}
-              <span aria-hidden>→</span>
-            </a>
+            <div className="hdx-cal">
+              <div className="hdx-cal-head">
+                <span className="hdx-cal-title">
+                  Reserva tu llamada de evaluación{" "}
+                  <em>— 10 minutos, sin costo</em>
+                </span>
+                <a
+                  href={EVAL_CALL_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hdx-cal-ext"
+                >
+                  Abrir en otra pestaña ↗
+                </a>
+              </div>
+              <iframe
+                src={`${EVAL_CALL_URL}?hide_landing_page_details=1&hide_event_type_details=1&hide_gdpr_banner=1&background_color=0a1020&text_color=f2f5fc&primary_color=ff7a29`}
+                title="Reserva tu llamada de evaluación (10 minutos)"
+                loading="lazy"
+                className="hdx-cal-frame"
+              />
+            </div>
             <p className="hdx-fine">
               Sin costo · Te confirmamos por WhatsApp al{" "}
               {answers.whatsapp || "número que nos diste"}.
@@ -697,18 +855,76 @@ export function EvaluationExperience({
           z-index: 1;
           flex: 1;
           display: flex;
-          align-items: center;
           justify-content: center;
           padding: 24px 20px 48px;
           overflow-y: auto;
         }
         .hdx-screen {
+          position: relative;
           width: 100%;
           max-width: 640px;
-          animation: hdx-step 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+          /* auto vertical: centrado cuando cabe, scroll natural cuando no
+             (el reveal con Calendly embebido es más alto que el viewport). */
+          margin: auto 0;
+          animation: hdx-in 0.4s ease both;
+        }
+        /* Cascada: cada bloque del paso entra con un pequeño desfase. */
+        .hdx-screen > * {
+          animation: hdx-step 0.48s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        }
+        .hdx-screen > *:nth-child(2) {
+          animation-delay: 0.06s;
+        }
+        .hdx-screen > *:nth-child(3) {
+          animation-delay: 0.12s;
+        }
+        .hdx-screen > *:nth-child(4) {
+          animation-delay: 0.18s;
+        }
+        .hdx-screen > *:nth-child(5) {
+          animation-delay: 0.24s;
+        }
+        .hdx-screen > *:nth-child(n + 6) {
+          animation-delay: 0.3s;
+        }
+        .hdx-screen--wide {
+          max-width: 760px;
         }
         .hdx-screen--center {
           text-align: center;
+        }
+        /* En desktop el paso vive dentro de un panel de vidrio: le da cuerpo
+           al formulario en pantallas grandes (en móvil sigue a sangre). */
+        @media (min-width: 860px) {
+          .hdx-screen {
+            padding: 44px 52px 40px;
+            border-radius: 26px;
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            background: linear-gradient(180deg, rgba(16, 24, 44, 0.72), rgba(8, 12, 24, 0.58));
+            box-shadow: 0 60px 140px -60px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+          }
+          .hdx-screen::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 44px;
+            right: 44px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(110, 168, 255, 0.45), rgba(55, 230, 195, 0.45), transparent);
+          }
+          .hdx-screen--center {
+            padding: 0;
+            border: none;
+            background: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+          }
+          .hdx-screen--center::before {
+            content: none;
+          }
         }
         .hdx-eyebrow {
           display: block;
@@ -717,7 +933,7 @@ export function EvaluationExperience({
           font-weight: 700;
           letter-spacing: 0.22em;
           text-transform: uppercase;
-          color: #5e6f8f;
+          color: #8fa1c4;
           margin-bottom: 16px;
         }
         .hdx-title {
@@ -744,10 +960,14 @@ export function EvaluationExperience({
         }
         .hdx-sub {
           margin: 0 0 34px;
-          font-size: 17px;
+          font-size: 17.5px;
           line-height: 1.65;
-          color: #8e9fbe;
+          color: #b9c6e3;
           max-width: 560px;
+        }
+        .hdx-name {
+          font-weight: 800;
+          color: #ffffff;
         }
 
         .hdx-input {
@@ -765,7 +985,7 @@ export function EvaluationExperience({
           transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
         }
         .hdx-input::placeholder {
-          color: #5e6f8f;
+          color: #7d8fb0;
         }
         .hdx-input:focus {
           border-color: rgba(110, 168, 255, 0.65);
@@ -792,9 +1012,9 @@ export function EvaluationExperience({
         .hdx-chip {
           padding: 15px 18px;
           border-radius: 14px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.04);
-          color: #d7e1f5;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          background: rgba(255, 255, 255, 0.045);
+          color: #e8eefb;
           font-family: inherit;
           font-size: 15.5px;
           font-weight: 600;
@@ -825,7 +1045,7 @@ export function EvaluationExperience({
           border-radius: 12px;
           border: 1px solid rgba(255, 255, 255, 0.12);
           background: transparent;
-          color: #8e9fbe;
+          color: #a8b7d4;
           font-family: inherit;
           font-size: 14px;
           font-weight: 600;
@@ -874,8 +1094,46 @@ export function EvaluationExperience({
         }
         .hdx-fine {
           margin-top: 14px;
-          font-size: 13px;
-          color: #5e6f8f;
+          font-size: 13.5px;
+          color: #8296b8;
+        }
+        .hdx-kbd {
+          display: none;
+          font-size: 12.5px;
+          color: #7d8fb0;
+        }
+        .hdx-kbd b {
+          font-weight: 700;
+          color: #a8b7d4;
+        }
+        @media (min-width: 860px) {
+          .hdx-kbd {
+            display: inline;
+          }
+        }
+        .hdx-crumbs {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin: -4px 0 20px;
+        }
+        .hdx-crumb {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 5px 12px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.035);
+          font-size: 12px;
+          font-weight: 600;
+          color: #a8b7d4;
+          animation: hdx-crumb-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        }
+        .hdx-crumb i {
+          font-style: normal;
+          font-size: 10.5px;
+          color: #37e6c3;
         }
 
         /* Computing */
@@ -916,7 +1174,7 @@ export function EvaluationExperience({
           border-radius: 20px;
           border: 1px solid;
           background: rgba(10, 16, 32, 0.8);
-          animation: hdx-step 0.5s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+          animation: hdx-program-pop 0.6s cubic-bezier(0.2, 1.25, 0.3, 1) both;
         }
         .hdx-program-aud {
           font-size: 12px;
@@ -933,7 +1191,7 @@ export function EvaluationExperience({
         .hdx-program-tag {
           font-size: 16px;
           line-height: 1.55;
-          color: #a9b8d6;
+          color: #c3d0e9;
         }
         .hdx-ia {
           display: flex;
@@ -968,12 +1226,180 @@ export function EvaluationExperience({
         .hdx-other {
           font-size: 13.5px;
           font-weight: 600;
-          color: #5e6f8f;
+          color: #7d8fb0;
         }
         .hdx-other em {
           font-style: normal;
           font-weight: 500;
-          color: #44536f;
+          color: #5e6f8f;
+        }
+
+        /* Intro: marquee de clientes */
+        .hdx-intro-proof {
+          margin-top: 40px;
+        }
+        .hdx-intro-caption {
+          display: block;
+          margin-bottom: 14px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: #7d8fb0;
+        }
+        .hdx-intro-logos {
+          overflow: hidden;
+          -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+        }
+        .hdx-intro-track {
+          display: flex;
+          align-items: center;
+          gap: 44px;
+          width: max-content;
+          padding-right: 44px;
+          animation: hdx-marquee 26s linear infinite;
+        }
+        .hdx-intro-logo {
+          height: 30px;
+          width: auto;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
+          opacity: 0.65;
+        }
+
+        /* Paso de contacto: referencias del programa tentativo */
+        .hdx-proof {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          margin-top: 26px;
+          padding: 18px 20px;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.09);
+          background: rgba(255, 255, 255, 0.03);
+        }
+        @media (min-width: 640px) {
+          .hdx-proof {
+            flex-direction: row;
+            align-items: center;
+            gap: 22px;
+          }
+        }
+        .hdx-proof-logos {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          flex-shrink: 0;
+        }
+        .hdx-proof-logo {
+          height: 26px;
+          width: auto;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
+          opacity: 0.75;
+        }
+        .hdx-proof-line {
+          margin: 0;
+          font-size: 13.5px;
+          line-height: 1.55;
+          color: #b0bfdd;
+        }
+
+        /* Reveal: sello + chispas + Calendly embebido */
+        .hdx-seal {
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          margin-bottom: 18px;
+          padding: 8px 16px;
+          border-radius: 999px;
+          border: 1px solid rgba(55, 230, 195, 0.35);
+          background: rgba(55, 230, 195, 0.08);
+          color: #37e6c3;
+          font-size: 12.5px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+        .hdx-screen > .hdx-seal {
+          animation: hdx-seal-pop 0.55s cubic-bezier(0.2, 1.4, 0.3, 1) both;
+        }
+        .hdx-seal-check {
+          display: grid;
+          place-items: center;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #37e6c3;
+          color: #05221b;
+          font-size: 11px;
+          font-weight: 800;
+        }
+        .hdx-burst {
+          position: absolute;
+          inset: 0;
+          overflow: visible;
+          pointer-events: none;
+          z-index: 2;
+        }
+        .hdx-screen > .hdx-burst {
+          animation: none;
+        }
+        .hdx-spark {
+          position: absolute;
+          left: 50%;
+          top: 110px;
+          border-radius: 2px;
+          opacity: 0;
+          animation: hdx-spark 1.15s cubic-bezier(0.16, 0.8, 0.3, 1) var(--dl, 0s) both;
+        }
+        .hdx-cal {
+          margin-top: 28px;
+          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(10, 16, 32, 0.8);
+          overflow: hidden;
+        }
+        .hdx-cal-head {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px 16px;
+          padding: 16px 20px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .hdx-cal-title {
+          font-size: 15px;
+          font-weight: 700;
+        }
+        .hdx-cal-title em {
+          font-style: normal;
+          font-weight: 500;
+          color: #8fa1c4;
+        }
+        .hdx-cal-ext {
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #8fdcec;
+          text-decoration: none;
+          white-space: nowrap;
+        }
+        .hdx-cal-ext:hover {
+          color: #d6f3fb;
+        }
+        .hdx-cal-frame {
+          display: block;
+          width: 100%;
+          height: 620px;
+          border: 0;
+          background: #0a1020;
+        }
+        @media (max-width: 639px) {
+          .hdx-cal-frame {
+            height: 560px;
+          }
         }
 
         @keyframes hdx-in {
@@ -1025,15 +1451,70 @@ export function EvaluationExperience({
             opacity: 0.7;
           }
         }
+        @keyframes hdx-marquee {
+          to {
+            transform: translateX(-50%);
+          }
+        }
+        @keyframes hdx-crumb-in {
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes hdx-seal-pop {
+          from {
+            opacity: 0;
+            transform: scale(0.55);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        @keyframes hdx-program-pop {
+          from {
+            opacity: 0;
+            transform: translateY(18px) scale(0.94);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes hdx-spark {
+          0% {
+            opacity: 0;
+            transform: translate(0, 0) scale(0.4) rotate(0deg);
+          }
+          12% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            transform: translate(var(--dx), var(--dy)) scale(1) rotate(300deg);
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
           .hdx-root--open,
           .hdx-screen,
+          .hdx-screen > *,
           .hdx-program,
           .hdx-aurora,
           .hdx-serif,
           .hdx-node,
-          .hdx-ia-dot {
+          .hdx-ia-dot,
+          .hdx-intro-track,
+          .hdx-crumb,
+          .hdx-screen > .hdx-seal {
             animation: none !important;
+          }
+          .hdx-spark {
+            display: none;
           }
         }
       `}</style>
@@ -1058,14 +1539,19 @@ function StepNav({
         </button>
       )}
       {onNext && (
-        <button
-          type="button"
-          className="hdx-cta"
-          disabled={canNext === false}
-          onClick={onNext}
-        >
-          Continuar <span aria-hidden>→</span>
-        </button>
+        <>
+          <button
+            type="button"
+            className="hdx-cta"
+            disabled={canNext === false}
+            onClick={onNext}
+          >
+            Continuar <span aria-hidden>→</span>
+          </button>
+          <span className="hdx-kbd" aria-hidden>
+            presiona <b>Enter ↵</b>
+          </span>
+        </>
       )}
     </div>
   );
