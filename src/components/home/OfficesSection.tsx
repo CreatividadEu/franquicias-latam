@@ -31,10 +31,10 @@ const OFFICES: Office[] = [
   {
     region: "LATAM",
     city: "Bogotá",
-    building: "Edificio Flormorado",
-    detail: "Oficina privada",
+    building: "Carrera 7 #116-50, Edificio Flormorado",
+    detail: "Usaquén",
     timeZone: "America/Bogota",
-    mapsQuery: "Edificio Flormorado, Bogotá",
+    mapsQuery: "Carrera 7 #116-50, Edificio Flormorado, Bogotá",
     image:
       "https://flormorado.com/wp-content/uploads/2022/07/flormorado-plaza-5.jpg",
     accent: "#37E6C3",
@@ -304,14 +304,15 @@ export function OfficesSection() {
         .hdo-building {
           display: flex;
           flex-direction: column;
-          gap: 2px;
-          font-size: 15px;
+          gap: 3px;
+          font-size: 17px;
           font-weight: 600;
-          color: #d7e1f5;
+          line-height: 1.25;
+          color: #e4ecfb;
         }
         .hdo-building em {
           font-style: normal;
-          font-size: 12.5px;
+          font-size: 13.5px;
           font-weight: 500;
           letter-spacing: 0.06em;
           text-transform: uppercase;
