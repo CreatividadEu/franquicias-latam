@@ -8,6 +8,8 @@ import {
   homeClientLogos,
   programInstitutionalLogos,
 } from "@/components/home/homeBrandData";
+import { EvaluationExperience } from "@/components/home/EvaluationExperience";
+import { OfficesSection } from "@/components/home/OfficesSection";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -90,6 +92,25 @@ function Arrow({ size = 18 }: { size?: number }) {
     </svg>
   );
 }
+
+// Flechas progresivas 1 → 2 → 3 (onda con easing, 4 ciclos); al terminar,
+// `primed` las deja fijas como estela.
+function ArrowTrail({ primed }: { primed: boolean }) {
+  return (
+    <span
+      className={`hdf-arrows${primed ? " hdf-arrows--primed" : ""}`}
+      aria-hidden="true"
+    >
+      <Arrow />
+      <Arrow />
+      <Arrow />
+    </span>
+  );
+}
+
+// Ciclos de la onda de flechas: mantener en sintonía con el CSS
+// (.hdf-arrows svg → animation ... 4) y el timer de "primed".
+const ARROW_CYCLES_MS = 7100;
 
 // MinTIC's asset is a solid-fill color badge (not a transparent line mark), so
 // brightness(0)/invert(1) collapses it into a plain white block. Give it a
@@ -276,6 +297,44 @@ export function HomeDecisionFork() {
   const [stats, setStats] = useState({ stores: 0, countries: 0, sales: 0 });
   const statsRef = useRef<HTMLDivElement | null>(null);
   const statsStartedRef = useRef(false);
+
+  // Evaluación Privada: onda de flechas → morph de la tarjeta → overlay.
+  const [evalPrimed, setEvalPrimed] = useState(false);
+  const [evalOpen, setEvalOpen] = useState(false);
+  const [companySeed, setCompanySeed] = useState("");
+  const evalCtaRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    const node = evalCtaRef.current;
+    if (!node) return;
+
+    const reduced =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduced || typeof IntersectionObserver === "undefined") {
+      const raf = requestAnimationFrame(() => setEvalPrimed(true));
+      return () => cancelAnimationFrame(raf);
+    }
+
+    let timer = 0;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          observer.disconnect();
+          timer = window.setTimeout(() => setEvalPrimed(true), ARROW_CYCLES_MS);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  const openEvaluation = () => setEvalOpen(true);
 
   useEffect(() => {
     const reduced =
@@ -575,13 +634,59 @@ export function HomeDecisionFork() {
 
         {/* Two paths */}
         <div className="hdf-cards mt-10 grid w-full max-w-[1120px] gap-6 sm:mt-14">
-          <a href={HREF.franquiciar} className="hdf-card hdf-card--orange">
+          <div
+            role="button"
+            tabIndex={0}
+            aria-label="Comenzar mi Evaluación Privada"
+            onClick={openEvaluation}
+            onKeyDown={(e) => {
+              // Solo cuando el foco está en la tarjeta misma: los eventos del
+              // input interno burbujean y un preventDefault aquí bloquearía
+              // escribir espacios en él.
+              if (e.target !== e.currentTarget) return;
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openEvaluation();
+              }
+            }}
+            className="hdf-card hdf-card--orange hdf-card--action"
+          >
             <span className="hdf-card-topline hdf-card-topline--orange" />
             <TypewriterEyebrow className="hdf-card-eyebrow hdf-card-eyebrow--orange" />
             <span className="hdf-card-title">Soy negocio y quiero franquiciar.</span>
-            <span className="hdf-card-cta hdf-card-cta--orange">
-              Diagnóstico gratis · Respuesta en 48h <Arrow />
-            </span>
+            {!evalPrimed ? (
+              <span ref={evalCtaRef} className="hdf-card-cta hdf-card-cta--orange">
+                Diagnóstico gratis · Respuesta en 48h <ArrowTrail primed={false} />
+              </span>
+            ) : (
+              <>
+                <span ref={evalCtaRef} className="hdf-card-cta hdf-card-cta--orange">
+                  Comienza tu Evaluación Privada <ArrowTrail primed />
+                </span>
+                <span
+                  className="hdf-eval-start"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    className="hdf-eval-input"
+                    placeholder="¿Cómo se llama tu empresa?"
+                    value={companySeed}
+                    onChange={(e) => setCompanySeed(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") openEvaluation();
+                    }}
+                    aria-label="Nombre de tu empresa"
+                  />
+                  <button
+                    type="button"
+                    className="hdf-eval-btn"
+                    onClick={openEvaluation}
+                  >
+                    Empezar <Arrow size={15} />
+                  </button>
+                </span>
+              </>
+            )}
             <span className="hdf-card-strip">
               <span className="hdf-card-strip-divider hdf-card-strip-divider--orange" />
               <span className="hdf-card-strip-label">METODOLOGÍA PREMIADA POR</span>
@@ -596,7 +701,7 @@ export function HomeDecisionFork() {
                 ))}
               </span>
             </span>
-          </a>
+          </div>
 
           <Link href={HREF.invertir} className="hdf-card hdf-card--cyan">
             <span className="hdf-card-topline hdf-card-topline--cyan" />
@@ -696,7 +801,17 @@ export function HomeDecisionFork() {
             </div>
           </div>
         </div>
+
+        {/* Oficinas — Madrid · Bogotá */}
+        <OfficesSection />
       </main>
+
+      {/* Evaluación Privada (overlay inmersivo) */}
+      <EvaluationExperience
+        open={evalOpen}
+        initialCompany={companySeed}
+        onClose={() => setEvalOpen(false)}
+      />
 
       {/* ── Modal de contacto ────────────────────────────────────────────── */}
       {contactOpen && (
@@ -1123,6 +1238,85 @@ export function HomeDecisionFork() {
         .hdf-card-cta--cyan {
           color: #8fdcec;
         }
+        .hdf-card--action {
+          cursor: pointer;
+        }
+
+        /* ── Onda de flechas 1 → 2 → 3 ── */
+        .hdf-arrows {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+        }
+        .hdf-arrows svg {
+          opacity: 0;
+          transform: translateX(-7px) scale(0.85);
+          animation: hdf-arrow-wave 1.6s cubic-bezier(0.25, 0.8, 0.3, 1) var(--d, 0s) 4;
+        }
+        .hdf-arrows svg:nth-child(1) {
+          --d: 0s;
+        }
+        .hdf-arrows svg:nth-child(2) {
+          --d: 0.22s;
+        }
+        .hdf-arrows svg:nth-child(3) {
+          --d: 0.44s;
+        }
+        .hdf-arrows--primed svg {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+
+        /* ── Morph: inicio de la Evaluación Privada en la tarjeta ── */
+        .hdf-eval-start {
+          display: flex;
+          gap: 10px;
+          width: 100%;
+          margin-top: 18px;
+          animation: hdf-fade-up 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        }
+        .hdf-eval-input {
+          flex: 1;
+          min-width: 0;
+          padding: 13px 16px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 138, 61, 0.35);
+          background: rgba(255, 255, 255, 0.05);
+          color: #f2f5fc;
+          font-family: inherit;
+          font-size: 15px;
+          outline: none;
+          transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .hdf-eval-input::placeholder {
+          color: #8e9fbe;
+        }
+        .hdf-eval-input:focus {
+          border-color: #ff8a3d;
+          box-shadow: 0 0 0 4px rgba(255, 122, 41, 0.14);
+        }
+        .hdf-eval-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 12px 20px;
+          border-radius: 12px;
+          border: none;
+          background: linear-gradient(90deg, #ff7a29, #ffa24f);
+          color: #160900;
+          font-family: inherit;
+          font-size: 14.5px;
+          font-weight: 700;
+          white-space: nowrap;
+          cursor: pointer;
+          box-shadow: 0 10px 30px -10px rgba(255, 122, 41, 0.55);
+          transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .hdf-eval-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 16px 40px -10px rgba(255, 122, 41, 0.7);
+        }
         .hdf-card-strip {
           display: flex;
           flex-wrap: wrap;
@@ -1504,6 +1698,28 @@ export function HomeDecisionFork() {
           initial-value: 0deg;
           inherits: false;
         }
+        @keyframes hdf-arrow-wave {
+          0% {
+            opacity: 0;
+            transform: translateX(-7px) scale(0.85);
+          }
+          18% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+          62% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+          82% {
+            opacity: 0;
+            transform: translateX(9px) scale(0.9);
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(-7px) scale(0.85);
+          }
+        }
         @keyframes hdf-caret-blink {
           0%,
           100% {
@@ -1633,8 +1849,14 @@ export function HomeDecisionFork() {
           .hdf-stats-line,
           .hdf-stat-node,
           .hdf-video-frame,
-          .hdf-cards {
+          .hdf-cards,
+          .hdf-eval-start {
             animation: none !important;
+          }
+          .hdf-arrows svg {
+            animation: none !important;
+            opacity: 1;
+            transform: none;
           }
           .hdf-caret {
             display: none;

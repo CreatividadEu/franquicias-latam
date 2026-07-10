@@ -83,6 +83,12 @@ export default async function FormLeadsPage({
     "50k-100k": "$50k – $100k",
     "100k-200k": "$100k – $200k",
     "200k+": "$200k+",
+    // Bandas de facturación (Evaluación Privada)
+    lt300k: "Factura < $300K",
+    "300k-1m": "Factura $300K – $1M",
+    "1m-5m": "Factura $1M – $5M",
+    "5m+": "Factura $5M+",
+    reservado: "Facturación reservada",
   };
 
   const EXPERIENCE_LABELS: Record<string, string> = {
@@ -97,6 +103,7 @@ export default async function FormLeadsPage({
     identified_brand_interest: "Interés marca",
     listing_interest: "Interés listing",
     home_contact: "Contacto Home",
+    evaluacion_privada: "Evaluación Privada",
   };
 
   return (
