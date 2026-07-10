@@ -68,8 +68,8 @@ const STAT_TARGETS = { stores: 450, countries: 40, sales: 250 };
 // ── Typewriter del eyebrow de Empresarios ───────────────────────────────────
 // "Para " queda fijo; las palabras se escriben y se borran, y la última
 // ("Franquiciar tu Negocio") queda fija.
-const TYPE_WORDS = ["microempresas", "startups", "PYMES", "Grandes Empresas"];
-const TYPE_FINAL = "Franquiciar tu Negocio";
+const TYPE_WORDS = ["Startups", "Microempresas", "PyMES", "Grandes Empresas"];
+const TYPE_FINAL = "Quienes Quieren Crecer";
 const TYPE_MS = 58;
 const TYPE_JITTER_MS = 26;
 const DELETE_MS = 32;
