@@ -777,7 +777,7 @@ export function HomeDecisionFork() {
                   className="hdf-palm-glass"
                   style={{ "--sd": "1.05s" } as React.CSSProperties}
                 >
-                  <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
+                  <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden>
                     <g stroke="#ff5d5d" strokeWidth="1.8" strokeLinecap="round">
                       <line x1="6" y1="1" x2="6" y2="11" />
                       <line x1="1.7" y1="3.5" x2="10.3" y2="8.5" />
@@ -1263,7 +1263,7 @@ export function HomeDecisionFork() {
           text-align: center;
         }
         .hdf-palm-eyebrow {
-          font-size: 10px;
+          font-size: 11.5px;
           font-weight: 600;
           letter-spacing: 0.24em;
           color: rgba(244, 241, 234, 0.52);
@@ -1275,11 +1275,11 @@ export function HomeDecisionFork() {
           color: #f4f1ea;
         }
         .hdf-palm-name-loco {
-          font-size: 19.5px;
+          font-size: 22px;
           line-height: 1.14;
         }
         .hdf-palm-name-retos {
-          font-size: 24px;
+          font-size: 27px;
           line-height: 1;
         }
         /* Chips de vidrio para los logos: glassmorphism + destello periódico */
@@ -1323,12 +1323,12 @@ export function HomeDecisionFork() {
           pointer-events: none;
         }
         .hdf-palm-glass--seal img {
-          height: 15px;
+          height: 18px;
           width: auto;
           object-fit: contain;
         }
         .hdf-palm-collision-logo {
-          height: 16px;
+          height: 19px;
           width: auto;
           object-fit: contain;
           filter: brightness(0) invert(1);
@@ -1347,7 +1347,7 @@ export function HomeDecisionFork() {
           white-space: normal;
         }
         .hdf-palm-bid {
-          height: 25px;
+          height: 30px;
           width: auto;
           object-fit: contain;
           filter: brightness(0) invert(1);
