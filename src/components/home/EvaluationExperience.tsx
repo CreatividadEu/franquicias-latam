@@ -14,6 +14,20 @@ import { homeClientLogos, type BrandLogo } from "./homeBrandData";
 const EVAL_CALL_URL =
   "https://calendly.com/franquicias_latam/programa_aceleradora_franquicias";
 
+// Franquicias.ai — cohorte fundacional (agosto 2026, hora Bogotá). Los cupos
+// comparten la variable de entorno del home para mostrar el mismo número.
+const FIA_URL = "https://franquicias.ai";
+const FIA_OPENS_AT = Date.parse("2026-08-01T00:00:00-05:00");
+const FIA_CUPOS_TOTAL = 14;
+const FIA_CUPOS_RESTANTES = Math.min(
+  Math.max(
+    Number.parseInt(process.env.NEXT_PUBLIC_FIA_CUPOS ?? "5", 10) || 5,
+    1,
+  ),
+  FIA_CUPOS_TOTAL,
+);
+const FIA_CUPOS_TOMADOS = FIA_CUPOS_TOTAL - FIA_CUPOS_RESTANTES;
+
 type ProgramKey = "bootcamp" | "development" | "ecosystem";
 
 const PROGRAMS: Record<
@@ -292,6 +306,16 @@ export function EvaluationExperience({
     return () => window.clearTimeout(id);
   }, [open, phase, step]);
 
+  // Cuenta regresiva de Franquicias.ai: solo corre mientras el reveal está
+  // en pantalla (este subárbol nunca se renderiza en servidor).
+  const [fiaNow, setFiaNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!open || phase !== "reveal") return;
+    setFiaNow(Date.now());
+    const id = window.setInterval(() => setFiaNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [open, phase]);
+
   const set = (patch: Partial<Answers>) =>
     setAnswers((prev) => ({ ...prev, ...patch }));
 
@@ -306,6 +330,23 @@ export function EvaluationExperience({
   const rec = PROGRAMS[program];
   const proof = PROGRAM_PROOF[program];
   const firstName = answers.nombre.trim().split(/\s+/)[0] ?? "";
+
+  // Reveal: evidencia personalizada (las respuestas que calibraron el match)
+  // y cuenta regresiva a la apertura de Franquicias.ai.
+  const whyChips = [
+    answers.unidades && labelOf(UNIDADES, answers.unidades),
+    answers.facturacion && labelOf(FACTURACION, answers.facturacion),
+    answers.objetivo && labelOf(OBJETIVOS, answers.objetivo),
+    answers.horizonte && labelOf(HORIZONTES, answers.horizonte),
+  ].filter((c): c is string => Boolean(c));
+
+  const fiaMsLeft = Math.max(0, FIA_OPENS_AT - fiaNow);
+  const fiaCountdown = [
+    ["días", Math.floor(fiaMsLeft / 86_400_000)],
+    ["hrs", Math.floor(fiaMsLeft / 3_600_000) % 24],
+    ["min", Math.floor(fiaMsLeft / 60_000) % 60],
+    ["seg", Math.floor(fiaMsLeft / 1_000) % 60],
+  ] as const;
 
   // Rastro de respuestas: mini-chips que se van acumulando bajo el contador
   // de paso — refuerzo visible de avance.
@@ -753,55 +794,163 @@ export function EvaluationExperience({
               es el siguiente:
             </h2>
 
-            <div className="hdx-programs">
-              {(Object.keys(PROGRAMS) as ProgramKey[]).map((k) => {
-                const p = PROGRAMS[k];
-                const isRec = k === program;
-                return (
-                  <button
-                    key={k}
-                    type="button"
-                    className={`hdx-pcard${isRec ? " hdx-pcard--rec" : ""}`}
-                    style={
-                      {
-                        "--pc": p.accent,
-                        "--pg": p.glow,
-                      } as React.CSSProperties
-                    }
-                    onClick={scrollToCal}
-                  >
-                    {isRec && <span className="hdx-pcard-flag">✓ Tu programa</span>}
-                    <span className="hdx-pcard-icon" aria-hidden>
-                      <ProgramGlyph k={k} />
-                    </span>
-                    <span className="hdx-pcard-aud">{p.audience}</span>
-                    <span className="hdx-pcard-name">{p.name}</span>
-                    <span className="hdx-pcard-tag">{p.tagline}</span>
-                    <span className="hdx-pcard-cta">
-                      {isRec
-                        ? "Agendar mi llamada ↓"
-                        : "Compáralo en la llamada"}
-                    </span>
+            {/* Dossier del programa recomendado: protagonista absoluto */}
+            <div
+              className="hdxr-hero"
+              style={
+                { "--pc": rec.accent, "--pg": rec.glow } as React.CSSProperties
+              }
+            >
+              <div className="hdxr-hero-body">
+                <div className="hdxr-hero-head">
+                  <span className="hdxr-hero-icon" aria-hidden>
+                    <ProgramGlyph k={program} />
+                  </span>
+                  <span className="hdxr-hero-id">
+                    <span className="hdxr-hero-aud">{rec.audience}</span>
+                    <span className="hdxr-hero-name">{rec.name}</span>
+                  </span>
+                  <span className="hdxr-hero-flag">✓ Tu programa</span>
+                </div>
+                <p className="hdxr-hero-tagline">{rec.tagline}</p>
+                <div className="hdxr-why">
+                  <span className="hdxr-why-caption">
+                    Calibrado con tus respuestas
+                  </span>
+                  <div className="hdxr-why-chips">
+                    {whyChips.map((c) => (
+                      <span key={c} className="hdxr-why-chip">
+                        <i aria-hidden>✓</i>
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="hdxr-hero-foot">
+                  <button type="button" className="hdx-cta" onClick={scrollToCal}>
+                    Agendar mi llamada <span aria-hidden>↓</span>
                   </button>
-                );
-              })}
+                  <div className="hdxr-hero-proof">
+                    {proof.logos.map((logo) => (
+                      <Image
+                        key={logo.alt}
+                        src={logo.src}
+                        alt={logo.alt}
+                        width={110}
+                        height={40}
+                        className="hdxr-hero-logo"
+                      />
+                    ))}
+                    <p>{proof.line}</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {program === "bootcamp" && (
-              <div className="hdx-ia">
-                <span className="hdx-ia-dot" aria-hidden />
-                <span>
-                  También calificas a <strong>Franquicias.ia</strong> — abre el
-                  1 de agosto · <strong>4 cupos</strong>. Pregúntanos en la
-                  llamada.
-                </span>
+            {/* Los otros dos programas quedan en segundo plano */}
+            <div className="hdxr-alt">
+              {(Object.keys(PROGRAMS) as ProgramKey[])
+                .filter((k) => k !== program)
+                .map((k) => {
+                  const p = PROGRAMS[k];
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      className="hdxr-alt-card"
+                      style={{ "--pc": p.accent } as React.CSSProperties}
+                      onClick={scrollToCal}
+                    >
+                      <span className="hdxr-alt-icon" aria-hidden>
+                        <ProgramGlyph k={k} />
+                      </span>
+                      <span className="hdxr-alt-text">
+                        <b>{p.name}</b>
+                        <i>{p.audience}</i>
+                      </span>
+                      <span className="hdxr-alt-cta">
+                        Compáralo en la llamada →
+                      </span>
+                    </button>
+                  );
+                })}
+            </div>
+
+            {/* Franquicias.ai — el futuro, protagonista del cierre */}
+            <section
+              className="hdxr-ai"
+              aria-label="Franquicias.ai — cohorte fundacional"
+            >
+              <span className="hdxr-ai-halo" aria-hidden />
+              <span className="hdxr-ai-beam" aria-hidden />
+              <em className="hdxr-ai-eyebrow">
+                Acceso anticipado · Cohorte fundacional · Agosto 2026
+              </em>
+              <p className="hdxr-ai-mark">
+                franquicias<span>.ai</span>
+              </p>
+              <p className="hdxr-ai-lede">
+                La nueva era de franquiciar, potenciada por inteligencia
+                artificial. Esta evaluación deja a{" "}
+                <strong>{answers.empresa.trim() || "tu negocio"}</strong> en la
+                lista de pre-calificados — asegura tu cupo en la llamada.
+              </p>
+              <div className="hdxr-ai-live">
+                {fiaMsLeft > 0 ? (
+                  <div
+                    className="hdxr-count"
+                    role="timer"
+                    aria-label="Tiempo restante para la apertura de Franquicias.ai"
+                  >
+                    {fiaCountdown.map(([label, value]) => (
+                      <span key={label} className="hdxr-count-cell">
+                        <b>{String(value).padStart(2, "0")}</b>
+                        <i>{label}</i>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="hdxr-count-open">Cohorte abierta</span>
+                )}
+                <div className="hdxr-cupos">
+                  <span className="hdxr-cupos-bar" aria-hidden>
+                    {Array.from({ length: FIA_CUPOS_TOTAL }, (_, i) => (
+                      <span
+                        key={i}
+                        className={`hdxr-seg${
+                          i < FIA_CUPOS_TOMADOS ? " hdxr-seg--taken" : ""
+                        }`}
+                      />
+                    ))}
+                  </span>
+                  <span className="hdxr-cupos-label">
+                    Quedan{" "}
+                    <strong>
+                      {FIA_CUPOS_RESTANTES} de {FIA_CUPOS_TOTAL}
+                    </strong>{" "}
+                    cupos
+                  </span>
+                </div>
               </div>
-            )}
+              <div className="hdxr-ai-actions">
+                <button type="button" className="hdx-cta" onClick={scrollToCal}>
+                  Reservar mi cupo en la llamada <span aria-hidden>↓</span>
+                </button>
+                <a
+                  className="hdxr-ai-link"
+                  href={FIA_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Conocer franquicias.ai ↗
+                </a>
+              </div>
+            </section>
 
             <div className="hdx-cal" ref={calRef}>
               <div className="hdx-cal-head">
                 <span className="hdx-cal-title">
-                  Reserva tu llamada de evaluación{" "}
+                  Último paso: reserva tu llamada de evaluación{" "}
                   <em>— 10 minutos, sin costo</em>
                 </span>
                 <a
@@ -1258,140 +1407,461 @@ export function EvaluationExperience({
           font-size: 28px;
         }
 
-        /* Reveal: los 3 programas con la misma jerarquía; el recomendado se
-           distingue por flag + acento, no por tamaño. */
-        .hdx-programs {
-          display: grid;
-          gap: 14px;
-          margin-top: 12px;
+        /* ── Reveal 2.0 ─────────────────────────────────────────────────
+           Jerarquía de cierre: dossier del programa recomendado (borde de
+           luz giratorio + evidencia personalizada), programas alternos en
+           segundo plano y monumento Franquicias.ai con FOMO en vivo. */
+        @property --hdxr-angle {
+          syntax: "<angle>";
+          inherits: false;
+          initial-value: 0deg;
         }
-        @media (min-width: 860px) {
-          .hdx-programs {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-          }
-        }
-        .hdx-pcard {
+        .hdxr-hero {
+          --hdxr-angle: 0deg;
           position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 7px;
-          padding: 22px 20px 18px;
-          border-radius: 18px;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          /* Fallback para navegadores sin color-mix() */
-          background: rgba(10, 16, 32, 0.75);
+          margin-top: 14px;
+          border-radius: 22px;
+          padding: 1.5px;
+          /* Fallback para navegadores sin @property: anillo estático. */
+          background: rgba(255, 255, 255, 0.13);
           background:
-            radial-gradient(130% 100% at 50% 0%, color-mix(in srgb, var(--pc) 11%, transparent), transparent 62%),
-            rgba(10, 16, 32, 0.75);
-          color: #f2f5fc;
-          font-family: inherit;
-          text-align: left;
-          cursor: pointer;
-          animation: hdx-program-pop 0.55s cubic-bezier(0.2, 1.25, 0.3, 1) both;
-          transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s, box-shadow 0.3s;
+            conic-gradient(
+              from var(--hdxr-angle),
+              transparent,
+              var(--pc) 14%,
+              transparent 30%,
+              transparent 52%,
+              rgba(255, 255, 255, 0.4) 60%,
+              transparent 74%
+            ),
+            rgba(255, 255, 255, 0.13);
+          box-shadow: 0 40px 110px -38px var(--pg);
+          animation:
+            hdxr-spin 6s linear infinite,
+            hdx-step 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.18s both;
         }
-        .hdx-pcard:nth-child(2) {
-          animation-delay: 0.08s;
-        }
-        .hdx-pcard:nth-child(3) {
-          animation-delay: 0.16s;
-        }
-        .hdx-pcard:hover {
-          transform: translateY(-4px);
-          border-color: var(--pc);
-          box-shadow: 0 26px 64px -26px var(--pg);
-        }
-        .hdx-pcard--rec {
-          border-color: var(--pc);
-          box-shadow: 0 30px 80px -28px var(--pg), inset 0 1px 0 rgba(255, 255, 255, 0.07);
-        }
-        /* En móvil (columna única) el recomendado va primero. */
-        .hdx-pcard--rec {
-          order: -1;
+        .hdxr-hero-body {
+          position: relative;
+          border-radius: 20.5px;
+          padding: 26px 22px 22px;
+          background: linear-gradient(180deg, rgba(13, 20, 38, 0.97), rgba(7, 11, 22, 0.98));
+          background:
+            radial-gradient(120% 90% at 12% 0%, color-mix(in srgb, var(--pc) 13%, transparent), transparent 55%),
+            linear-gradient(180deg, rgba(13, 20, 38, 0.97), rgba(7, 11, 22, 0.98));
         }
         @media (min-width: 860px) {
-          .hdx-pcard--rec {
-            order: 0;
+          .hdxr-hero-body {
+            padding: 30px 32px 26px;
           }
         }
-        .hdx-pcard-flag {
-          position: absolute;
-          top: -11px;
-          left: 16px;
-          padding: 4px 12px;
-          border-radius: 999px;
-          background: var(--pc);
-          color: #06121c;
-          font-size: 10.5px;
-          font-weight: 800;
-          letter-spacing: 0.09em;
-          text-transform: uppercase;
-          white-space: nowrap;
+        .hdxr-hero-head {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          flex-wrap: wrap;
         }
-        .hdx-pcard-icon {
+        .hdxr-hero-icon {
           display: grid;
           place-items: center;
-          width: 40px;
-          height: 40px;
-          margin-bottom: 4px;
-          border-radius: 12px;
+          width: 52px;
+          height: 52px;
+          border-radius: 15px;
           color: var(--pc);
           border: 1px solid rgba(255, 255, 255, 0.14);
           background: rgba(255, 255, 255, 0.04);
-          border-color: color-mix(in srgb, var(--pc) 38%, transparent);
-          background: color-mix(in srgb, var(--pc) 10%, transparent);
+          border-color: color-mix(in srgb, var(--pc) 40%, transparent);
+          background: color-mix(in srgb, var(--pc) 12%, transparent);
+          box-shadow: 0 0 28px -8px var(--pg);
+          flex-shrink: 0;
         }
-        .hdx-pcard-aud {
-          font-size: 10.5px;
+        .hdxr-hero-icon svg {
+          width: 26px;
+          height: 26px;
+        }
+        .hdxr-hero-id {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          min-width: 0;
+        }
+        .hdxr-hero-aud {
+          font-size: 11px;
           font-weight: 700;
-          letter-spacing: 0.16em;
+          letter-spacing: 0.18em;
           text-transform: uppercase;
           color: var(--pc);
         }
-        .hdx-pcard-name {
-          font-size: 19px;
+        .hdxr-hero-name {
+          font-size: clamp(24px, 3.4vw, 34px);
           font-weight: 700;
-          letter-spacing: -0.01em;
-          line-height: 1.15;
+          letter-spacing: -0.02em;
+          line-height: 1.05;
         }
-        .hdx-pcard-tag {
-          font-size: 13.5px;
-          line-height: 1.5;
-          color: #b0bfdd;
+        .hdxr-hero-flag {
+          margin-left: auto;
+          padding: 6px 14px;
+          border-radius: 999px;
+          background: var(--pc);
+          color: #06121c;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          white-space: nowrap;
+          box-shadow: 0 10px 30px -10px var(--pg);
+        }
+        .hdxr-hero-tagline {
+          margin: 14px 0 0;
+          font-size: 16px;
+          line-height: 1.6;
+          color: #c3d0ea;
+          max-width: 560px;
           text-wrap: pretty;
         }
-        .hdx-pcard-cta {
-          margin-top: auto;
-          padding-top: 10px;
-          font-size: 13px;
+        .hdxr-why {
+          margin-top: 18px;
+        }
+        .hdxr-why-caption {
+          display: block;
+          margin-bottom: 10px;
+          font-size: 11px;
           font-weight: 700;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: #8fa1c4;
+        }
+        .hdxr-why-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .hdxr-why-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 7px 13px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          background: rgba(255, 255, 255, 0.04);
+          border-color: color-mix(in srgb, var(--pc) 30%, transparent);
+          background: color-mix(in srgb, var(--pc) 7%, transparent);
+          font-size: 13px;
+          font-weight: 600;
+          color: #e8eefb;
+          animation: hdx-crumb-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        }
+        .hdxr-why-chip:nth-child(2) {
+          animation-delay: 0.07s;
+        }
+        .hdxr-why-chip:nth-child(3) {
+          animation-delay: 0.14s;
+        }
+        .hdxr-why-chip:nth-child(4) {
+          animation-delay: 0.21s;
+        }
+        .hdxr-why-chip i {
+          font-style: normal;
+          font-size: 10.5px;
           color: var(--pc);
         }
-        .hdx-ia {
+        .hdxr-hero-foot {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 16px 24px;
+          margin-top: 22px;
+        }
+        .hdxr-hero-proof {
           display: flex;
           align-items: center;
-          gap: 10px;
-          flex-wrap: wrap;
-          margin-top: 14px;
-          padding: 13px 18px;
-          border-radius: 14px;
-          border: 1px solid rgba(55, 230, 195, 0.3);
-          background: rgba(55, 230, 195, 0.06);
-          font-size: 14.5px;
-          color: #c9ede2;
+          gap: 12px;
+          flex: 1;
+          min-width: 240px;
         }
-        .hdx-ia strong {
+        .hdxr-hero-logo {
+          height: 22px;
+          width: auto;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
+          opacity: 0.7;
+          flex-shrink: 0;
+        }
+        .hdxr-hero-proof p {
+          margin: 0;
+          font-size: 12.5px;
+          line-height: 1.5;
+          color: #97a8c9;
+          text-wrap: pretty;
+        }
+
+        .hdxr-alt {
+          display: grid;
+          gap: 10px;
+          margin-top: 12px;
+        }
+        @media (min-width: 560px) {
+          .hdxr-alt {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+          }
+        }
+        .hdxr-alt-card {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 8px 12px;
+          padding: 14px 16px;
+          border-radius: 15px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(10, 16, 32, 0.6);
+          color: #e8eefb;
+          font-family: inherit;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .hdxr-alt-card:hover {
+          transform: translateY(-2px);
+          border-color: color-mix(in srgb, var(--pc) 55%, transparent);
+          background: color-mix(in srgb, var(--pc) 6%, rgba(10, 16, 32, 0.6));
+        }
+        .hdxr-alt-icon {
+          display: grid;
+          place-items: center;
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
+          color: var(--pc);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: rgba(255, 255, 255, 0.04);
+          border-color: color-mix(in srgb, var(--pc) 32%, transparent);
+          background: color-mix(in srgb, var(--pc) 9%, transparent);
+          flex-shrink: 0;
+        }
+        .hdxr-alt-icon svg {
+          width: 17px;
+          height: 17px;
+        }
+        .hdxr-alt-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
+        }
+        .hdxr-alt-text b {
+          font-size: 14.5px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+        }
+        .hdxr-alt-text i {
+          font-style: normal;
+          font-size: 10.5px;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #8fa1c4;
+        }
+        .hdxr-alt-cta {
+          margin-left: auto;
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--pc);
+          white-space: nowrap;
+        }
+
+        /* Monumento Franquicias.ai */
+        .hdxr-ai {
+          position: relative;
+          overflow: hidden;
+          margin-top: 26px;
+          padding: 40px 20px 36px;
+          border-radius: 24px;
+          border: 1px solid rgba(55, 230, 195, 0.22);
+          background:
+            radial-gradient(120% 130% at 50% -10%, rgba(55, 230, 195, 0.13), transparent 55%),
+            radial-gradient(90% 100% at 85% 110%, rgba(110, 168, 255, 0.12), transparent 60%),
+            linear-gradient(180deg, #070d1c, #05080f);
+          text-align: center;
+        }
+        @media (min-width: 860px) {
+          .hdxr-ai {
+            padding: 52px 48px 46px;
+          }
+        }
+        .hdxr-ai-halo {
+          position: absolute;
+          left: 50%;
+          top: 10%;
+          transform: translateX(-50%);
+          width: min(480px, 90%);
+          height: 260px;
+          border-radius: 50%;
+          background: radial-gradient(closest-side, rgba(55, 230, 195, 0.2), transparent 70%);
+          filter: blur(30px);
+          pointer-events: none;
+          animation: hdxr-halo 6s ease-in-out infinite;
+        }
+        .hdxr-ai-beam {
+          position: absolute;
+          top: 0;
+          left: -30%;
+          width: 55%;
+          height: 100%;
+          pointer-events: none;
+          background: linear-gradient(
+            100deg,
+            transparent,
+            rgba(255, 255, 255, 0.05) 45%,
+            rgba(55, 230, 195, 0.08) 52%,
+            transparent 62%
+          );
+          animation: hdxr-beam 5.5s ease-in-out infinite;
+        }
+        .hdxr-ai-eyebrow {
+          position: relative;
+          display: block;
+          font-style: normal;
+          font-size: 11.5px;
+          font-weight: 700;
+          letter-spacing: 0.24em;
+          text-transform: uppercase;
+          color: #7ee7cf;
+          margin-bottom: 18px;
+        }
+        .hdxr-ai-mark {
+          position: relative;
+          margin: 0;
+          font-size: clamp(38px, 9vw, 84px);
+          font-weight: 700;
+          letter-spacing: -0.045em;
+          line-height: 1;
+          color: #ffffff;
+        }
+        .hdxr-ai-mark span {
+          background: linear-gradient(100deg, #37e6c3, #6ea8ff, #37e6c3);
+          background-size: 200% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          filter: drop-shadow(0 0 22px rgba(55, 230, 195, 0.45));
+          animation: hdx-drift 5s ease-in-out infinite;
+        }
+        .hdxr-ai-lede {
+          position: relative;
+          margin: 16px auto 0;
+          max-width: 560px;
+          font-size: 15.5px;
+          line-height: 1.65;
+          color: #b9c6e3;
+          text-wrap: pretty;
+        }
+        .hdxr-ai-lede strong {
+          color: #ffffff;
+        }
+        .hdxr-ai-live {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 18px;
+          margin-top: 26px;
+        }
+        @media (min-width: 720px) {
+          .hdxr-ai-live {
+            flex-direction: row;
+            justify-content: center;
+            gap: 36px;
+          }
+        }
+        .hdxr-count {
+          display: flex;
+          gap: 8px;
+        }
+        .hdxr-count-cell {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 3px;
+          min-width: 56px;
+          padding: 10px 8px 8px;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: rgba(255, 255, 255, 0.04);
+        }
+        .hdxr-count-cell b {
+          font-size: 24px;
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
+          line-height: 1;
+          color: #ffffff;
+        }
+        .hdxr-count-cell i {
+          font-style: normal;
+          font-size: 9.5px;
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #7d8fb0;
+        }
+        .hdxr-count-open {
+          font-size: 15px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
           color: #37e6c3;
         }
-        .hdx-ia-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #37e6c3;
-          box-shadow: 0 0 10px rgba(55, 230, 195, 0.9);
-          animation: hdx-node 2s ease-in-out infinite;
+        .hdxr-cupos {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 9px;
+        }
+        .hdxr-cupos-bar {
+          display: flex;
+          gap: 4px;
+        }
+        .hdxr-seg {
+          width: 13px;
+          height: 20px;
+          border-radius: 4px;
+          border: 1px solid rgba(55, 230, 195, 0.55);
+          background: rgba(55, 230, 195, 0.14);
+          box-shadow: 0 0 12px -2px rgba(55, 230, 195, 0.5);
+          animation: hdxr-seg 2.4s ease-in-out infinite;
+        }
+        .hdxr-seg--taken {
+          border-color: rgba(255, 255, 255, 0.13);
+          background: rgba(255, 255, 255, 0.07);
+          box-shadow: none;
+          animation: none;
+        }
+        .hdxr-cupos-label {
+          font-size: 13px;
+          color: #a8b7d4;
+        }
+        .hdxr-cupos-label strong {
+          color: #37e6c3;
+          font-weight: 800;
+        }
+        .hdxr-ai-actions {
+          position: relative;
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: 14px 24px;
+          margin-top: 28px;
+        }
+        .hdxr-ai-link {
+          font-size: 14px;
+          font-weight: 600;
+          color: #8fdcec;
+          text-decoration: none;
+          transition: color 0.2s;
+        }
+        .hdxr-ai-link:hover {
+          color: #d6f3fb;
         }
         /* Intro: marquee de clientes */
         .hdx-intro-proof {
@@ -1636,14 +2106,38 @@ export function EvaluationExperience({
             transform: scale(1);
           }
         }
-        @keyframes hdx-program-pop {
-          from {
-            opacity: 0;
-            transform: translateY(18px) scale(0.94);
-          }
+        @keyframes hdxr-spin {
           to {
+            --hdxr-angle: 360deg;
+          }
+        }
+        @keyframes hdxr-halo {
+          0%,
+          100% {
+            opacity: 0.75;
+            transform: translateX(-50%) scale(1);
+          }
+          50% {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateX(-50%) scale(1.08);
+          }
+        }
+        @keyframes hdxr-beam {
+          0% {
+            transform: translateX(-70%);
+          }
+          55%,
+          100% {
+            transform: translateX(280%);
+          }
+        }
+        @keyframes hdxr-seg {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
           }
         }
         @keyframes hdx-spark {
@@ -1663,18 +2157,22 @@ export function EvaluationExperience({
           .hdx-root--open,
           .hdx-screen,
           .hdx-screen > *,
-          .hdx-pcard,
           .hdx-aurora,
           .hdx-serif,
           .hdx-node,
-          .hdx-ia-dot,
           .hdx-intro-track,
           .hdx-crumb,
-          .hdx-screen > .hdx-seal {
+          .hdx-screen > .hdx-seal,
+          .hdxr-hero,
+          .hdxr-why-chip,
+          .hdxr-ai-halo,
+          .hdxr-ai-beam,
+          .hdxr-ai-mark span,
+          .hdxr-seg {
             animation: none !important;
           }
-          .hdx-pcard,
-          .hdx-pcard:hover {
+          .hdxr-alt-card,
+          .hdxr-alt-card:hover {
             transform: none;
             transition: none;
           }
