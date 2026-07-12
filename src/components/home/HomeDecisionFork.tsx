@@ -704,13 +704,18 @@ export function HomeDecisionFork() {
               <LaurelSvg flip withDefs />
               <div className="hdf-palm-stack">
                 <div className="hdf-palm-eyebrow">2× FINANCIADOS POR</div>
-                <Image
-                  src={programInstitutionalLogos[0].src}
-                  alt={programInstitutionalLogos[0].alt}
-                  width={800}
-                  height={300}
-                  className="hdf-palm-bid"
-                />
+                <span
+                  className="hdf-palm-glass"
+                  style={{ "--sd": "0.15s" } as React.CSSProperties}
+                >
+                  <Image
+                    src={programInstitutionalLogos[0].src}
+                    alt={programInstitutionalLogos[0].alt}
+                    width={800}
+                    height={300}
+                    className="hdf-palm-bid"
+                  />
+                </span>
                 <div className="hdf-palm-origin hdf-palm-origin--wrap">
                   BANCO INTERAMERICANO DE DESARROLLO
                 </div>
@@ -727,7 +732,10 @@ export function HomeDecisionFork() {
                   <br />
                   la Innovación
                 </div>
-                <span className="hdf-palm-chip">
+                <span
+                  className="hdf-palm-glass hdf-palm-glass--seal"
+                  style={{ "--sd": "0.45s" } as React.CSSProperties}
+                >
                   <Image
                     src={programInstitutionalLogos[2].src}
                     alt={programInstitutionalLogos[2].alt}
@@ -746,7 +754,10 @@ export function HomeDecisionFork() {
                 <div className="hdf-palm-name-serif hdf-palm-name-retos">
                   Retos 4.0
                 </div>
-                <span className="hdf-palm-chip">
+                <span
+                  className="hdf-palm-glass hdf-palm-glass--seal"
+                  style={{ "--sd": "0.75s" } as React.CSSProperties}
+                >
                   <Image
                     src={programInstitutionalLogos[2].src}
                     alt={programInstitutionalLogos[2].alt}
@@ -762,16 +773,25 @@ export function HomeDecisionFork() {
               <LaurelSvg flip />
               <div className="hdf-palm-stack">
                 <div className="hdf-palm-eyebrow">STARTUP FINALISTA</div>
-                <div className="hdf-palm-collision">
-                  <svg width="13" height="13" viewBox="0 0 12 12" aria-hidden>
+                <span
+                  className="hdf-palm-glass"
+                  style={{ "--sd": "1.05s" } as React.CSSProperties}
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
                     <g stroke="#ff5d5d" strokeWidth="1.8" strokeLinecap="round">
                       <line x1="6" y1="1" x2="6" y2="11" />
                       <line x1="1.7" y1="3.5" x2="10.3" y2="8.5" />
                       <line x1="10.3" y1="3.5" x2="1.7" y2="8.5" />
                     </g>
                   </svg>
-                  Collision <span>Conf.</span>
-                </div>
+                  <Image
+                    src="/logos/logo_collision.png"
+                    alt="Collision Conf."
+                    width={501}
+                    height={98}
+                    className="hdf-palm-collision-logo"
+                  />
+                </span>
                 <div className="hdf-palm-origin">TORONTO · CANADÁ</div>
               </div>
               <LaurelSvg />
@@ -1262,18 +1282,57 @@ export function HomeDecisionFork() {
           font-size: 24px;
           line-height: 1;
         }
-        .hdf-palm-collision {
-          display: flex;
+        /* Chips de vidrio para los logos: glassmorphism + destello periódico */
+        .hdf-palm-glass {
+          position: relative;
+          overflow: hidden;
+          display: inline-flex;
           align-items: center;
-          gap: 6px;
-          font-weight: 700;
-          font-size: 21px;
-          line-height: 1;
-          color: #f4f1ea;
+          justify-content: center;
+          gap: 7px;
+          padding: 7px 14px;
+          border-radius: 11px;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          background: linear-gradient(
+            160deg,
+            rgba(255, 255, 255, 0.13),
+            rgba(255, 255, 255, 0.045) 55%,
+            rgba(255, 255, 255, 0.09)
+          );
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            0 10px 30px -12px rgba(230, 190, 120, 0.4);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
         }
-        .hdf-palm-collision span {
-          font-weight: 400;
-          opacity: 0.72;
+        .hdf-palm-glass::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -70%;
+          width: 45%;
+          background: linear-gradient(
+            105deg,
+            transparent,
+            rgba(255, 255, 255, 0.28) 50%,
+            transparent
+          );
+          transform: skewX(-18deg);
+          animation: hdf-palm-shine 5.6s ease-in-out var(--sd, 0s) infinite;
+          pointer-events: none;
+        }
+        .hdf-palm-glass--seal img {
+          height: 15px;
+          width: auto;
+          object-fit: contain;
+        }
+        .hdf-palm-collision-logo {
+          height: 16px;
+          width: auto;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
+          opacity: 0.95;
         }
         .hdf-palm-origin {
           font-size: 7.5px;
@@ -1288,23 +1347,11 @@ export function HomeDecisionFork() {
           white-space: normal;
         }
         .hdf-palm-bid {
-          height: 27px;
+          height: 25px;
           width: auto;
           object-fit: contain;
           filter: brightness(0) invert(1);
           opacity: 0.95;
-        }
-        .hdf-palm-chip {
-          display: inline-flex;
-          align-items: center;
-          border-radius: 4px;
-          background: #ffffff;
-          padding: 2px 5px;
-        }
-        .hdf-palm-chip img {
-          height: 12px;
-          width: auto;
-          object-fit: contain;
         }
         .hdf-palm-sep {
           width: 1px;
@@ -2187,6 +2234,16 @@ export function HomeDecisionFork() {
             opacity: 1;
           }
         }
+        @keyframes hdf-palm-shine {
+          0%,
+          55% {
+            transform: translateX(0) skewX(-18deg);
+          }
+          78%,
+          100% {
+            transform: translateX(430%) skewX(-18deg);
+          }
+        }
         @keyframes hdf-node-pulse {
           0%,
           100% {
@@ -2286,6 +2343,7 @@ export function HomeDecisionFork() {
           .hdf-strip-logo-chip,
           .hdf-palm,
           .hdf-palms-halo,
+          .hdf-palm-glass::after,
           .hdf-marquee,
           .hdf-stats-line,
           .hdf-stat-node,
