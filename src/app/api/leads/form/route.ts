@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { matchesFranchiseSlug } from "@/lib/franchiseSlug";
+import { sendFormLeadNotification } from "@/lib/resend";
 import {
   getLeadSourceType,
   resolveListingState,
@@ -138,6 +139,19 @@ export async function POST(request: Request) {
       sourceType,
       listingType: resolvedListing.listingType,
     });
+
+    // Notify the sales inbox (async, don't block the response).
+    sendFormLeadNotification({
+      name: created.lead.name,
+      email: created.lead.email,
+      phone: created.lead.phone,
+      sourceType: created.lead.sourceType,
+      franchiseSlug: created.lead.franchiseSlug,
+      investmentRange: created.lead.investmentRange,
+      city: created.lead.city,
+      country: created.lead.country,
+      message: created.lead.message,
+    }).catch(console.error);
 
     return NextResponse.json(
       { id: created.lead.id, publicInterestCount: created.publicInterestCount },
