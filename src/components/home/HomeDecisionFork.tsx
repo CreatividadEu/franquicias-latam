@@ -160,217 +160,64 @@ function AwardLogo({
   );
 }
 
-// ── Palmarés: vitrina de premios (entre el nav y la cápsula) ────────────────
-// Cuatro logros como trofeos de vidrio: medallón con glifo propio y anillo de
-// luz giratorio, titular legible y la institución (logo real donde existe).
-type AwardGlyphKind = "bid2x" | "loco" | "trophy" | "collision";
-type AwardOrgKind = "bid" | "mintic" | "toronto";
+// ── Palmarés: franja de laureles dorados (handoff hifi) ─────────────────────
+// Cuatro insignias estilo festival de cine: laureles de trazo dorado
+// (#f5e9c8 → #d9b26a), pila eyebrow / nombre / origen y separadores de 1px.
+// BID usa el logo real del proyecto en blanco; MinTIC va en chip blanco
+// (su asset es un badge de color sólido que no admite monocromo); Collision
+// queda tipográfico con su chispa — no hay logo oficial en el repo.
+const LAUREL_D =
+  "M 17,117 A 55 55 0 0 0 17,13 M 27.5,112.6 Q 34,107.6 41.8,110.3 Q 33.7,116.7 27.5,112.6 Z M 36.8,105.9 Q 32.8,98.8 36.5,91.5 Q 41.7,100.4 36.8,105.9 Z M 44.5,97.3 Q 48.4,90.1 56.6,89.4 Q 51.8,98.5 44.5,97.3 Z M 50.2,87.4 Q 43.7,82.6 44.1,74.3 Q 52.4,80.4 50.2,87.4 Z M 53.8,76.4 Q 54.4,68.3 61.7,64.3 Q 60.9,74.5 53.8,76.4 Z M 55,65 Q 47.1,63.2 44.1,55.5 Q 54.1,57.7 55,65 Z M 53.8,53.6 Q 51.1,45.9 56,39.3 Q 59.6,49 53.8,53.6 Z M 50.2,42.6 Q 42.2,44.2 36.4,38.4 Q 46.4,36.3 50.2,42.6 Z M 44.5,32.7 Q 38.9,26.8 40.8,18.8 Q 47.9,26.1 44.5,32.7 Z M 36.8,24.1 Q 30.2,28.8 22.5,25.9 Q 30.8,19.8 36.8,24.1 Z M 27.5,17.4 Q 20,14.3 18.4,6.2 Q 27.9,10 27.5,17.4 Z M 17,12.7 Q 9.6,16.1 2.6,11.7 Q 11.9,7.4 17,12.7 Z";
 
-const AWARDS: {
-  glyph: AwardGlyphKind;
-  verb: string;
-  subject: string | null;
-  org: AwardOrgKind;
-  accent: string;
-  glow: string;
-}[] = [
-  {
-    glyph: "bid2x",
-    verb: "Financiados por",
-    subject: null,
-    org: "bid",
-    accent: "#6EA8FF",
-    glow: "rgba(110, 168, 255, 0.4)",
-  },
-  {
-    glyph: "loco",
-    verb: "Ganadores",
-    subject: "Locomotora de la Innovación",
-    org: "mintic",
-    accent: "#37E6C3",
-    glow: "rgba(55, 230, 195, 0.4)",
-  },
-  {
-    glyph: "trophy",
-    verb: "Ganadores",
-    subject: "Retos 4.0",
-    org: "mintic",
-    accent: "#FFA24F",
-    glow: "rgba(255, 162, 79, 0.4)",
-  },
-  {
-    glyph: "collision",
-    verb: "Startup Finalista",
-    subject: "Collision Conf.",
-    org: "toronto",
-    accent: "#FF6B7D",
-    glow: "rgba(255, 107, 125, 0.4)",
-  },
-];
-
-// Glifos de cada logro, en el lenguaje de trazos del sitio: 2× (conteo BID),
-// locomotora (Locomotora de la Innovación), copa (Retos 4.0) y dos partículas
-// chocando (Collision).
-function AwardGlyph({ kind }: { kind: AwardGlyphKind }) {
-  if (kind === "bid2x") {
-    return <em className="hdf-award-2x">2×</em>;
-  }
-  if (kind === "loco") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden>
-        {/* cabina alta + caldera baja */}
-        <path
-          d="M4 15 V7.5 H9 V10.5 H19.5 V15 H4 Z"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinejoin="round"
-        />
-        {/* ventana de cabina */}
-        <path
-          d="M5.9 9.6 H7.2"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-        {/* chimenea + humo */}
-        <path
-          d="M16.2 10.5 V8.2"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-        />
-        <path
-          d="M14.9 5.8 C15.7 5 17 5 17.8 5.8"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          opacity=".65"
-        />
-        <circle cx="7" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="11.8" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="16.6" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.5" />
-      </svg>
-    );
-  }
-  if (kind === "trophy") {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path
-          d="M8 4.5 H16 V8.5 A4 4 0 0 1 8 8.5 Z"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M8 5.8 H5.4 A2.4 2.4 0 0 0 8 8.8 M16 5.8 H18.6 A2.4 2.4 0 0 1 16 8.8"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-        <path
-          d="M12 12.5 V15 M10.4 15 H13.6 L14.4 18 H9.6 Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M8.6 19.8 H15.4"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="5.6" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="18.4" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-      <path
-        d="M12 6.8 V9 M12 15 V17.2 M9.9 9.9 L8.9 8.9 M14.1 14.1 L15.1 15.1 M14.1 9.9 L15.1 8.9 M9.9 14.1 L8.9 15.1"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function MapleLeaf() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 2.5 13.6 5.9 16.4 4.7 15.7 7.9 19 8.4 16.8 10.9 19.5 12.8 16.3 13.8 16.9 17 13.9 15.7 12 21.5 10.1 15.7 7.1 17 7.7 13.8 4.5 12.8 7.2 10.9 5 8.4 8.3 7.9 7.6 4.7 10.4 5.9 Z" />
-    </svg>
-  );
-}
-
-function AwardOrgMark({ org }: { org: AwardOrgKind }) {
-  if (org === "bid") {
-    return (
-      <Image
-        src={programInstitutionalLogos[0].src}
-        alt={programInstitutionalLogos[0].alt}
-        width={400}
-        height={150}
-        className="hdf-award-org-logo hdf-award-org-logo--lg"
-      />
-    );
-  }
-  if (org === "mintic") {
-    return (
-      <span className="hdf-award-chip">
-        <Image
-          src={programInstitutionalLogos[2].src}
-          alt={programInstitutionalLogos[2].alt}
-          width={400}
-          height={150}
-        />
-      </span>
-    );
-  }
-  return (
-    <span className="hdf-award-loc">
-      <MapleLeaf />
-      Toronto · Canadá
-    </span>
-  );
-}
-
-function AwardCard({
-  award,
-  index,
-  dup = false,
+// El primer laurel define <defs> (gradiente lgold + path laurelB); los otros
+// siete lo reutilizan con <use>. El lado izquierdo va espejado.
+function LaurelSvg({
+  flip = false,
+  withDefs = false,
 }: {
-  award: (typeof AWARDS)[number];
-  index: number;
-  dup?: boolean;
+  flip?: boolean;
+  withDefs?: boolean;
 }) {
   return (
-    <div
-      className={`hdf-award${dup ? " hdf-award--dup" : ""}`}
-      style={
-        {
-          "--ac": award.accent,
-          "--ag": award.glow,
-          "--ld": `${0.1 + index * 0.09}s`,
-          "--gd": `${index * 1.1}s`,
-        } as React.CSSProperties
-      }
-      aria-hidden={dup || undefined}
+    <svg
+      width="58"
+      height="108"
+      viewBox="0 0 70 130"
+      className={`hdf-palm-laurel${flip ? " hdf-palm-laurel--l" : ""}`}
+      aria-hidden="true"
     >
-      <span className="hdf-award-sheen" aria-hidden />
-      <span className="hdf-award-medal" aria-hidden={award.glyph !== "bid2x"}>
-        <AwardGlyph kind={award.glyph} />
-      </span>
-      <span className="hdf-award-text">
-        <b>{award.verb}</b>
-        {award.subject && <i>{award.subject}</i>}
-        <span className="hdf-award-org">
-          <AwardOrgMark org={award.org} />
-        </span>
-      </span>
-    </div>
+      {withDefs && (
+        <defs>
+          <linearGradient
+            id="lgold"
+            gradientUnits="userSpaceOnUse"
+            x1="0"
+            y1="8"
+            x2="0"
+            y2="128"
+          >
+            <stop offset="0" stopColor="#f5e9c8" />
+            <stop offset=".5" stopColor="#d9b26a" />
+            <stop offset="1" stopColor="rgba(217,178,106,.18)" />
+          </linearGradient>
+          <path
+            id="laurelB"
+            stroke="url(#lgold)"
+            strokeWidth="1.7"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d={LAUREL_D}
+          />
+        </defs>
+      )}
+      <use href="#laurelB" />
+    </svg>
   );
+}
+
+function PalmSep() {
+  return <div className="hdf-palm-sep" aria-hidden />;
 }
 
 function TypewriterEyebrow({ className }: { className: string }) {
@@ -848,19 +695,89 @@ export function HomeDecisionFork() {
       </header>
 
       {/* ── Contenido principal ──────────────────────────────────────────── */}
-      <main className="relative z-[2] flex flex-col items-center px-4 pb-16 pt-9 text-center sm:px-6 sm:pb-24 sm:pt-12 lg:pb-28 lg:pt-14">
-        {/* Palmarés: vitrina de premios */}
-        <div className="hdf-awards" role="group" aria-label="Reconocimientos">
-          <div className="hdf-awards-track">
-            {AWARDS.map((a, i) => (
-              <AwardCard key={a.glyph} award={a} index={i} />
-            ))}
-            {/* Segunda copia: solo alimenta el loop del marquee móvil */}
-            {AWARDS.map((a, i) => (
-              <AwardCard key={`dup-${a.glyph}`} award={a} index={i} dup />
-            ))}
+      <main className="relative z-[2] flex flex-col items-center px-4 pb-16 pt-[52px] text-center sm:px-6 sm:pb-24 lg:pb-28">
+        {/* Palmarés: franja de laureles dorados */}
+        <section className="hdf-palms" aria-label="Reconocimientos">
+          <div className="hdf-palms-halo" aria-hidden />
+          <div className="hdf-palms-row">
+            <div className="hdf-palm" style={{ animationDelay: "0.05s" }}>
+              <LaurelSvg flip withDefs />
+              <div className="hdf-palm-stack">
+                <div className="hdf-palm-eyebrow">2× FINANCIADOS POR</div>
+                <Image
+                  src={programInstitutionalLogos[0].src}
+                  alt={programInstitutionalLogos[0].alt}
+                  width={800}
+                  height={300}
+                  className="hdf-palm-bid"
+                />
+                <div className="hdf-palm-origin hdf-palm-origin--wrap">
+                  BANCO INTERAMERICANO DE DESARROLLO
+                </div>
+              </div>
+              <LaurelSvg />
+            </div>
+            <PalmSep />
+            <div className="hdf-palm" style={{ animationDelay: "0.2s" }}>
+              <LaurelSvg flip />
+              <div className="hdf-palm-stack">
+                <div className="hdf-palm-eyebrow">GANADORES</div>
+                <div className="hdf-palm-name-serif hdf-palm-name-loco">
+                  Locomotora de
+                  <br />
+                  la Innovación
+                </div>
+                <span className="hdf-palm-chip">
+                  <Image
+                    src={programInstitutionalLogos[2].src}
+                    alt={programInstitutionalLogos[2].alt}
+                    width={800}
+                    height={300}
+                  />
+                </span>
+              </div>
+              <LaurelSvg />
+            </div>
+            <PalmSep />
+            <div className="hdf-palm" style={{ animationDelay: "0.35s" }}>
+              <LaurelSvg flip />
+              <div className="hdf-palm-stack">
+                <div className="hdf-palm-eyebrow">GANADORES</div>
+                <div className="hdf-palm-name-serif hdf-palm-name-retos">
+                  Retos 4.0
+                </div>
+                <span className="hdf-palm-chip">
+                  <Image
+                    src={programInstitutionalLogos[2].src}
+                    alt={programInstitutionalLogos[2].alt}
+                    width={800}
+                    height={300}
+                  />
+                </span>
+              </div>
+              <LaurelSvg />
+            </div>
+            <PalmSep />
+            <div className="hdf-palm" style={{ animationDelay: "0.5s" }}>
+              <LaurelSvg flip />
+              <div className="hdf-palm-stack">
+                <div className="hdf-palm-eyebrow">STARTUP FINALISTA</div>
+                <div className="hdf-palm-collision">
+                  <svg width="13" height="13" viewBox="0 0 12 12" aria-hidden>
+                    <g stroke="#ff5d5d" strokeWidth="1.8" strokeLinecap="round">
+                      <line x1="6" y1="1" x2="6" y2="11" />
+                      <line x1="1.7" y1="3.5" x2="10.3" y2="8.5" />
+                      <line x1="10.3" y1="3.5" x2="1.7" y2="8.5" />
+                    </g>
+                  </svg>
+                  Collision <span>Conf.</span>
+                </div>
+                <div className="hdf-palm-origin">TORONTO · CANADÁ</div>
+              </div>
+              <LaurelSvg />
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* Cupos capsule */}
         <a href={HREF.franquiciar} className="hdf-badge-outer hdf-focus">
@@ -1274,242 +1191,131 @@ export function HomeDecisionFork() {
           background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
         }
 
-        /* ── Palmarés: vitrina de premios ── */
-        .hdf-awards {
-          width: 100%;
-          max-width: 1180px;
-          margin-bottom: 34px;
-        }
-        .hdf-awards-track {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: stretch;
-          justify-content: center;
-          gap: 14px;
-        }
-        .hdf-award {
-          --ac: #6ea8ff;
-          --ag: rgba(110, 168, 255, 0.35);
+        /* ── Palmarés: franja de laureles dorados ── */
+        .hdf-palms {
           position: relative;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 13px 20px 13px 13px;
-          border-radius: 18px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: rgba(10, 16, 32, 0.66);
-          background:
-            radial-gradient(
-              130% 150% at 0% 0%,
-              color-mix(in srgb, var(--ac) 10%, transparent),
-              transparent 58%
-            ),
-            rgba(10, 16, 32, 0.66);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          text-align: left;
-          animation: hdf-fade-up 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)
-            var(--ld, 0s) both;
-          transition:
-            transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-            border-color 0.3s,
-            box-shadow 0.3s;
+          width: 100%;
+          margin-bottom: 46px;
         }
-        .hdf-award:hover {
-          transform: translateY(-3px);
-          border-color: color-mix(in srgb, var(--ac) 55%, transparent);
-          box-shadow: 0 24px 60px -24px var(--ag);
-        }
-        .hdf-award--dup {
-          display: none;
-        }
-        /* Destello periódico de vitrina, en cascada entre tarjetas */
-        .hdf-award-sheen {
+        .hdf-palms-halo {
           position: absolute;
-          inset: 0 auto 0 -40%;
-          width: 34%;
-          background: linear-gradient(
-            100deg,
-            transparent,
-            rgba(255, 255, 255, 0.09) 50%,
-            transparent
+          left: 50%;
+          top: 50%;
+          width: 980px;
+          height: 240px;
+          transform: translate(-50%, -50%);
+          background: radial-gradient(
+            closest-side,
+            rgba(233, 199, 128, 0.09),
+            transparent 72%
           );
-          animation: hdf-award-gleam 7s ease-in-out var(--gd, 0s) infinite;
+          animation: hdf-palm-glow 5.5s ease-in-out infinite alternate;
           pointer-events: none;
         }
-        .hdf-award-medal {
+        .hdf-palms-row {
           position: relative;
-          display: grid;
-          place-items: center;
-          width: 54px;
-          height: 54px;
-          border-radius: 50%;
-          flex-shrink: 0;
-          color: var(--ac);
-          background: radial-gradient(
-            100% 100% at 32% 26%,
-            color-mix(in srgb, var(--ac) 24%, transparent),
-            rgba(8, 12, 24, 0.9) 72%
-          );
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          align-items: stretch;
+          gap: 14px 30px;
         }
-        .hdf-award-medal::before {
-          content: "";
-          position: absolute;
-          inset: -2px;
-          border-radius: 50%;
-          padding: 1.5px;
-          background: conic-gradient(
-            from var(--hdf-angle, 0deg),
-            color-mix(in srgb, var(--ac) 18%, transparent) 0deg,
-            color-mix(in srgb, var(--ac) 18%, transparent) 250deg,
-            var(--ac) 310deg,
-            rgba(255, 255, 255, 0.95) 330deg,
-            color-mix(in srgb, var(--ac) 18%, transparent) 360deg
-          );
-          -webkit-mask:
-            linear-gradient(#000 0 0) content-box,
-            linear-gradient(#000 0 0);
-          -webkit-mask-composite: xor;
-          mask:
-            linear-gradient(#000 0 0) content-box,
-            linear-gradient(#000 0 0);
-          mask-composite: exclude;
-          animation: hdf-shine-rotate 4.2s linear infinite;
+        .hdf-palm {
+          flex: none;
+          display: flex;
+          align-items: center;
+          animation: hdf-palm-fade-up 0.9s ease both;
         }
-        .hdf-award-medal svg {
-          width: 26px;
-          height: 26px;
-          filter: drop-shadow(0 0 8px var(--ag));
+        .hdf-palm-laurel {
+          filter: drop-shadow(0 0 7px rgba(230, 190, 120, 0.3));
         }
-        .hdf-award-2x {
-          font-family: var(--font-instrument-serif), "Instrument Serif", serif;
-          font-style: italic;
-          font-size: 22px;
-          line-height: 1;
-          background: linear-gradient(120deg, #ffffff 30%, var(--ac));
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          color: transparent;
-          filter: drop-shadow(0 0 10px var(--ag));
+        .hdf-palm-laurel--l {
+          transform: scaleX(-1);
         }
-        .hdf-award-text {
+        .hdf-palm-stack {
           display: flex;
           flex-direction: column;
-          align-items: flex-start;
+          align-items: center;
           justify-content: center;
-          gap: 4px;
-          min-width: 0;
+          gap: 7px;
+          max-width: 186px;
+          padding: 0 6px;
+          text-align: center;
         }
-        .hdf-award-text b {
-          font-size: 11.5px;
-          font-weight: 800;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          line-height: 1;
-          color: #f2f5fc;
-          text-shadow: 0 0 16px var(--ag);
+        .hdf-palm-eyebrow {
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.24em;
+          color: rgba(244, 241, 234, 0.52);
           white-space: nowrap;
         }
-        .hdf-award-text i {
+        .hdf-palm-name-serif {
           font-family: var(--font-instrument-serif), "Instrument Serif", serif;
           font-style: italic;
-          font-size: 17px;
-          line-height: 1.05;
-          white-space: nowrap;
-          background: linear-gradient(100deg, #ffffff 30%, var(--ac));
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          color: transparent;
+          color: #f4f1ea;
         }
-        .hdf-award-org {
+        .hdf-palm-name-loco {
+          font-size: 19.5px;
+          line-height: 1.14;
+        }
+        .hdf-palm-name-retos {
+          font-size: 24px;
+          line-height: 1;
+        }
+        .hdf-palm-collision {
           display: flex;
           align-items: center;
           gap: 6px;
-          margin-top: 2px;
+          font-weight: 700;
+          font-size: 21px;
+          line-height: 1;
+          color: #f4f1ea;
         }
-        .hdf-award-org-logo {
-          height: 16px;
+        .hdf-palm-collision span {
+          font-weight: 400;
+          opacity: 0.72;
+        }
+        .hdf-palm-origin {
+          font-size: 7.5px;
+          font-weight: 600;
+          letter-spacing: 0.17em;
+          line-height: 1.7;
+          color: rgba(233, 207, 154, 0.55);
+          white-space: nowrap;
+        }
+        .hdf-palm-origin--wrap {
+          max-width: 150px;
+          white-space: normal;
+        }
+        .hdf-palm-bid {
+          height: 27px;
           width: auto;
           object-fit: contain;
           filter: brightness(0) invert(1);
-          opacity: 0.92;
+          opacity: 0.95;
         }
-        .hdf-award-org-logo--lg {
-          height: 21px;
-        }
-        .hdf-award-chip {
+        .hdf-palm-chip {
           display: inline-flex;
           align-items: center;
-          border-radius: 5px;
+          border-radius: 4px;
           background: #ffffff;
           padding: 2px 5px;
         }
-        .hdf-award-chip img {
-          height: 11px;
+        .hdf-palm-chip img {
+          height: 12px;
           width: auto;
           object-fit: contain;
         }
-        .hdf-award-loc {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: #9fb2d2;
-        }
-        .hdf-award-loc svg {
-          width: 13px;
-          height: 13px;
-          color: var(--ac);
-        }
-        /* Móvil: la vitrina gira en loop (mismo lenguaje del marquee de
-           clientes) para no empujar la cápsula fuera del fold. */
-        @media (max-width: 767px) {
-          .hdf-awards {
-            margin-bottom: 26px;
-            overflow: hidden;
-            -webkit-mask-image: linear-gradient(
-              90deg,
-              transparent,
-              #000 10%,
-              #000 90%,
-              transparent
-            );
-            mask-image: linear-gradient(
-              90deg,
-              transparent,
-              #000 10%,
-              #000 90%,
-              transparent
-            );
-          }
-          .hdf-awards-track {
-            flex-wrap: nowrap;
-            justify-content: flex-start;
-            width: max-content;
-            gap: 12px;
-            padding-right: 12px;
-            animation: hdf-marquee-scroll 26s linear infinite;
-          }
-          .hdf-award {
-            animation: none;
-          }
-          .hdf-award--dup {
-            display: flex;
-          }
-        }
-        @media (max-width: 767px) and (prefers-reduced-motion: reduce) {
-          .hdf-awards {
-            overflow-x: auto;
-          }
-          .hdf-awards-track {
-            animation: none;
-          }
+        .hdf-palm-sep {
+          width: 1px;
+          align-self: center;
+          height: 56px;
+          background: linear-gradient(
+            180deg,
+            transparent,
+            rgba(233, 207, 154, 0.26),
+            transparent
+          );
         }
 
         /* ── Cupos badge ── */
@@ -2363,14 +2169,22 @@ export function HomeDecisionFork() {
             transform: translateX(-50%);
           }
         }
-        @keyframes hdf-award-gleam {
-          0%,
-          58% {
-            transform: translateX(0);
+        @keyframes hdf-palm-fade-up {
+          from {
+            opacity: 0;
+            transform: translateY(14px);
           }
-          78%,
-          100% {
-            transform: translateX(480%);
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes hdf-palm-glow {
+          from {
+            opacity: 0.45;
+          }
+          to {
+            opacity: 1;
           }
         }
         @keyframes hdf-node-pulse {
@@ -2470,10 +2284,8 @@ export function HomeDecisionFork() {
           .hdf-card-eyebrow,
           .hdf-strip-logo,
           .hdf-strip-logo-chip,
-          .hdf-award,
-          .hdf-award-sheen,
-          .hdf-award-medal::before,
-          .hdf-awards-track,
+          .hdf-palm,
+          .hdf-palms-halo,
           .hdf-marquee,
           .hdf-stats-line,
           .hdf-stat-node,
