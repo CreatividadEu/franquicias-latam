@@ -160,81 +160,183 @@ function AwardLogo({
   );
 }
 
-// ── Palmarés: laureles estilo festival (entre el nav y la cápsula) ─────────
-// Los logos disponibles en el proyecto (BID, Naciones Unidas) se muestran en
-// blanco dentro del laurel; el resto de reconocimientos van tipográficos.
+// ── Palmarés: vitrina de premios (entre el nav y la cápsula) ────────────────
+// Cuatro logros como trofeos de vidrio: medallón con glifo propio y anillo de
+// luz giratorio, titular legible y la institución (logo real donde existe).
+type AwardGlyphKind = "bid2x" | "loco" | "trophy" | "collision";
+type AwardOrgKind = "bid" | "mintic" | "toronto";
+
 const AWARDS: {
-  top: string;
-  org: string;
-  logo?: (typeof programInstitutionalLogos)[number];
+  glyph: AwardGlyphKind;
+  verb: string;
+  subject: string | null;
+  org: AwardOrgKind;
+  accent: string;
+  glow: string;
 }[] = [
-  { top: "2× Financiados", org: "BID", logo: programInstitutionalLogos[0] },
-  { top: "Ganadores", org: "Locomotora Innovación · MinTIC" },
-  { top: "Ganadores", org: "Retos 4.0 · MinTIC" },
-  { top: "Consultores Líderes", org: "Microfranquicias · Propaís" },
   {
-    top: "Consultores",
-    org: "Naciones Unidas",
-    logo: programInstitutionalLogos[1],
+    glyph: "bid2x",
+    verb: "Financiados por",
+    subject: null,
+    org: "bid",
+    accent: "#6EA8FF",
+    glow: "rgba(110, 168, 255, 0.4)",
   },
-  { top: "Startup Finalista", org: "Collision Conf. · Toronto" },
+  {
+    glyph: "loco",
+    verb: "Ganadores",
+    subject: "Locomotora de la Innovación",
+    org: "mintic",
+    accent: "#37E6C3",
+    glow: "rgba(55, 230, 195, 0.4)",
+  },
+  {
+    glyph: "trophy",
+    verb: "Ganadores",
+    subject: "Retos 4.0",
+    org: "mintic",
+    accent: "#FFA24F",
+    glow: "rgba(255, 162, 79, 0.4)",
+  },
+  {
+    glyph: "collision",
+    verb: "Startup Finalista",
+    subject: "Collision Conf.",
+    org: "toronto",
+    accent: "#FF6B7D",
+    glow: "rgba(255, 107, 125, 0.4)",
+  },
 ];
 
-// Rama de laurel: tallo en trazo + hojas sólidas, en currentColor para que
-// el hover del badge la tiña completa. La derecha es esta misma espejada.
-function LaurelBranch({ flip = false }: { flip?: boolean }) {
+// Glifos de cada logro, en el lenguaje de trazos del sitio: 2× (conteo BID),
+// locomotora (Locomotora de la Innovación), copa (Retos 4.0) y dos partículas
+// chocando (Collision).
+function AwardGlyph({ kind }: { kind: AwardGlyphKind }) {
+  if (kind === "bid2x") {
+    return <em className="hdf-award-2x">2×</em>;
+  }
+  if (kind === "loco") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+        {/* cabina alta + caldera baja */}
+        <path
+          d="M4 15 V7.5 H9 V10.5 H19.5 V15 H4 Z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinejoin="round"
+        />
+        {/* ventana de cabina */}
+        <path
+          d="M5.9 9.6 H7.2"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        {/* chimenea + humo */}
+        <path
+          d="M16.2 10.5 V8.2"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+        />
+        <path
+          d="M14.9 5.8 C15.7 5 17 5 17.8 5.8"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          opacity=".65"
+        />
+        <circle cx="7" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="11.8" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="16.6" cy="17.5" r="1.6" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  if (kind === "trophy") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M8 4.5 H16 V8.5 A4 4 0 0 1 8 8.5 Z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M8 5.8 H5.4 A2.4 2.4 0 0 0 8 8.8 M16 5.8 H18.6 A2.4 2.4 0 0 1 16 8.8"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M12 12.5 V15 M10.4 15 H13.6 L14.4 18 H9.6 Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M8.6 19.8 H15.4"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
   return (
-    <svg
-      viewBox="0 0 24 56"
-      className={`hdf-laurel-branch${flip ? " hdf-laurel-branch--r" : ""}`}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="5.6" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="18.4" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6" />
       <path
-        d="M17.5 5 C8.5 16 6.5 33 12 51"
-        fill="none"
+        d="M12 6.8 V9 M12 15 V17.2 M9.9 9.9 L8.9 8.9 M14.1 14.1 L15.1 15.1 M14.1 9.9 L15.1 8.9 M9.9 14.1 L8.9 15.1"
         stroke="currentColor"
-        strokeWidth="1.7"
+        strokeWidth="1.6"
         strokeLinecap="round"
       />
-      {/* Hojas exteriores (grandes) siguiendo el tallo */}
-      {(
-        [
-          [14.6, 9.2, 50, 0.62],
-          [11.6, 15.6, 32, 0.76],
-          [9.7, 22.6, 16, 0.88],
-          [8.9, 29.8, 2, 0.94],
-          [9.3, 37.4, -14, 0.92],
-          [10.9, 44.8, -28, 0.84],
-        ] as const
-      ).map(([x, y, r, s], i) => (
-        <path
-          key={`o${i}`}
-          d="M0 0 C-4 -0.4 -7.2 -2.2 -8.6 -6.2 C-4.6 -6.4 -1 -3.8 0 0 Z"
-          fill="currentColor"
-          transform={`translate(${x} ${y}) rotate(${r}) scale(${s})`}
-        />
-      ))}
-      {/* Hojas interiores (pequeñas, espejadas) para dar cuerpo */}
-      {(
-        [
-          [12.6, 19.4, -34, 0.5],
-          [10.6, 26.6, -18, 0.56],
-          [10.1, 34, -4, 0.56],
-          [11.6, 41.4, 12, 0.5],
-        ] as const
-      ).map(([x, y, r, s], i) => (
-        <path
-          key={`i${i}`}
-          d="M0 0 C-4 -0.4 -7.2 -2.2 -8.6 -6.2 C-4.6 -6.4 -1 -3.8 0 0 Z"
-          fill="currentColor"
-          transform={`translate(${x} ${y}) rotate(${r}) scale(${-s} ${s})`}
-        />
-      ))}
     </svg>
   );
 }
 
-function AwardLaurel({
+function MapleLeaf() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2.5 13.6 5.9 16.4 4.7 15.7 7.9 19 8.4 16.8 10.9 19.5 12.8 16.3 13.8 16.9 17 13.9 15.7 12 21.5 10.1 15.7 7.1 17 7.7 13.8 4.5 12.8 7.2 10.9 5 8.4 8.3 7.9 7.6 4.7 10.4 5.9 Z" />
+    </svg>
+  );
+}
+
+function AwardOrgMark({ org }: { org: AwardOrgKind }) {
+  if (org === "bid") {
+    return (
+      <Image
+        src={programInstitutionalLogos[0].src}
+        alt={programInstitutionalLogos[0].alt}
+        width={400}
+        height={150}
+        className="hdf-award-org-logo hdf-award-org-logo--lg"
+      />
+    );
+  }
+  if (org === "mintic") {
+    return (
+      <span className="hdf-award-chip">
+        <Image
+          src={programInstitutionalLogos[2].src}
+          alt={programInstitutionalLogos[2].alt}
+          width={400}
+          height={150}
+        />
+      </span>
+    );
+  }
+  return (
+    <span className="hdf-award-loc">
+      <MapleLeaf />
+      Toronto · Canadá
+    </span>
+  );
+}
+
+function AwardCard({
   award,
   index,
   dup = false,
@@ -244,28 +346,30 @@ function AwardLaurel({
   dup?: boolean;
 }) {
   return (
-    <span
-      className={`hdf-laurel${dup ? " hdf-laurel--dup" : ""}`}
-      style={{ "--ld": `${0.1 + index * 0.08}s` } as React.CSSProperties}
+    <div
+      className={`hdf-award${dup ? " hdf-award--dup" : ""}`}
+      style={
+        {
+          "--ac": award.accent,
+          "--ag": award.glow,
+          "--ld": `${0.1 + index * 0.09}s`,
+          "--gd": `${index * 1.1}s`,
+        } as React.CSSProperties
+      }
       aria-hidden={dup || undefined}
     >
-      <LaurelBranch />
-      <span className="hdf-laurel-body">
-        <b>{award.top}</b>
-        {award.logo ? (
-          <Image
-            src={award.logo.src}
-            alt={award.logo.alt}
-            width={400}
-            height={150}
-            className="hdf-laurel-logo"
-          />
-        ) : (
-          <i>{award.org}</i>
-        )}
+      <span className="hdf-award-sheen" aria-hidden />
+      <span className="hdf-award-medal" aria-hidden={award.glyph !== "bid2x"}>
+        <AwardGlyph kind={award.glyph} />
       </span>
-      <LaurelBranch flip />
-    </span>
+      <span className="hdf-award-text">
+        <b>{award.verb}</b>
+        {award.subject && <i>{award.subject}</i>}
+        <span className="hdf-award-org">
+          <AwardOrgMark org={award.org} />
+        </span>
+      </span>
+    </div>
   );
 }
 
@@ -745,15 +849,15 @@ export function HomeDecisionFork() {
 
       {/* ── Contenido principal ──────────────────────────────────────────── */}
       <main className="relative z-[2] flex flex-col items-center px-4 pb-16 pt-9 text-center sm:px-6 sm:pb-24 sm:pt-12 lg:pb-28 lg:pt-14">
-        {/* Palmarés: laureles de festival */}
-        <div className="hdf-laurels" role="group" aria-label="Reconocimientos">
-          <div className="hdf-laurels-track">
+        {/* Palmarés: vitrina de premios */}
+        <div className="hdf-awards" role="group" aria-label="Reconocimientos">
+          <div className="hdf-awards-track">
             {AWARDS.map((a, i) => (
-              <AwardLaurel key={a.org} award={a} index={i} />
+              <AwardCard key={a.glyph} award={a} index={i} />
             ))}
             {/* Segunda copia: solo alimenta el loop del marquee móvil */}
             {AWARDS.map((a, i) => (
-              <AwardLaurel key={`dup-${a.org}`} award={a} index={i} dup />
+              <AwardCard key={`dup-${a.glyph}`} award={a} index={i} dup />
             ))}
           </div>
         </div>
@@ -1170,124 +1274,240 @@ export function HomeDecisionFork() {
           background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
         }
 
-        /* ── Palmarés: laureles de festival ── */
-        .hdf-laurels {
+        /* ── Palmarés: vitrina de premios ── */
+        .hdf-awards {
           width: 100%;
           max-width: 1180px;
-          margin-bottom: 32px;
+          margin-bottom: 34px;
         }
-        .hdf-laurels-track {
+        .hdf-awards-track {
           display: flex;
           flex-wrap: wrap;
           align-items: stretch;
           justify-content: center;
-          gap: 12px 26px;
+          gap: 14px;
         }
-        .hdf-laurel {
+        .hdf-award {
+          --ac: #6ea8ff;
+          --ag: rgba(110, 168, 255, 0.35);
+          position: relative;
+          overflow: hidden;
           display: flex;
           align-items: center;
-          gap: 1px;
-          color: rgba(174, 197, 232, 0.88);
+          gap: 14px;
+          padding: 13px 20px 13px 13px;
+          border-radius: 18px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(10, 16, 32, 0.66);
+          background:
+            radial-gradient(
+              130% 150% at 0% 0%,
+              color-mix(in srgb, var(--ac) 10%, transparent),
+              transparent 58%
+            ),
+            rgba(10, 16, 32, 0.66);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          text-align: left;
           animation: hdf-fade-up 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)
             var(--ld, 0s) both;
           transition:
-            color 0.35s,
-            filter 0.35s,
-            transform 0.35s;
+            transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+            border-color 0.3s,
+            box-shadow 0.3s;
         }
-        .hdf-laurel:hover {
-          color: #7ee7cf;
-          transform: translateY(-2px);
-          filter: drop-shadow(0 6px 18px rgba(55, 230, 195, 0.3));
+        .hdf-award:hover {
+          transform: translateY(-3px);
+          border-color: color-mix(in srgb, var(--ac) 55%, transparent);
+          box-shadow: 0 24px 60px -24px var(--ag);
         }
-        .hdf-laurel--dup {
+        .hdf-award--dup {
           display: none;
         }
-        .hdf-laurel-branch {
-          width: 20px;
-          height: 45px;
+        /* Destello periódico de vitrina, en cascada entre tarjetas */
+        .hdf-award-sheen {
+          position: absolute;
+          inset: 0 auto 0 -40%;
+          width: 34%;
+          background: linear-gradient(
+            100deg,
+            transparent,
+            rgba(255, 255, 255, 0.09) 50%,
+            transparent
+          );
+          animation: hdf-award-gleam 7s ease-in-out var(--gd, 0s) infinite;
+          pointer-events: none;
+        }
+        .hdf-award-medal {
+          position: relative;
+          display: grid;
+          place-items: center;
+          width: 54px;
+          height: 54px;
+          border-radius: 50%;
           flex-shrink: 0;
-          filter: drop-shadow(0 0 7px rgba(110, 168, 255, 0.3));
+          color: var(--ac);
+          background: radial-gradient(
+            100% 100% at 32% 26%,
+            color-mix(in srgb, var(--ac) 24%, transparent),
+            rgba(8, 12, 24, 0.9) 72%
+          );
         }
-        .hdf-laurel-branch--r {
-          transform: scaleX(-1);
+        .hdf-award-medal::before {
+          content: "";
+          position: absolute;
+          inset: -2px;
+          border-radius: 50%;
+          padding: 1.5px;
+          background: conic-gradient(
+            from var(--hdf-angle, 0deg),
+            color-mix(in srgb, var(--ac) 18%, transparent) 0deg,
+            color-mix(in srgb, var(--ac) 18%, transparent) 250deg,
+            var(--ac) 310deg,
+            rgba(255, 255, 255, 0.95) 330deg,
+            color-mix(in srgb, var(--ac) 18%, transparent) 360deg
+          );
+          -webkit-mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+          -webkit-mask-composite: xor;
+          mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+          mask-composite: exclude;
+          animation: hdf-shine-rotate 4.2s linear infinite;
         }
-        .hdf-laurel-body {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 3px;
-          min-width: 92px;
-          padding: 0 4px;
-          text-align: center;
+        .hdf-award-medal svg {
+          width: 26px;
+          height: 26px;
+          filter: drop-shadow(0 0 8px var(--ag));
         }
-        .hdf-laurel-body b {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          line-height: 1.1;
-          color: #f2f5fc;
-          text-shadow: 0 0 14px rgba(110, 168, 255, 0.35);
-          white-space: nowrap;
-        }
-        .hdf-laurel-body i {
+        .hdf-award-2x {
           font-family: var(--font-instrument-serif), "Instrument Serif", serif;
           font-style: italic;
-          font-size: 12.5px;
-          line-height: 1.15;
-          color: rgba(159, 178, 210, 0.95);
+          font-size: 22px;
+          line-height: 1;
+          background: linear-gradient(120deg, #ffffff 30%, var(--ac));
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          filter: drop-shadow(0 0 10px var(--ag));
+        }
+        .hdf-award-text {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: center;
+          gap: 4px;
+          min-width: 0;
+        }
+        .hdf-award-text b {
+          font-size: 11.5px;
+          font-weight: 800;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          line-height: 1;
+          color: #f2f5fc;
+          text-shadow: 0 0 16px var(--ag);
           white-space: nowrap;
         }
-        .hdf-laurel-logo {
-          height: 15px;
+        .hdf-award-text i {
+          font-family: var(--font-instrument-serif), "Instrument Serif", serif;
+          font-style: italic;
+          font-size: 17px;
+          line-height: 1.05;
+          white-space: nowrap;
+          background: linear-gradient(100deg, #ffffff 30%, var(--ac));
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+        }
+        .hdf-award-org {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 2px;
+        }
+        .hdf-award-org-logo {
+          height: 16px;
           width: auto;
           object-fit: contain;
           filter: brightness(0) invert(1);
           opacity: 0.92;
         }
-        /* Móvil: el palmarés gira en loop (mismo lenguaje del marquee de
+        .hdf-award-org-logo--lg {
+          height: 21px;
+        }
+        .hdf-award-chip {
+          display: inline-flex;
+          align-items: center;
+          border-radius: 5px;
+          background: #ffffff;
+          padding: 2px 5px;
+        }
+        .hdf-award-chip img {
+          height: 11px;
+          width: auto;
+          object-fit: contain;
+        }
+        .hdf-award-loc {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #9fb2d2;
+        }
+        .hdf-award-loc svg {
+          width: 13px;
+          height: 13px;
+          color: var(--ac);
+        }
+        /* Móvil: la vitrina gira en loop (mismo lenguaje del marquee de
            clientes) para no empujar la cápsula fuera del fold. */
         @media (max-width: 767px) {
-          .hdf-laurels {
+          .hdf-awards {
             margin-bottom: 26px;
             overflow: hidden;
             -webkit-mask-image: linear-gradient(
               90deg,
               transparent,
-              #000 12%,
-              #000 88%,
+              #000 10%,
+              #000 90%,
               transparent
             );
             mask-image: linear-gradient(
               90deg,
               transparent,
-              #000 12%,
-              #000 88%,
+              #000 10%,
+              #000 90%,
               transparent
             );
           }
-          .hdf-laurels-track {
+          .hdf-awards-track {
             flex-wrap: nowrap;
             justify-content: flex-start;
             width: max-content;
-            gap: 0 26px;
-            padding-right: 26px;
-            animation: hdf-marquee-scroll 34s linear infinite;
+            gap: 12px;
+            padding-right: 12px;
+            animation: hdf-marquee-scroll 26s linear infinite;
           }
-          .hdf-laurel {
+          .hdf-award {
             animation: none;
           }
-          .hdf-laurel--dup {
+          .hdf-award--dup {
             display: flex;
           }
         }
         @media (max-width: 767px) and (prefers-reduced-motion: reduce) {
-          .hdf-laurels {
+          .hdf-awards {
             overflow-x: auto;
           }
-          .hdf-laurels-track {
+          .hdf-awards-track {
             animation: none;
           }
         }
@@ -2143,6 +2363,16 @@ export function HomeDecisionFork() {
             transform: translateX(-50%);
           }
         }
+        @keyframes hdf-award-gleam {
+          0%,
+          58% {
+            transform: translateX(0);
+          }
+          78%,
+          100% {
+            transform: translateX(480%);
+          }
+        }
         @keyframes hdf-node-pulse {
           0%,
           100% {
@@ -2240,8 +2470,10 @@ export function HomeDecisionFork() {
           .hdf-card-eyebrow,
           .hdf-strip-logo,
           .hdf-strip-logo-chip,
-          .hdf-laurel,
-          .hdf-laurels-track,
+          .hdf-award,
+          .hdf-award-sheen,
+          .hdf-award-medal::before,
+          .hdf-awards-track,
           .hdf-marquee,
           .hdf-stats-line,
           .hdf-stat-node,
