@@ -160,6 +160,115 @@ function AwardLogo({
   );
 }
 
+// ── Palmarés: laureles estilo festival (entre el nav y la cápsula) ─────────
+// Los logos disponibles en el proyecto (BID, Naciones Unidas) se muestran en
+// blanco dentro del laurel; el resto de reconocimientos van tipográficos.
+const AWARDS: {
+  top: string;
+  org: string;
+  logo?: (typeof programInstitutionalLogos)[number];
+}[] = [
+  { top: "2× Financiados", org: "BID", logo: programInstitutionalLogos[0] },
+  { top: "Ganadores", org: "Locomotora Innovación · MinTIC" },
+  { top: "Ganadores", org: "Retos 4.0 · MinTIC" },
+  { top: "Consultores Líderes", org: "Microfranquicias · Propaís" },
+  {
+    top: "Consultores",
+    org: "Naciones Unidas",
+    logo: programInstitutionalLogos[1],
+  },
+  { top: "Startup Finalista", org: "Collision Conf. · Toronto" },
+];
+
+// Rama de laurel: tallo en trazo + hojas sólidas, en currentColor para que
+// el hover del badge la tiña completa. La derecha es esta misma espejada.
+function LaurelBranch({ flip = false }: { flip?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 56"
+      className={`hdf-laurel-branch${flip ? " hdf-laurel-branch--r" : ""}`}
+      aria-hidden="true"
+    >
+      <path
+        d="M17.5 5 C8.5 16 6.5 33 12 51"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+      {/* Hojas exteriores (grandes) siguiendo el tallo */}
+      {(
+        [
+          [14.6, 9.2, 50, 0.62],
+          [11.6, 15.6, 32, 0.76],
+          [9.7, 22.6, 16, 0.88],
+          [8.9, 29.8, 2, 0.94],
+          [9.3, 37.4, -14, 0.92],
+          [10.9, 44.8, -28, 0.84],
+        ] as const
+      ).map(([x, y, r, s], i) => (
+        <path
+          key={`o${i}`}
+          d="M0 0 C-4 -0.4 -7.2 -2.2 -8.6 -6.2 C-4.6 -6.4 -1 -3.8 0 0 Z"
+          fill="currentColor"
+          transform={`translate(${x} ${y}) rotate(${r}) scale(${s})`}
+        />
+      ))}
+      {/* Hojas interiores (pequeñas, espejadas) para dar cuerpo */}
+      {(
+        [
+          [12.6, 19.4, -34, 0.5],
+          [10.6, 26.6, -18, 0.56],
+          [10.1, 34, -4, 0.56],
+          [11.6, 41.4, 12, 0.5],
+        ] as const
+      ).map(([x, y, r, s], i) => (
+        <path
+          key={`i${i}`}
+          d="M0 0 C-4 -0.4 -7.2 -2.2 -8.6 -6.2 C-4.6 -6.4 -1 -3.8 0 0 Z"
+          fill="currentColor"
+          transform={`translate(${x} ${y}) rotate(${r}) scale(${-s} ${s})`}
+        />
+      ))}
+    </svg>
+  );
+}
+
+function AwardLaurel({
+  award,
+  index,
+  dup = false,
+}: {
+  award: (typeof AWARDS)[number];
+  index: number;
+  dup?: boolean;
+}) {
+  return (
+    <span
+      className={`hdf-laurel${dup ? " hdf-laurel--dup" : ""}`}
+      style={{ "--ld": `${0.1 + index * 0.08}s` } as React.CSSProperties}
+      aria-hidden={dup || undefined}
+    >
+      <LaurelBranch />
+      <span className="hdf-laurel-body">
+        <b>{award.top}</b>
+        {award.logo ? (
+          <Image
+            src={award.logo.src}
+            alt={award.logo.alt}
+            width={400}
+            height={150}
+            className="hdf-laurel-logo"
+          />
+        ) : (
+          <i>{award.org}</i>
+        )}
+      </span>
+      <LaurelBranch flip />
+    </span>
+  );
+}
+
 function TypewriterEyebrow({ className }: { className: string }) {
   const rootRef = useRef<HTMLSpanElement | null>(null);
   const startedRef = useRef(false);
@@ -635,7 +744,20 @@ export function HomeDecisionFork() {
       </header>
 
       {/* ── Contenido principal ──────────────────────────────────────────── */}
-      <main className="relative z-[2] flex flex-col items-center px-4 pb-16 pt-16 text-center sm:px-6 sm:pb-24 sm:pt-24 lg:pb-28 lg:pt-28">
+      <main className="relative z-[2] flex flex-col items-center px-4 pb-16 pt-9 text-center sm:px-6 sm:pb-24 sm:pt-12 lg:pb-28 lg:pt-14">
+        {/* Palmarés: laureles de festival */}
+        <div className="hdf-laurels" role="group" aria-label="Reconocimientos">
+          <div className="hdf-laurels-track">
+            {AWARDS.map((a, i) => (
+              <AwardLaurel key={a.org} award={a} index={i} />
+            ))}
+            {/* Segunda copia: solo alimenta el loop del marquee móvil */}
+            {AWARDS.map((a, i) => (
+              <AwardLaurel key={`dup-${a.org}`} award={a} index={i} dup />
+            ))}
+          </div>
+        </div>
+
         {/* Cupos capsule */}
         <a href={HREF.franquiciar} className="hdf-badge-outer hdf-focus">
           <div className="hdf-badge-inner">
@@ -1046,6 +1168,128 @@ export function HomeDecisionFork() {
         .hdf-sheen--fast {
           animation-duration: 2.8s;
           background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+        }
+
+        /* ── Palmarés: laureles de festival ── */
+        .hdf-laurels {
+          width: 100%;
+          max-width: 1180px;
+          margin-bottom: 32px;
+        }
+        .hdf-laurels-track {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: stretch;
+          justify-content: center;
+          gap: 12px 26px;
+        }
+        .hdf-laurel {
+          display: flex;
+          align-items: center;
+          gap: 1px;
+          color: rgba(174, 197, 232, 0.88);
+          animation: hdf-fade-up 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)
+            var(--ld, 0s) both;
+          transition:
+            color 0.35s,
+            filter 0.35s,
+            transform 0.35s;
+        }
+        .hdf-laurel:hover {
+          color: #7ee7cf;
+          transform: translateY(-2px);
+          filter: drop-shadow(0 6px 18px rgba(55, 230, 195, 0.3));
+        }
+        .hdf-laurel--dup {
+          display: none;
+        }
+        .hdf-laurel-branch {
+          width: 20px;
+          height: 45px;
+          flex-shrink: 0;
+          filter: drop-shadow(0 0 7px rgba(110, 168, 255, 0.3));
+        }
+        .hdf-laurel-branch--r {
+          transform: scaleX(-1);
+        }
+        .hdf-laurel-body {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 3px;
+          min-width: 92px;
+          padding: 0 4px;
+          text-align: center;
+        }
+        .hdf-laurel-body b {
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          line-height: 1.1;
+          color: #f2f5fc;
+          text-shadow: 0 0 14px rgba(110, 168, 255, 0.35);
+          white-space: nowrap;
+        }
+        .hdf-laurel-body i {
+          font-family: var(--font-instrument-serif), "Instrument Serif", serif;
+          font-style: italic;
+          font-size: 12.5px;
+          line-height: 1.15;
+          color: rgba(159, 178, 210, 0.95);
+          white-space: nowrap;
+        }
+        .hdf-laurel-logo {
+          height: 15px;
+          width: auto;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
+          opacity: 0.92;
+        }
+        /* Móvil: el palmarés gira en loop (mismo lenguaje del marquee de
+           clientes) para no empujar la cápsula fuera del fold. */
+        @media (max-width: 767px) {
+          .hdf-laurels {
+            margin-bottom: 26px;
+            overflow: hidden;
+            -webkit-mask-image: linear-gradient(
+              90deg,
+              transparent,
+              #000 12%,
+              #000 88%,
+              transparent
+            );
+            mask-image: linear-gradient(
+              90deg,
+              transparent,
+              #000 12%,
+              #000 88%,
+              transparent
+            );
+          }
+          .hdf-laurels-track {
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            width: max-content;
+            gap: 0 26px;
+            padding-right: 26px;
+            animation: hdf-marquee-scroll 34s linear infinite;
+          }
+          .hdf-laurel {
+            animation: none;
+          }
+          .hdf-laurel--dup {
+            display: flex;
+          }
+        }
+        @media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+          .hdf-laurels {
+            overflow-x: auto;
+          }
+          .hdf-laurels-track {
+            animation: none;
+          }
         }
 
         /* ── Cupos badge ── */
@@ -1996,6 +2240,8 @@ export function HomeDecisionFork() {
           .hdf-card-eyebrow,
           .hdf-strip-logo,
           .hdf-strip-logo-chip,
+          .hdf-laurel,
+          .hdf-laurels-track,
           .hdf-marquee,
           .hdf-stats-line,
           .hdf-stat-node,
