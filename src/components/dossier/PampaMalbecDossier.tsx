@@ -70,7 +70,7 @@ const PHASES: {
 
 const CONDICIONES = [
   "El 10% aplica solo si reservas y pagas la separación del cupo dentro de los 3 días — a más tardar el 15 de julio de 2026.",
-  "Separación del cupo: 1.500 €, asegura el lugar y se abona a la inversión total.",
+  "Separación del cupo: 1.750 €, asegura el lugar y se abona a la inversión total.",
   "Con descuento: 3 cuotas, una cada 30 días, la primera 30 días después del pago del cupo.",
   "Sin descuento: 5 cuotas bajo el mismo esquema de 30 días — pensada para cuidar el flujo de caja de nuestros emprendedores; requiere igualmente separar el cupo en 3 días.",
   "Vigencia de la propuesta: 15 días (hasta el 24 de julio de 2026), valores sin IVA.",
@@ -155,7 +155,7 @@ function CtaBlock({ dark = false }: { dark?: boolean }) {
       >
         Separar mi cupo · Reservar ahora →
       </a>
-      <span className="pd-cta-sub">Pago seguro vía Stripe · Reserva de 1.500 €</span>
+      <span className="pd-cta-sub">Pago seguro vía Stripe · Reserva de 1.750 €</span>
     </div>
   );
 }
