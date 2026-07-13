@@ -830,8 +830,23 @@ export function HomeDecisionFork() {
           ¿Cómo quieres <em className="hdf-grad">crecer</em> hoy?
         </h1>
 
+        {/* Manifiesto: el estándar de la industria */}
+        <div className="hdf-manifesto">
+          <p className="hdf-manifesto-lead">
+            El <em className="hdf-grad">Estándar de Franquicias</em> en
+            Iberoamérica.
+          </p>
+          <p className="hdf-manifesto-body">
+            Los únicos del sector con <strong>tecnología propia</strong> —
+            desarrollada, financiada y premiada. Desde{" "}
+            <strong>Madrid y Bogotá</strong> operamos en{" "}
+            <strong>12 países</strong>: legal, expansión, capital e
+            inteligencia artificial bajo un mismo techo.
+          </p>
+        </div>
+
         {/* Two paths */}
-        <div className="hdf-cards mt-10 grid w-full max-w-[1120px] gap-6 sm:mt-14">
+        <div className="hdf-cards mt-8 grid w-full max-w-[1120px] gap-6 sm:mt-12">
           <div
             role="button"
             tabIndex={0}
@@ -1434,6 +1449,44 @@ export function HomeDecisionFork() {
           letter-spacing: -0.03em;
           font-weight: 600;
         }
+        /* ── Manifiesto bajo el titular ── */
+        .hdf-manifesto {
+          max-width: 800px;
+          margin-top: 22px;
+          animation: hdf-fade-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.25s
+            both;
+        }
+        .hdf-manifesto-lead {
+          margin: 0;
+          font-family: var(--font-instrument-serif), "Instrument Serif", serif;
+          font-style: italic;
+          font-size: clamp(22px, 2.8vw, 31px);
+          line-height: 1.2;
+          color: #f2f5fc;
+          text-wrap: balance;
+          text-shadow: 0 0 34px rgba(110, 168, 255, 0.22);
+        }
+        .hdf-manifesto-lead .hdf-grad {
+          filter: drop-shadow(0 0 16px rgba(55, 230, 195, 0.3));
+        }
+        .hdf-manifesto-body {
+          margin: 13px auto 0;
+          max-width: 730px;
+          font-size: 16.5px;
+          line-height: 1.7;
+          color: #aebadb;
+          text-wrap: pretty;
+        }
+        .hdf-manifesto-body strong {
+          color: #ffffff;
+          font-weight: 600;
+        }
+        @media (max-width: 639px) {
+          .hdf-manifesto-body {
+            font-size: 15px;
+          }
+        }
+
         .hdf-grad {
           font-family: var(--font-instrument-serif), "Instrument Serif", serif;
           font-style: italic;
@@ -2344,6 +2397,7 @@ export function HomeDecisionFork() {
           .hdf-palm,
           .hdf-palms-halo,
           .hdf-palm-glass::after,
+          .hdf-manifesto,
           .hdf-marquee,
           .hdf-stats-line,
           .hdf-stat-node,
