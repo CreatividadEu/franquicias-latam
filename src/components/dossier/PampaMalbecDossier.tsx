@@ -1,12 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { homeClientLogos } from "@/components/home/homeBrandData";
 
 // ── Dossier Pampa Malbec ─────────────────────────────────────────────────────
 // Estética heritage steakhouse: charcoal/crema, Cinzel para display, Archivo
 // para todo lo demás, hairlines, letras de fase A–E en rojo. Sin gradientes.
 
-const STRIPE_URL = "https://buy.stripe.com/cNi14oda60PsePPcrv5c41u";
+const STRIPE_URL = "https://buy.stripe.com/9B600k7PM69M9vv3UZ5c41x";
 
 const PHASES: {
   letter: string;
@@ -90,36 +92,40 @@ function Digit({ value }: { value: string }) {
 
 function CountdownBar({ deadlineIso }: { deadlineIso: string }) {
   const deadline = new Date(deadlineIso).getTime();
-  const [left, setLeft] = useState(() => deadline - Date.now());
+  // El reloj arranca tras el mount (SSR pinta "––"): así el HTML del server
+  // y el del cliente coinciden y no hay error de hidratación por Date.now().
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    const raf = requestAnimationFrame(() => setNow(Date.now()));
     const id = window.setInterval(() => {
-      const remaining = deadline - Date.now();
-      setLeft(remaining);
-      if (remaining <= 0) {
+      const t = Date.now();
+      setNow(t);
+      if (deadline - t <= 0) {
         window.clearInterval(id);
         // El servidor decide: al recargar, la page renderiza la expiración.
         window.location.reload();
       }
     }, 1000);
-    return () => window.clearInterval(id);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearInterval(id);
+    };
   }, [deadline]);
 
-  const totalSeconds = Math.max(0, Math.floor(left / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor(totalSeconds / 60) % 60;
-  const seconds = totalSeconds % 60;
-  const urgent = left < 6 * 3_600_000;
+  const left = now === null ? null : deadline - now;
+  const totalSeconds = left === null ? null : Math.max(0, Math.floor(left / 1000));
+  const urgent = left !== null && left < 6 * 3_600_000;
 
   return (
     <div className={`pd-bar${urgent ? " pd-bar--urgent" : ""}`} role="timer">
       <span className="pd-bar-label">Esta propuesta se cierra en</span>
       <span className="pd-bar-time" aria-hidden>
-        <Digit value={pad(hours)} />
+        <Digit value={totalSeconds === null ? "––" : pad(Math.floor(totalSeconds / 3600))} />
         <i>:</i>
-        <Digit value={pad(minutes)} />
+        <Digit value={totalSeconds === null ? "––" : pad(Math.floor(totalSeconds / 60) % 60)} />
         <i>:</i>
-        <Digit value={pad(seconds)} />
+        <Digit value={totalSeconds === null ? "––" : pad(totalSeconds % 60)} />
       </span>
       <a
         className="pd-bar-cta"
@@ -150,6 +156,85 @@ function CtaBlock({ dark = false }: { dark?: boolean }) {
         Separar mi cupo · Reservar ahora →
       </a>
       <span className="pd-cta-sub">Pago seguro vía Stripe · Reserva de 1.500 €</span>
+    </div>
+  );
+}
+
+// ── Autodestrucción por lectura ──────────────────────────────────────────────
+// Cada sección leída se desintegra (estilo "delete" de Telegram) cuando su
+// borde inferior cruza el 22% superior del viewport: polvo + blur y un
+// vestigio sellado que no puede volver a leerse. El alto del bloque se
+// conserva (visibility) para que el scroll nunca salte.
+const DUST_COLORS = ["#C9A44C", "#A31621", "#6E6860"];
+
+function Ephemeral({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [state, setState] = useState<"live" | "burning" | "gone">("live");
+
+  useEffect(() => {
+    if (state !== "live") return;
+    let raf = 0;
+    const reduced =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const check = () => {
+      const el = ref.current;
+      if (!el) return;
+      if (el.getBoundingClientRect().bottom < window.innerHeight * 0.22) {
+        window.removeEventListener("scroll", onScroll);
+        if (reduced) {
+          setState("gone");
+          return;
+        }
+        setState("burning");
+        window.setTimeout(() => setState("gone"), 950);
+      }
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(check);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, [state]);
+
+  return (
+    <div ref={ref} className={`pd-eph pd-eph--${state}`}>
+      <div className="pd-eph-content" aria-hidden={state === "gone"}>
+        {children}
+      </div>
+      {state === "burning" && (
+        <div className="pd-eph-dust" aria-hidden>
+          {Array.from({ length: 30 }, (_, i) => (
+            <span
+              key={i}
+              style={
+                {
+                  left: `${(i * 37 + 11) % 100}%`,
+                  top: `${(i * 53 + 23) % 100}%`,
+                  width: 3 + (i % 4),
+                  height: 3 + (i % 4),
+                  background: DUST_COLORS[i % 3],
+                  "--dx": `${((i * 17) % 44) - 22}px`,
+                  animationDelay: `${(i % 6) * 0.06}s`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+        </div>
+      )}
+      {state === "gone" && (
+        <div className="pd-eph-seal" aria-hidden>
+          <span className="pd-eph-rule" />
+          <span className="pd-eph-note">
+            Sección eliminada · Este dossier se lee una sola vez
+          </span>
+          <span className="pd-eph-rule" />
+        </div>
+      )}
     </div>
   );
 }
@@ -219,6 +304,7 @@ export function PampaMalbecDossier({
       <CountdownBar deadlineIso={deadlineIso} />
 
       {/* ── Portada ── */}
+      <Ephemeral>
       <header className="pd-cover">
         <p className="pd-eyebrow pd-eyebrow--gold" data-reveal>
           FRANQUICIAS LATAM · CONFIDENCIAL
@@ -240,8 +326,10 @@ export function PampaMalbecDossier({
           Bogotá / Madrid · 9 de julio de 2026 · Franquiciaslatam.com
         </p>
       </header>
+      </Ephemeral>
 
       {/* ── Carta ── */}
+      <Ephemeral>
       <section className="pd-section">
         <p className="pd-eyebrow pd-eyebrow--red" data-reveal>
           CARTA
@@ -266,8 +354,10 @@ export function PampaMalbecDossier({
           </p>
         </div>
       </section>
+      </Ephemeral>
 
       {/* ── Programa ── */}
+      <Ephemeral>
       <section className="pd-section pd-section--alt">
         <p className="pd-eyebrow pd-eyebrow--red" data-reveal>
           PROGRAMA
@@ -286,10 +376,12 @@ export function PampaMalbecDossier({
           ))}
         </ol>
       </section>
+      </Ephemeral>
 
       {/* ── Fases ── */}
       {PHASES.map((phase) => (
-        <section className="pd-section pd-phase" key={phase.letter}>
+        <Ephemeral key={phase.letter}>
+        <section className="pd-section pd-phase">
           <div className="pd-phase-letter" aria-hidden data-reveal>
             {phase.letter}
           </div>
@@ -315,6 +407,7 @@ export function PampaMalbecDossier({
             )}
           </div>
         </section>
+        </Ephemeral>
       ))}
 
       {/* ── Inversión y condiciones ── */}
@@ -344,6 +437,27 @@ export function PampaMalbecDossier({
         </ol>
         <div data-reveal>
           <CtaBlock dark />
+        </div>
+
+        {/* Prueba social: las marcas del home, para reafirmar la decisión */}
+        <div className="pd-proof" data-reveal>
+          <span className="pd-proof-caption">
+            Las marcas que confiaron en este proceso
+          </span>
+          <div className="pd-proof-mask">
+            <div className="pd-proof-track">
+              {[...homeClientLogos, ...homeClientLogos].map((logo, i) => (
+                <Image
+                  key={`${logo.alt}-${i}`}
+                  src={logo.src}
+                  alt={i < homeClientLogos.length ? logo.alt : ""}
+                  width={120}
+                  height={44}
+                  className="pd-proof-logo"
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -824,6 +938,132 @@ export function PampaMalbecDossier({
           text-align: center;
         }
 
+        /* ── Autodestrucción por lectura ── */
+        .pd-eph {
+          position: relative;
+        }
+        .pd-eph--burning .pd-eph-content {
+          animation: pd-eph-burn 0.95s ease forwards;
+        }
+        .pd-eph--gone .pd-eph-content {
+          visibility: hidden;
+        }
+        .pd-eph-dust {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 3;
+        }
+        .pd-eph-dust span {
+          position: absolute;
+          border-radius: 1.5px;
+          opacity: 0;
+          animation: pd-eph-dust 0.9s ease-out forwards;
+        }
+        .pd-eph-seal {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 18px;
+          padding: 0 26px;
+          animation: pd-eph-seal-in 0.5s ease both;
+        }
+        .pd-eph-rule {
+          flex: 1;
+          max-width: 130px;
+          height: 1px;
+          background: rgba(201, 164, 76, 0.3);
+        }
+        .pd-eph-note {
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.26em;
+          text-transform: uppercase;
+          color: #6e6860;
+          text-align: center;
+        }
+
+        /* ── Prueba social bajo el CTA ── */
+        .pd-proof {
+          margin-top: 46px;
+        }
+        .pd-proof-caption {
+          display: block;
+          margin-bottom: 20px;
+          font-size: 10.5px;
+          font-weight: 700;
+          letter-spacing: 0.26em;
+          text-transform: uppercase;
+          color: #c9a44c;
+          text-align: center;
+        }
+        .pd-proof-mask {
+          overflow: hidden;
+          -webkit-mask-image: linear-gradient(
+            90deg,
+            transparent,
+            #000 12%,
+            #000 88%,
+            transparent
+          );
+          mask-image: linear-gradient(
+            90deg,
+            transparent,
+            #000 12%,
+            #000 88%,
+            transparent
+          );
+        }
+        .pd-proof-track {
+          display: flex;
+          align-items: center;
+          gap: 54px;
+          width: max-content;
+          padding-right: 54px;
+          animation: pd-proof-scroll 30s linear infinite;
+        }
+        .pd-proof-logo {
+          height: 26px;
+          width: auto;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
+          opacity: 0.6;
+        }
+
+        @keyframes pd-eph-burn {
+          to {
+            opacity: 0;
+            filter: blur(10px);
+            transform: translateY(-16px) scale(0.99);
+          }
+        }
+        @keyframes pd-eph-dust {
+          0% {
+            opacity: 0.95;
+            transform: translate(0, 0) rotate(0deg);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(var(--dx, 0px), -70px) rotate(140deg);
+          }
+        }
+        @keyframes pd-eph-seal-in {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes pd-proof-scroll {
+          to {
+            transform: translateX(-50%);
+          }
+        }
+
         @keyframes pd-digit-in {
           from {
             opacity: 0.15;
@@ -845,11 +1085,16 @@ export function PampaMalbecDossier({
 
         @media (prefers-reduced-motion: reduce) {
           .pd-digit,
-          .pd-bar--urgent .pd-bar-time {
+          .pd-bar--urgent .pd-bar-time,
+          .pd-eph-content,
+          .pd-proof-track {
             animation: none !important;
           }
           [data-reveal] {
             transition: none;
+          }
+          .pd-proof-mask {
+            overflow-x: auto;
           }
         }
 
@@ -858,7 +1103,8 @@ export function PampaMalbecDossier({
           .pd-cta,
           .pd-bar-cta,
           .pd-chip,
-          .pd-cta-sub {
+          .pd-cta-sub,
+          .pd-proof {
             display: none !important;
           }
           .pd-root {
