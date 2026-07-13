@@ -242,11 +242,31 @@ function Ephemeral({ children }: { children: React.ReactNode }) {
 export function PampaMalbecDossier({
   deadlineIso,
   inviteToken,
+  openKey,
 }: {
   deadlineIso: string;
-  inviteToken: string;
+  inviteToken?: string;
+  openKey?: string;
 }) {
   const rootRef = useRef<HTMLDivElement | null>(null);
+
+  // Link abierto: consumir el "uso único" al montar. Solo los navegadores
+  // reales ejecutan JS, así que los prefetch de WhatsApp/email no lo queman.
+  useEffect(() => {
+    if (!openKey) return;
+    try {
+      const payload = JSON.stringify({ k: openKey });
+      if (!navigator.sendBeacon?.("/api/dossier/open", payload)) {
+        void fetch("/api/dossier/open", {
+          method: "POST",
+          body: payload,
+          keepalive: true,
+        });
+      }
+    } catch {
+      /* nunca romper la lectura */
+    }
+  }, [openKey]);
 
   // Tracking del CTA: un beacon por click (no bloquea la navegación).
   useEffect(() => {
@@ -256,7 +276,9 @@ export function PampaMalbecDossier({
       const target = (e.target as HTMLElement).closest("[data-cta]");
       if (!target) return;
       try {
-        const payload = JSON.stringify({ t: inviteToken });
+        const payload = JSON.stringify(
+          openKey ? { k: openKey } : { t: inviteToken },
+        );
         if (!navigator.sendBeacon?.("/api/dossier/cta", payload)) {
           void fetch("/api/dossier/cta", {
             method: "POST",
@@ -270,7 +292,7 @@ export function PampaMalbecDossier({
     };
     root.addEventListener("click", onClick);
     return () => root.removeEventListener("click", onClick);
-  }, [inviteToken]);
+  }, [inviteToken, openKey]);
 
   // Scroll-reveal sobrio (300ms). Con reduced-motion, todo visible.
   useEffect(() => {

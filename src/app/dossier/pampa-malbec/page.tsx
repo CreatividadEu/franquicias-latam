@@ -5,6 +5,8 @@ import {
   dossierDeadline,
   dossierExpirado,
   ensureOpenedAt,
+  getOpenedAt,
+  resolveOpenKey,
   verifyDossierInvite,
 } from "@/lib/dossier";
 import { PampaMalbecDossier } from "@/components/dossier/PampaMalbecDossier";
@@ -29,7 +31,18 @@ const archivo = Archivo({
 // Dossier privado: jamás indexar ni cachear.
 export const dynamic = "force-dynamic";
 
-type SearchParams = Promise<{ t?: string }>;
+type SearchParams = Promise<{ t?: string; k?: string }>;
+
+// Dos puertas de acceso:
+// - ?k= : link abierto de un solo uso (sin login). El "uso" lo arma el
+//   cliente con un beacon; desde la primera apertura real corre una única
+//   ventana de lectura y luego expira para siempre.
+// - ?t= : invitación firmada legada (por email), sigue funcionando.
+function resolveInvite(k?: string, t?: string) {
+  if (k) return { invite: resolveOpenKey(k, SLUG), viaKey: true as const };
+  if (t) return { invite: verifyDossierInvite(t, SLUG), viaKey: false as const };
+  return { invite: null, viaKey: false as const };
+}
 
 // La validación vive también aquí (antes del streaming) para que el status
 // HTTP sea un 404 real; dentro del page llegaría tarde y la respuesta ya
@@ -39,8 +52,8 @@ export async function generateMetadata({
 }: {
   searchParams: SearchParams;
 }): Promise<Metadata> {
-  const { t } = await searchParams;
-  if (!t || !verifyDossierInvite(t, SLUG)) {
+  const { t, k } = await searchParams;
+  if (!resolveInvite(k, t).invite) {
     notFound();
   }
   return {
@@ -54,19 +67,38 @@ export default async function PampaMalbecDossierPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { t } = await searchParams;
+  const { t, k } = await searchParams;
 
-  // Puerta de acceso: token de invitación firmado, ligado a este slug.
-  // Sin token válido la página no existe (404, sin filtrar contenido).
-  const invite = t ? verifyDossierInvite(t, SLUG) : null;
+  const { invite, viaKey } = resolveInvite(k, t);
   if (!invite) {
     notFound();
   }
 
-  // Primera apertura → arranca el reloj. Enforced en cada request.
+  const fontClass = `${cinzel.variable} ${archivo.variable}`;
+
+  if (viaKey) {
+    // Link abierto: la apertura NO se persiste en el GET (los prefetch de
+    // WhatsApp/email no deben quemar el link); la arma el beacon del
+    // cliente. La expiración sí se enforcea aquí en cada request.
+    const openedAt = await getOpenedAt(invite);
+    const deadline = dossierDeadline(openedAt ?? new Date(), invite.ttlHours);
+    if (openedAt && dossierExpirado(deadline)) {
+      return (
+        <div className={fontClass}>
+          <DossierExpired />
+        </div>
+      );
+    }
+    return (
+      <div className={fontClass}>
+        <PampaMalbecDossier deadlineIso={deadline.toISOString()} openKey={k} />
+      </div>
+    );
+  }
+
+  // Invitación firmada legada: primera apertura → arranca el reloj.
   const openedAt = await ensureOpenedAt(invite);
   const deadline = dossierDeadline(openedAt, invite.ttlHours);
-  const fontClass = `${cinzel.variable} ${archivo.variable}`;
 
   if (dossierExpirado(deadline)) {
     return (
@@ -78,10 +110,7 @@ export default async function PampaMalbecDossierPage({
 
   return (
     <div className={fontClass}>
-      <PampaMalbecDossier
-        deadlineIso={deadline.toISOString()}
-        inviteToken={t!}
-      />
+      <PampaMalbecDossier deadlineIso={deadline.toISOString()} inviteToken={t} />
     </div>
   );
 }

@@ -149,6 +149,53 @@ export function dossierExpirado(deadline: Date): boolean {
   return deadline.getTime() <= Date.now();
 }
 
+// ── Links abiertos de un solo uso (sin email ni login) ──────────────────────
+// Cada key es una capacidad compartible. El "uso" lo arma el cliente con un
+// beacon al montar (los bots de preview de WhatsApp/email no ejecutan JS, así
+// que un prefetch no quema el link); desde esa primera apertura real corre
+// una única ventana de lectura y después queda expirado para siempre.
+export const OPEN_LINK_TTL_HOURS = 1;
+
+const OPEN_KEYS: Record<string, { slug: string; name: string }> = {
+  "pm-vino-x7k92fq4": { slug: "pampa-malbec", name: "Invitados Pampa Malbec" },
+  "pm-brasa-t3w8rm72": { slug: "pampa-malbec", name: "Mateo" },
+  "pm-fuego-j5h2dn94": { slug: "pampa-malbec", name: "Daniel" },
+};
+
+export function resolveOpenKey(
+  key: string,
+  slug: string,
+): DossierInvite | null {
+  const entry = Object.hasOwn(OPEN_KEYS, key) ? OPEN_KEYS[key] : undefined;
+  if (!entry || entry.slug !== slug) return null;
+  return {
+    slug,
+    email: `${key}@${slug}.dossier`,
+    name: entry.name,
+    ttlHours: OPEN_LINK_TTL_HOURS,
+  };
+}
+
+/** Solo lectura: primera apertura registrada, o null si el link está fresco. */
+export async function getOpenedAt(invite: DossierInvite): Promise<Date | null> {
+  const key = dossierKey(invite.slug);
+  try {
+    const existing = await prisma.formLead.findFirst({
+      where: {
+        franchiseSlug: key,
+        email: invite.email,
+        sourceType: "dossier_open",
+      },
+      orderBy: { createdAt: "asc" },
+      select: { createdAt: true },
+    });
+    return existing?.createdAt ?? null;
+  } catch (error) {
+    console.error("[dossier] DB no disponible en lectura; usando memoria", error);
+    return memoryOpens.get(`${key}:${invite.email}`) ?? null;
+  }
+}
+
 /** Registra un click en el CTA de reserva (Stripe). */
 export async function trackDossierCta(invite: DossierInvite): Promise<void> {
   const key = dossierKey(invite.slug);
