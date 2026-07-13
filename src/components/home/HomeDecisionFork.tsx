@@ -10,6 +10,7 @@ import {
 } from "@/components/home/homeBrandData";
 import { EvaluationExperience } from "@/components/home/EvaluationExperience";
 import { OfficesSection } from "@/components/home/OfficesSection";
+import { CasesShowcase } from "@/components/home/CasesShowcase";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -1018,6 +1019,9 @@ export function HomeDecisionFork() {
             </div>
           </div>
         </div>
+
+        {/* Trofeos: casos de éxito por tamaño de operación */}
+        <CasesShowcase />
 
         {/* Oficinas — Madrid · Bogotá */}
         <OfficesSection />
