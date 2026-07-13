@@ -77,9 +77,31 @@ export default async function PampaMalbecDossierPage({
   const fontClass = `${cinzel.variable} ${archivo.variable}`;
 
   if (viaKey) {
-    // Link abierto: la apertura NO se persiste en el GET (los prefetch de
-    // WhatsApp/email no deben quemar el link); la arma el beacon del
-    // cliente. La expiración sí se enforcea aquí en cada request.
+    // Link abierto. Dos modos:
+    // - Vencimiento fijo (expiresAt): validez calendario; el timer cuenta
+    //   hacia esa fecha sin importar cuándo se abra.
+    // - Un solo uso: la apertura NO se persiste en el GET (los prefetch de
+    //   WhatsApp/email no deben quemar el link); la arma el beacon del
+    //   cliente y corre la ventana única de lectura.
+    // En ambos, la expiración se enforcea aquí en cada request.
+    if (invite.expiresAt) {
+      if (dossierExpirado(invite.expiresAt)) {
+        return (
+          <div className={fontClass}>
+            <DossierExpired />
+          </div>
+        );
+      }
+      return (
+        <div className={fontClass}>
+          <PampaMalbecDossier
+            deadlineIso={invite.expiresAt.toISOString()}
+            openKey={k}
+          />
+        </div>
+      );
+    }
+
     const openedAt = await getOpenedAt(invite);
     const deadline = dossierDeadline(openedAt ?? new Date(), invite.ttlHours);
     if (openedAt && dossierExpirado(deadline)) {

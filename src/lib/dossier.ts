@@ -19,6 +19,8 @@ export type DossierInvite = {
   email: string;
   name?: string;
   ttlHours: number;
+  /** Vencimiento fijo absoluto (links con validez calendario, no por uso). */
+  expiresAt?: Date;
 };
 
 function getSecret(): string {
@@ -156,10 +158,24 @@ export function dossierExpirado(deadline: Date): boolean {
 // una única ventana de lectura y después queda expirado para siempre.
 export const OPEN_LINK_TTL_HOURS = 1;
 
-const OPEN_KEYS: Record<string, { slug: string; name: string }> = {
-  "pm-vino-x7k92fq4": { slug: "pampa-malbec", name: "Invitados Pampa Malbec" },
+// Los links de invitados y Daniel tienen vencimiento fijo (72h desde su
+// emisión el 13 de julio de 2026, 22:45 UTC); el de Mateo sigue siendo de
+// un solo uso con ventana de lectura.
+const OPEN_KEYS: Record<
+  string,
+  { slug: string; name: string; expiresAt?: string }
+> = {
+  "pm-vino-x7k92fq4": {
+    slug: "pampa-malbec",
+    name: "Invitados Pampa Malbec",
+    expiresAt: "2026-07-16T22:45:00Z",
+  },
   "pm-brasa-t3w8rm72": { slug: "pampa-malbec", name: "Mateo" },
-  "pm-fuego-j5h2dn94": { slug: "pampa-malbec", name: "Daniel" },
+  "pm-fuego-j5h2dn94": {
+    slug: "pampa-malbec",
+    name: "Daniel",
+    expiresAt: "2026-07-16T22:45:00Z",
+  },
 };
 
 export function resolveOpenKey(
@@ -173,6 +189,7 @@ export function resolveOpenKey(
     email: `${key}@${slug}.dossier`,
     name: entry.name,
     ttlHours: OPEN_LINK_TTL_HOURS,
+    expiresAt: entry.expiresAt ? new Date(entry.expiresAt) : undefined,
   };
 }
 
