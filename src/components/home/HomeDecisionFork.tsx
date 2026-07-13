@@ -841,12 +841,12 @@ export function HomeDecisionFork() {
             desarrollada, financiada y premiada. Desde{" "}
             <strong>Madrid y Bogotá</strong> operamos en{" "}
             <strong>12 países</strong>: legal, expansión, capital e
-            inteligencia artificial bajo un mismo techo.
+            inteligencia artificial.
           </p>
         </div>
 
         {/* Two paths */}
-        <div className="hdf-cards mt-8 grid w-full max-w-[1120px] gap-6 sm:mt-12">
+        <div className="hdf-cards mt-10 grid w-full max-w-[1120px] gap-6 sm:mt-14">
           <div
             role="button"
             tabIndex={0}
@@ -1452,7 +1452,7 @@ export function HomeDecisionFork() {
         /* ── Manifiesto bajo el titular ── */
         .hdf-manifesto {
           max-width: 800px;
-          margin-top: 22px;
+          margin-top: 18px;
           animation: hdf-fade-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.25s
             both;
         }
@@ -1470,12 +1470,12 @@ export function HomeDecisionFork() {
           filter: drop-shadow(0 0 16px rgba(55, 230, 195, 0.3));
         }
         .hdf-manifesto-body {
-          margin: 13px auto 0;
-          max-width: 730px;
-          font-size: 16.5px;
-          line-height: 1.7;
+          margin: 10px auto 0;
+          max-width: 740px;
+          font-size: 16px;
+          line-height: 1.65;
           color: #aebadb;
-          text-wrap: pretty;
+          text-wrap: balance;
         }
         .hdf-manifesto-body strong {
           color: #ffffff;
