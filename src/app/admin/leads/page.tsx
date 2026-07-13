@@ -104,6 +104,8 @@ export default async function FormLeadsPage({
     listing_interest: "Interés listing",
     home_contact: "Contacto Home",
     evaluacion_privada: "Evaluación Privada",
+    dossier_open: "Dossier abierto",
+    dossier_cta: "Dossier · CTA Stripe",
   };
 
   return (
