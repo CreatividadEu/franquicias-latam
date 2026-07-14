@@ -126,6 +126,8 @@ const DATA: Case[] = [
     eyebrow: "PROGRAMA MICROFRANQUICIAS",
     brand: "Propaís",
     textLogo: true,
+    logo: "https://propais.org.co/wp-content/themes/propais/img/logopro.png",
+    logoH: 40,
     textLogoSub: "CON FONDOS DEL BANCO INTERAMERICANO DE DESARROLLO",
     projA: "Microfranquicias",
     projB: "Propaís",
@@ -259,7 +261,17 @@ export function CasesShowcase({
 
                   {d.textLogo ? (
                     <div className="casos-textlogo-wrap">
-                      <div className="casos-textlogo">Propaís</div>
+                      {/* Logo remoto de Propaís (propais.org.co); normalizado a
+                          blanco para el panel oscuro. eslint-disable: es un host
+                          externo con relación de aspecto desconocida, next/image
+                          exige width/height fijos → <img> preserva el aspecto. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={d.logo}
+                        alt={d.brand}
+                        className="casos-logo casos-textlogo-img"
+                        style={{ height: d.logoH }}
+                      />
                       <div className="casos-textlogo-sub">{d.textLogoSub}</div>
                     </div>
                   ) : (
@@ -499,11 +511,8 @@ export function CasesShowcase({
         .casos-textlogo-wrap {
           margin: 4px 0 2px;
         }
-        .casos-textlogo {
-          font-size: 38px;
-          font-weight: 700;
-          color: #f4f7fc;
-          line-height: 1;
+        .casos-textlogo-img {
+          margin: 0;
         }
         .casos-textlogo-sub {
           margin-top: 10px;
