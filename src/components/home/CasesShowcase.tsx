@@ -344,7 +344,9 @@ export function CasesShowcase() {
         .hda-stage {
           display: flex;
           gap: 12px;
-          height: clamp(520px, 68vh, 680px);
+          /* Altura ceñida al contenido: el panel más alto (micro, 3 stats)
+             ronda ~470px, así el aire superior/inferior queda proporcionado. */
+          height: clamp(490px, 56vh, 560px);
           margin-top: 40px;
         }
         .hda-panel {
@@ -588,7 +590,7 @@ export function CasesShowcase() {
           line-height: 1.7;
           color: #aebadb;
           text-wrap: pretty;
-          max-width: 460px;
+          max-width: 540px;
         }
         .hda-tier {
           margin-top: 8px;
