@@ -1234,7 +1234,10 @@ export function HomeDecisionFork() {
         .hdf-palms {
           position: relative;
           width: 100%;
-          margin-bottom: 46px;
+          /* Mismo ancho de contenedor que las tarjetas de abajo (1120px):
+             los laureles extremos quedan alineados a los márgenes. */
+          max-width: 1120px;
+          margin: 0 auto 46px;
         }
         .hdf-palms-halo {
           position: absolute;
@@ -1258,6 +1261,21 @@ export function HomeDecisionFork() {
           justify-content: center;
           align-items: stretch;
           gap: 14px 30px;
+        }
+        /* En una sola fila (desktop ancho) el espacio sobrante se reparte
+           proporcionalmente y los extremos tocan los márgenes del contenedor. */
+        @media (min-width: 1100px) {
+          .hdf-palms-row {
+            justify-content: space-between;
+            gap: 14px 12px;
+          }
+        }
+        /* Cuando la fila se parte, los separadores verticales flotan sueltos:
+           fuera. */
+        @media (max-width: 1099px) {
+          .hdf-palm-sep {
+            display: none;
+          }
         }
         .hdf-palm {
           flex: none;
@@ -1382,6 +1400,57 @@ export function HomeDecisionFork() {
             rgba(233, 207, 154, 0.26),
             transparent
           );
+        }
+        /* ── Móvil: palmarés compacto — laureles reducidos, tipografía y
+           chips más ligeros, ritmo vertical apretado (sin sensación de
+           bloques gigantes apilados). ── */
+        @media (max-width: 639px) {
+          .hdf-palms {
+            margin-bottom: 34px;
+          }
+          .hdf-palms-row {
+            gap: 6px 14px;
+          }
+          .hdf-palms-halo {
+            width: 120%;
+            height: 100%;
+          }
+          .hdf-palm-laurel {
+            width: 38px;
+            height: 71px;
+          }
+          .hdf-palm-stack {
+            gap: 5px;
+            max-width: 168px;
+            padding: 0 2px;
+          }
+          .hdf-palm-eyebrow {
+            font-size: 9.5px;
+            letter-spacing: 0.2em;
+          }
+          .hdf-palm-name-loco {
+            font-size: 18px;
+          }
+          .hdf-palm-name-retos {
+            font-size: 21px;
+          }
+          .hdf-palm-glass {
+            padding: 5px 11px;
+            border-radius: 9px;
+          }
+          .hdf-palm-bid {
+            height: 24px;
+          }
+          .hdf-palm-glass--seal img {
+            height: 15px;
+          }
+          .hdf-palm-collision-logo {
+            height: 15px;
+          }
+          .hdf-palm-origin {
+            font-size: 7px;
+            line-height: 1.5;
+          }
         }
 
         /* ── Cupos badge ── */

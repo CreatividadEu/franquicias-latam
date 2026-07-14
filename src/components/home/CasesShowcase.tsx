@@ -1,148 +1,150 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { Poppins, Playfair_Display } from "next/font/google";
+import { useEffect, useState } from "react";
+import { Poppins, Newsreader } from "next/font/google";
 
-// ── "De enterprise global a microfranquicia" — acordeón de casos por escala ──
-// Acordeón horizontal de 4 casos (ENTERPRISE → FRANQUICIAS OS → PYME → MICRO).
-// Un panel expandido a la vez (982px); los demás colapsan a rieles de 72px con
-// punto de acento, etiqueta vertical y número índice tenue. UI oscura con un
-// aura de glow por panel (color de firma). Canvas de 1240px (982 + 3×72 +
-// 3×14 gap); en móvil se apila en vertical con barras horizontales. Tipografía
-// del handoff: Poppins + Playfair Display (acentos serif en itálica).
+// ── "Un caso para cada escala" — acordeón cromático ─────────────────────────
+// Cuatro paneles a toda altura sobre #05070d; el activo se expande (flex 8
+// vs 1, 0.85s cubic-bezier(0.66,0,0.22,1)) con glow de acento, número índice
+// fantasma, detalle del proyecto a la izquierda y hero stat degradado con
+// count-up de 1100ms a la derecha. Los colapsados muestran etiqueta vertical
+// y punto luminoso. Auto-rota cada 6s con línea de progreso de 2px (pausa en
+// hover); click + flechas del teclado; en <980px pasa a columna con bandas
+// de 64px. Tipografía del handoff: Poppins + Newsreader Italic.
 
 const poppins = Poppins({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-poppins",
   display: "swap",
 });
 
-const playfair = Playfair_Display({
+const newsreader = Newsreader({
   subsets: ["latin"],
+  style: ["italic"],
   weight: ["400", "500"],
-  style: ["normal", "italic"],
-  variable: "--font-playfair",
+  variable: "--font-newsreader",
   display: "swap",
 });
 
-// Alpha helper: hex + 2-digit alpha (idéntico al del handoff de diseño).
-const A = (hex: string, a: number) =>
-  hex +
-  Math.round(Math.min(1, Math.max(0, a)) * 255)
-    .toString(16)
-    .padStart(2, "0");
-
-type Stat = { v: string; l: string };
-
-type Case = {
-  num: string;
-  railLabel: string;
-  eyebrow: string;
-  brand: string;
-  logo?: string;
-  logoH?: number;
-  logoW?: number;
-  textLogo?: boolean;
-  textLogoSub?: string;
-  projA: string;
-  projB: string;
-  desc: string;
-  chip: string;
-  accent: string;
-  soft: string;
-  single: boolean;
-  statValue?: string;
-  statLabel?: string;
-  statSub?: string;
-  stats?: Stat[];
+type CaseMetric = {
+  value: number;
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+  label: string;
+  caption?: string;
 };
 
-// Logos: los SVG de Sodexo/Mercado Libre son #3d3d3d y el wordmark de SAJÚ ya
-// es blanco; `filter: brightness(0) invert(1)` los normaliza todos a blanco
-// sobre transparente (es idempotente sobre lo que ya es blanco).
-const DATA: Case[] = [
+type CasePanel = {
+  id: string;
+  programa: string;
+  tier: string;
+  railLabel: string;
+  logo?: { src: string; alt: string };
+  logoChip?: { src: string; alt: string };
+  /** Logo a color sobre chip claro con destello (mismo shine de los laureles). */
+  logoGlass?: { src: string; alt: string };
+  clienteText?: string;
+  clienteSub?: string;
+  proyecto: string;
+  descripcion: string;
+  metrics: CaseMetric[];
+  accent: string;
+  glow: string;
+};
+
+const CASES: CasePanel[] = [
   {
-    num: "01",
-    railLabel: "ENTERPRISE",
-    eyebrow: "PROGRAMA ENTERPRISE",
-    brand: "Sodexo",
-    logo: "/logos_clientes/logo_sodexo.svg",
-    logoH: 42,
-    logoW: 105,
-    projA: "Kitchen",
-    projB: "Works",
-    desc: "Estructuración, programa y plataforma de formación de una de las ofertas de mayor tamaño de Sodexo a nivel global.",
-    chip: "GRANDES COMPAÑÍAS GLOBALES",
-    accent: "#7d9bff",
-    soft: "#bccdff",
-    single: true,
-    statValue: "€24B",
-    statLabel: "FACTURACIÓN ANUAL",
-    statSub: "24 billones de euros",
-  },
-  {
-    num: "02",
-    railLabel: "FRANQUICIAS OS",
-    eyebrow: "PROGRAMA FRANQUICIAS OS",
-    brand: "Mercado Libre",
-    logo: "/logos_clientes/logo_mercado_libre.svg",
-    logoH: 46,
-    logoW: 115,
-    projA: "CDF",
-    projB: "Tucarro",
-    desc: "Creación del sistema de franquicias y experiencia de los Centros de Fotografía de Tucarro.com.",
-    chip: "CORPORATIVOS Y PLATAFORMAS",
-    accent: "#43e5a0",
-    soft: "#a9f5d4",
-    single: true,
-    statValue: "$22B",
-    statLabel: "FACTURACIÓN ANUAL",
-    statSub: "22 billones de dólares",
-  },
-  {
-    num: "03",
-    railLabel: "PYME",
-    eyebrow: "PROGRAMA FRANQUICIAS PYME",
-    brand: "SAJÚ",
-    logo: "/saju/saju-wordmark-tight.png",
-    logoH: 52,
-    logoW: 91,
-    projA: "Franquicias",
-    projB: "SAJU",
-    desc: "Creación del sistema de franquicias de la amada marca colombiana SAJÚ.",
-    chip: "MARCAS EN CRECIMIENTO",
-    accent: "#f2a65a",
-    soft: "#ffd9a6",
-    single: true,
-    statValue: "$6M",
-    statLabel: "FACTURACIÓN ANUAL",
-    statSub: "6 millones de dólares",
-  },
-  {
-    num: "04",
-    railLabel: "MICRO",
-    eyebrow: "PROGRAMA MICROFRANQUICIAS",
-    brand: "Propaís",
-    textLogo: true,
-    logo: "https://propais.org.co/wp-content/themes/propais/img/logopro.png",
-    logoH: 40,
-    textLogoSub: "CON FONDOS DEL BANCO INTERAMERICANO DE DESARROLLO",
-    projA: "Microfranquicias",
-    projB: "Propaís",
-    desc: "Desarrollamos más de 20 proyectos de microfranquicias con Propaís y fondos del Banco Interamericano de Desarrollo — los proveedores más grandes de todo el proyecto, con 50% del total y una puntuación histórica de 97.5% de aprobación.",
-    chip: "MICROEMPRESAS E IMPACTO",
-    accent: "#ff5c7c",
-    soft: "#ffb6c6",
-    single: false,
-    stats: [
-      { v: "20+", l: "SISTEMAS CREADOS" },
-      { v: "50%", l: "DEL PROYECTO TOTAL" },
-      { v: "97.5%", l: "APROBACIÓN HISTÓRICA" },
+    id: "enterprise",
+    programa: "Programa Enterprise",
+    tier: "Grandes compañías globales",
+    railLabel: "Enterprise",
+    logo: { src: "/logos_clientes/logo_sodexo.svg", alt: "Sodexo" },
+    proyecto: "Kitchen Works",
+    descripcion:
+      "Estructuración, programa y plataforma de formación de una de las ofertas de mayor tamaño de Sodexo a nivel global.",
+    metrics: [
+      {
+        value: 24,
+        prefix: "€",
+        suffix: "B",
+        label: "Facturación anual",
+        caption: "24 billones de euros",
+      },
     ],
+    accent: "#5E8BFF",
+    glow: "rgba(94, 139, 255, 0.45)",
+  },
+  {
+    id: "franquicias-os",
+    programa: "Programa Franquicias OS",
+    tier: "Corporativos y plataformas",
+    railLabel: "Franquicias OS",
+    logo: { src: "/logos_clientes/logo_mercado_libre.svg", alt: "Mercado Libre" },
+    proyecto: "CDF Tucarro",
+    descripcion:
+      "Creación del sistema de franquicias y experiencia de los Centros de Fotografía de Tucarro.com.",
+    metrics: [
+      {
+        value: 22,
+        prefix: "$",
+        suffix: "B",
+        label: "Facturación anual",
+        caption: "22 billones de dólares",
+      },
+    ],
+    accent: "#38D9A9",
+    glow: "rgba(56, 217, 169, 0.45)",
+  },
+  {
+    id: "pyme",
+    programa: "Programa Franquicias PyME",
+    tier: "Marcas en crecimiento",
+    railLabel: "PyME",
+    logoChip: { src: "/saju/saju-mono.png", alt: "SAJÚ" },
+    clienteText: "SAJÚ",
+    proyecto: "Franquicias SAJÚ",
+    descripcion:
+      "Creación del sistema de franquicias de la amada marca colombiana SAJÚ.",
+    metrics: [
+      {
+        value: 6,
+        prefix: "$",
+        suffix: "M",
+        label: "Facturación anual",
+        caption: "6 millones de dólares",
+      },
+    ],
+    accent: "#F79D45",
+    glow: "rgba(247, 157, 69, 0.45)",
+  },
+  {
+    id: "micro",
+    programa: "Programa Microfranquicias",
+    tier: "Microempresas e impacto",
+    railLabel: "Micro",
+    logoGlass: {
+      src: "https://propais.org.co/wp-content/themes/propais/img/logopro.png",
+      alt: "Propaís",
+    },
+    clienteSub: "Con fondos del Banco Interamericano de Desarrollo",
+    proyecto: "Microfranquicias Propaís",
+    descripcion:
+      "Desarrollamos más de 20 proyectos de microfranquicias con Propaís y fondos del Banco Interamericano de Desarrollo — los proveedores más grandes de todo el proyecto, con 50% del total y una puntuación histórica de 97.5% de aprobación.",
+    metrics: [
+      { value: 20, suffix: "+", label: "Sistemas creados" },
+      { value: 50, suffix: "%", label: "Del proyecto total" },
+      { value: 97.5, decimals: 1, suffix: "%", label: "Aprobación histórica" },
+    ],
+    accent: "#F65E7C",
+    glow: "rgba(246, 94, 124, 0.45)",
   },
 ];
+
+const AUTO_MS = 6000;
+const COUNT_MS = 1100;
 
 function prefersReducedMotion() {
   return (
@@ -152,558 +154,611 @@ function prefersReducedMotion() {
   );
 }
 
-type CasesShowcaseProps = {
-  /** Auto-avanza por los paneles. */
-  autoCycle?: boolean;
-  /** Segundos por panel en auto-cycle (rango 3–12). */
-  cycleSeconds?: number;
-  /** Escala todos los glows/sombras de acento (0–1). */
-  glowIntensity?: number;
-  /** Muestra/oculta el gran número fantasma de esquina. */
-  showGhostNumbers?: boolean;
-};
+// Count-up de 1100ms con easing cúbico; reduced-motion salta al final.
+function CountUp({
+  value,
+  decimals = 0,
+}: {
+  value: number;
+  decimals?: number;
+}) {
+  const [shown, setShown] = useState(0);
 
-export function CasesShowcase({
-  autoCycle = false,
-  cycleSeconds = 6,
-  glowIntensity = 0.7,
-  showGhostNumbers = true,
-}: CasesShowcaseProps = {}) {
-  const [active, setActive] = useState(0);
-  const locked = useRef(false);
-  const glow = Math.min(1, Math.max(0, glowIntensity));
-
-  // Auto-cycle: setInterval avanza active = (active+1) % 4; se limpia al elegir
-  // manualmente (locked) y al desmontar; se reconstruye si cambia cycleSeconds.
   useEffect(() => {
-    if (!autoCycle || locked.current || prefersReducedMotion()) return;
-    const secs = Math.min(12, Math.max(3, cycleSeconds));
-    const t = window.setInterval(
-      () => setActive((a) => (a + 1) % DATA.length),
-      secs * 1000,
-    );
-    return () => window.clearInterval(t);
-  }, [autoCycle, cycleSeconds, active]);
+    let raf = 0;
+    const t0 = performance.now();
+    const reduced = prefersReducedMotion();
+    const tick = (t: number) => {
+      const p = reduced ? 1 : Math.min(1, (t - t0) / COUNT_MS);
+      setShown(value * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
 
-  // La selección manual bloquea el auto-cycle.
+  return <>{shown.toFixed(decimals)}</>;
+}
+
+export function CasesShowcase() {
+  const [active, setActive] = useState(0);
+  const [auto, setAuto] = useState(true);
+  const [hovered, setHovered] = useState(false);
+
+  useEffect(() => {
+    if (!auto || hovered || prefersReducedMotion()) return;
+    const id = window.setInterval(
+      () => setActive((a) => (a + 1) % CASES.length),
+      AUTO_MS,
+    );
+    return () => window.clearInterval(id);
+  }, [auto, hovered]);
+
   const pick = (i: number) => {
-    locked.current = true;
+    setAuto(false);
     setActive(i);
   };
 
-  // Variables CSS por panel — colores calculados con el mismo A()/glow del
-  // handoff para fidelidad exacta; el stylesheet solo las referencia.
-  const vars = (d: Case): React.CSSProperties =>
-    ({
-      "--ac": d.accent,
-      "--soft": d.soft,
-      "--bd-on": A(d.accent, 0.5),
-      "--bd-off": A(d.accent, 0.22),
-      "--bg-on-rad": A(d.accent, 0.1),
-      "--bg-off-lin": A(d.accent, 0.05),
-      "--bg-off-rad": A(d.accent, 0.13),
-      "--sh-a": A(d.accent, 0.5 * glow),
-      "--sh-b": A(d.accent, 0.35 * glow),
-      "--dot-glow": A(d.accent, 0.6 * glow),
-      "--idx": A(d.accent, 0.55),
-      "--chip-bd": A(d.accent, 0.45),
-      "--stat-glow": A(d.accent, 0.25 + 0.4 * glow),
-    }) as React.CSSProperties;
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      pick((active + 1) % CASES.length);
+    }
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      pick((active - 1 + CASES.length) % CASES.length);
+    }
+  };
 
   return (
     <section
-      className={`casos-root ${poppins.variable} ${playfair.variable} mt-16 w-full max-w-[1240px] sm:mt-[72px]`}
+      className={`hda-root ${poppins.variable} ${newsreader.variable} mt-16 w-full max-w-[1180px] sm:mt-[72px]`}
       aria-label="Casos de éxito por tamaño de operación"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      <header className="casos-head">
-        <span className="casos-kicker">Un caso para cada escala</span>
-        <h2 className="casos-h2">
-          De <em>enterprise global</em> a microfranquicia.
+      <div className="flex flex-col items-center gap-4 text-center">
+        <em className="hdf-eyebrow-serif">Un caso para cada escala</em>
+        <h2 className="hdf-h2">
+          De <span className="hdf-grad">enterprise global</span> a
+          microfranquicia.
         </h2>
-        <p className="casos-sub">
+        <span className="text-[17px] text-[#8E9FBE]">
           El mismo estándar, en cuatro tamaños de operación.
-        </p>
-      </header>
+        </span>
+      </div>
 
-      <div className="casos-row">
-        {DATA.map((d, i) => {
+      <div
+        className="hda-stage"
+        role="tablist"
+        aria-label="Selecciona el tamaño de operación"
+        onKeyDown={onKeyDown}
+      >
+        {CASES.map((c, i) => {
           const on = i === active;
           return (
-            <div
-              key={d.num}
-              role="button"
-              tabIndex={0}
-              aria-label={d.railLabel}
-              aria-expanded={on}
-              className={`casos-panel${on ? " on" : ""}`}
-              style={vars(d)}
-              onClick={() => {
-                if (!on) pick(i);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  if (!on) pick(i);
-                }
-              }}
+            <article
+              key={c.id}
+              role="tab"
+              id={`hda-tab-${c.id}`}
+              aria-selected={on}
+              tabIndex={on ? 0 : -1}
+              className={`hda-panel${on ? " hda-panel--on" : ""}`}
+              style={{ "--ac": c.accent, "--ag": c.glow } as React.CSSProperties}
+              onClick={() => pick(i)}
             >
-              {/* Riel colapsado: punto + etiqueta vertical + número índice */}
-              <div className="casos-rail" aria-hidden={on}>
-                <span className="casos-dot" />
-                <span className="casos-vlabel">{d.railLabel}</span>
-                <span className="casos-idx">{d.num}</span>
+              {/* Línea de progreso del auto-avance (2px, acento) */}
+              {on && auto && !hovered && (
+                <span key={`prog-${active}`} className="hda-progress" aria-hidden />
+              )}
+
+              {/* Número índice fantasma */}
+              <span className="hda-ghost" aria-hidden>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+
+              {/* Estado colapsado: punto + etiqueta vertical */}
+              <div className="hda-closed" aria-hidden={on}>
+                <span className="hda-dot" />
+                <b className="hda-vlabel">{c.railLabel}</b>
               </div>
 
-              {/* Contenido expandido */}
-              <div className="casos-content" aria-hidden={!on}>
-                <div className="casos-left">
-                  <div className="casos-eyebrow">{d.eyebrow}</div>
-
-                  {d.textLogo ? (
-                    <div className="casos-textlogo-wrap">
-                      {/* Logo remoto de Propaís (propais.org.co); normalizado a
-                          blanco para el panel oscuro. eslint-disable: es un host
-                          externo con relación de aspecto desconocida, next/image
-                          exige width/height fijos → <img> preserva el aspecto. */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={d.logo}
-                        alt={d.brand}
-                        className="casos-logo casos-textlogo-img"
-                        style={{ height: d.logoH }}
+              {/* Estado expandido */}
+              <div className="hda-open" aria-hidden={!on}>
+                <div className="hda-detail">
+                  <span className="hda-programa">{c.programa}</span>
+                  <div className="hda-cliente">
+                    {c.logo && (
+                      <Image
+                        src={c.logo.src}
+                        alt={c.logo.alt}
+                        width={400}
+                        height={140}
+                        className="hda-cliente-logo"
                       />
-                      <div className="casos-textlogo-sub">{d.textLogoSub}</div>
-                    </div>
-                  ) : (
-                    <Image
-                      src={d.logo!}
-                      alt={d.brand}
-                      width={d.logoW}
-                      height={d.logoH}
-                      className="casos-logo"
-                      style={{ height: d.logoH, width: "auto" }}
-                    />
-                  )}
-
-                  <div className="casos-proyecto">
-                    Proyecto · <span className="a">{d.projA}</span>{" "}
-                    <span className="b">{d.projB}</span>
+                    )}
+                    {c.logoChip && (
+                      <span className="hda-cliente-chip">
+                        <Image
+                          src={c.logoChip.src}
+                          alt={c.logoChip.alt}
+                          width={140}
+                          height={140}
+                        />
+                      </span>
+                    )}
+                    {c.logoGlass && (
+                      <span className="hda-cliente-glass">
+                        {/* Host externo (propais.org.co) con aspecto libre →
+                            <img> en vez de next/image. */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={c.logoGlass.src} alt={c.logoGlass.alt} />
+                      </span>
+                    )}
+                    {c.clienteText && (
+                      <span className="hda-cliente-text">{c.clienteText}</span>
+                    )}
                   </div>
-
-                  <p className="casos-desc">{d.desc}</p>
-
-                  <span className="casos-chip">{d.chip}</span>
+                  {c.clienteSub && (
+                    <span className="hda-cliente-sub">{c.clienteSub}</span>
+                  )}
+                  <em className="hda-proyecto">
+                    Proyecto · <span>{c.proyecto}</span>
+                  </em>
+                  <p className="hda-desc">{c.descripcion}</p>
+                  <span className="hda-tier">{c.tier}</span>
                 </div>
 
-                <div className="casos-right">
-                  {d.single ? (
-                    <>
-                      <div className="casos-bigval">{d.statValue}</div>
-                      <div className="casos-biglabel">{d.statLabel}</div>
-                      <div className="casos-bigsub">{d.statSub}</div>
-                    </>
-                  ) : (
-                    <div className="casos-multi">
-                      {d.stats!.map((s) => (
-                        <div key={s.l}>
-                          <div className="casos-mval">{s.v}</div>
-                          <div className="casos-mlabel">{s.l}</div>
-                        </div>
-                      ))}
+                <div className="hda-stats">
+                  {c.metrics.map((m) => (
+                    <div
+                      key={m.label}
+                      className={`hda-stat${c.metrics.length === 1 ? " hda-stat--hero" : ""}`}
+                    >
+                      <span className="hda-stat-value">
+                        {m.prefix}
+                        {on ? (
+                          <CountUp value={m.value} decimals={m.decimals ?? 0} />
+                        ) : (
+                          m.value.toFixed(m.decimals ?? 0)
+                        )}
+                        {m.suffix}
+                      </span>
+                      <span className="hda-stat-label">{m.label}</span>
+                      {m.caption && (
+                        <em className="hda-stat-caption">{m.caption}</em>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
-
-                {showGhostNumbers && (
-                  <div className="casos-ghost" aria-hidden>
-                    {d.num}
-                  </div>
-                )}
               </div>
-            </div>
+            </article>
           );
         })}
       </div>
 
       <style jsx global>{`
-        .casos-root {
+        .hda-root {
           font-family: var(--font-poppins), system-ui, sans-serif;
-          box-sizing: border-box;
         }
-        .casos-root *,
-        .casos-root *::before,
-        .casos-root *::after {
-          box-sizing: border-box;
-        }
-
-        /* ── Encabezado ── */
-        .casos-head {
-          width: 100%;
-          max-width: 1240px;
-          margin: 0 auto 44px;
-          text-align: center;
-        }
-        .casos-kicker {
-          display: block;
-          font-family: var(--font-playfair), "Playfair Display", serif;
-          font-style: italic;
-          font-size: 21px;
-          color: #4fd8c6;
-        }
-        .casos-h2 {
-          margin: 12px 0 10px;
-          font-size: clamp(30px, 6vw, 46px);
-          font-weight: 700;
-          letter-spacing: -0.01em;
-          color: #f2f5fb;
-          line-height: 1.1;
-        }
-        .casos-h2 em {
-          font-family: var(--font-playfair), "Playfair Display", serif;
-          font-weight: 500;
-          font-style: italic;
-          background: linear-gradient(95deg, #56d9c9, #7d9bff);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          color: transparent;
-        }
-        .casos-sub {
-          margin: 0;
-          font-size: 16px;
-          color: #93a0b8;
-        }
-
-        /* ── Fila del acordeón ── */
-        .casos-row {
+        .hda-stage {
           display: flex;
-          gap: 14px;
-          height: 460px;
-          width: 100%;
-          max-width: 1240px;
-          margin: 0 auto;
+          gap: 12px;
+          height: clamp(520px, 68vh, 680px);
+          margin-top: 40px;
         }
-
-        /* Modelo fluido: base 72px, sin shrink; el activo crece (flex-grow 1)
-           para ocupar el espacio libre → exactamente 982px a 1240px de canvas
-           (1240 − 4×72 − 3×14 = 910 de espacio libre; 72 + 910 = 982). */
-        .casos-panel {
+        .hda-panel {
           position: relative;
           overflow: hidden;
-          border-radius: 20px;
-          height: 100%;
-          flex: 0 0 72px;
-          flex-grow: 0;
-          cursor: pointer;
-          outline: none;
-          border: 1px solid var(--bd-off);
+          flex: 1;
+          min-width: 0;
+          border-radius: 22px;
+          border: 1px solid rgba(255, 255, 255, 0.09);
+          border-color: color-mix(in srgb, var(--ac) 24%, rgba(255, 255, 255, 0.06));
+          background: #05070d;
           background:
-            linear-gradient(180deg, var(--bg-off-lin), transparent 40%),
-            radial-gradient(140% 55% at 50% 110%, var(--bg-off-rad), transparent 60%),
-            #05080f;
+            radial-gradient(
+              130% 120% at 50% 110%,
+              color-mix(in srgb, var(--ac) 13%, transparent),
+              transparent 62%
+            ),
+            #05070d;
+          cursor: pointer;
           transition:
-            flex-grow 0.6s cubic-bezier(0.25, 0.9, 0.3, 1),
-            border-color 0.4s,
+            flex 0.85s cubic-bezier(0.66, 0, 0.22, 1),
+            border-color 0.5s,
             box-shadow 0.6s;
         }
-        .casos-panel.on {
-          flex-grow: 1;
+        .hda-panel--on {
+          flex: 8;
           cursor: default;
-          border-color: var(--bd-on);
-          background:
-            radial-gradient(120% 90% at 82% 105%, var(--bg-on-rad), transparent 55%),
-            linear-gradient(180deg, #080d17 0%, #050810 70%);
+          border-color: color-mix(in srgb, var(--ac) 55%, transparent);
           box-shadow:
-            0 34px 90px -28px var(--sh-a),
-            0 0 44px -18px var(--sh-b);
+            0 40px 110px -42px var(--ag),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
-        .casos-panel:focus-visible {
-          outline: 2px solid var(--ac);
-          outline-offset: 3px;
+        .hda-panel:not(.hda-panel--on):hover {
+          border-color: color-mix(in srgb, var(--ac) 45%, transparent);
+          box-shadow: 0 20px 60px -30px var(--ag);
         }
-
-        /* ── Riel colapsado ── */
-        .casos-rail {
+        .hda-progress {
           position: absolute;
           top: 0;
           left: 0;
-          height: 100%;
-          width: 72px;
+          height: 2px;
+          width: 100%;
+          transform-origin: left;
+          background: var(--ac);
+          box-shadow: 0 0 12px var(--ag);
+          animation: hda-progress ${AUTO_MS}ms linear forwards;
+          z-index: 3;
+        }
+        .hda-ghost {
+          position: absolute;
+          right: 18px;
+          bottom: -34px;
+          font-size: clamp(120px, 15vw, 210px);
+          font-weight: 800;
+          line-height: 1;
+          letter-spacing: -0.04em;
+          color: color-mix(in srgb, var(--ac) 13%, transparent);
+          pointer-events: none;
+          user-select: none;
+          transition: opacity 0.5s;
+          z-index: 0;
+        }
+        .hda-panel:not(.hda-panel--on) .hda-ghost {
+          opacity: 0;
+        }
+
+        /* ── Colapsado: punto + etiqueta vertical ── */
+        .hda-closed {
+          position: absolute;
+          inset: 0;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 16px;
-          padding: 20px 0 16px;
+          justify-content: flex-start;
+          gap: 18px;
+          padding-top: 26px;
           opacity: 1;
-          transition: opacity 0.35s 0.2s;
-          pointer-events: none;
+          transition: opacity 0.35s 0.25s;
+          z-index: 1;
         }
-        .casos-panel.on .casos-rail {
-          opacity: 0;
-          transition: opacity 0.25s;
-        }
-        .casos-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          flex: none;
-          background: var(--ac);
-          box-shadow: 0 0 12px 2px var(--dot-glow);
-        }
-        .casos-vlabel {
-          writing-mode: vertical-rl;
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 2.6px;
-          color: #9aa6bc;
-          white-space: nowrap;
-        }
-        .casos-idx {
-          margin-top: auto;
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--idx);
-        }
-
-        /* ── Contenido expandido ── */
-        .casos-content {
-          position: absolute;
-          top: 0;
-          left: 0;
-          height: 100%;
-          width: 100%;
-          padding: 36px 48px;
-          display: flex;
-          align-items: center;
-          gap: 46px;
+        .hda-panel--on .hda-closed {
           opacity: 0;
           transition: opacity 0.2s;
           pointer-events: none;
         }
-        .casos-panel.on .casos-content {
-          opacity: 1;
-          transition: opacity 0.4s 0.18s;
-          pointer-events: auto;
+        .hda-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: var(--ac);
+          box-shadow: 0 0 16px var(--ag), 0 0 4px var(--ag);
+          flex-shrink: 0;
+        }
+        .hda-vlabel {
+          writing-mode: vertical-rl;
+          transform: rotate(180deg);
+          font-size: 15px;
+          font-weight: 600;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: #aebadb;
+          white-space: nowrap;
         }
 
-        .casos-left {
-          flex: 1;
-          min-width: 0;
+        /* ── Expandido ── */
+        .hda-open {
+          position: absolute;
+          inset: 0;
+          display: grid;
+          grid-template-columns: 1.45fr 1fr;
+          gap: 36px;
+          align-items: center;
+          text-align: left;
+          /* Ancho fijo interior: el texto no refluye durante la animación */
+          width: min(920px, calc(100vw - 96px));
+          padding: 46px 52px;
+          opacity: 0;
+          transition: opacity 0.4s;
+          z-index: 2;
+        }
+        .hda-panel--on .hda-open {
+          opacity: 1;
+          transition: opacity 0.45s 0.3s;
+        }
+        .hda-panel:not(.hda-panel--on) .hda-open {
+          pointer-events: none;
+        }
+        .hda-detail {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          gap: 15px;
-          position: relative;
-          z-index: 1;
+          gap: 13px;
+          min-width: 0;
         }
-        .casos-eyebrow {
+        .hda-programa {
+          font-size: 12.5px;
+          font-weight: 700;
+          letter-spacing: 0.24em;
+          text-transform: uppercase;
+          color: var(--ac);
+        }
+        .hda-cliente {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          margin-top: 8px;
+        }
+        .hda-cliente-logo {
+          height: 64px;
+          width: auto;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
+          opacity: 0.96;
+        }
+        .hda-cliente-chip {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 66px;
+          height: 66px;
+          border-radius: 15px;
+          background: #ffffff;
+          flex-shrink: 0;
+        }
+        .hda-cliente-chip img {
+          width: 48px;
+          height: 48px;
+          object-fit: contain;
+        }
+        .hda-cliente-text {
+          font-size: clamp(34px, 4.2vw, 50px);
+          font-weight: 700;
+          letter-spacing: -0.02em;
+          line-height: 1;
+          color: #f2f5fc;
+        }
+        /* Chip claro con destello periódico para logos a color (Propaís):
+           mismo lenguaje de shine que los chips de laureles del hero. */
+        .hda-cliente-glass {
+          position: relative;
+          overflow: hidden;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 13px 24px;
+          border-radius: 15px;
+          border: 1px solid rgba(233, 207, 154, 0.55);
+          background: linear-gradient(160deg, #ffffff, #eef2f8 55%, #ffffff);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.9),
+            0 12px 34px -14px rgba(230, 190, 120, 0.55);
+        }
+        .hda-cliente-glass::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -70%;
+          width: 45%;
+          background: linear-gradient(
+            105deg,
+            transparent,
+            rgba(230, 190, 120, 0.32) 50%,
+            transparent
+          );
+          transform: skewX(-18deg);
+          animation: hda-glass-shine 5.6s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .hda-cliente-glass img {
+          height: 46px;
+          width: auto;
+          object-fit: contain;
+          display: block;
+        }
+        .hda-cliente-sub {
           font-size: 12px;
           font-weight: 600;
-          letter-spacing: 3.2px;
-          color: var(--ac);
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #8e9fbe;
         }
-        .casos-logo {
-          display: block;
-          width: auto;
-          margin: 6px 0 2px;
-          filter: brightness(0) invert(1);
-        }
-        .casos-textlogo-wrap {
-          margin: 4px 0 2px;
-        }
-        .casos-textlogo-img {
-          margin: 0;
-        }
-        .casos-textlogo-sub {
-          margin-top: 10px;
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 2.2px;
-          color: #93a0b8;
-        }
-        .casos-proyecto {
-          font-family: var(--font-playfair), "Playfair Display", serif;
+        .hda-proyecto {
+          font-family: var(--font-newsreader), "Newsreader", serif;
           font-style: italic;
-          font-size: 19px;
-          color: #8e9bb3;
+          font-size: 22px;
+          font-weight: 500;
+          color: #b9c6e3;
         }
-        .casos-proyecto .a {
-          color: #e2e8f4;
-        }
-        .casos-proyecto .b {
-          color: var(--ac);
-        }
-        .casos-desc {
-          margin: 0;
-          font-size: 15px;
-          line-height: 1.7;
-          color: #a5b1c8;
-          max-width: 520px;
-          text-wrap: pretty;
-        }
-        .casos-chip {
-          display: inline-block;
-          padding: 9px 18px;
-          border-radius: 999px;
-          border: 1px solid var(--chip-bd);
-          color: var(--ac);
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 1.8px;
-          margin-top: 4px;
-        }
-
-        .casos-right {
-          border-left: 1px solid rgba(255, 255, 255, 0.1);
-          padding-left: 42px;
-          min-width: 280px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          position: relative;
-          z-index: 1;
-        }
-        .casos-bigval {
-          font-size: 82px;
-          font-weight: 700;
-          line-height: 1;
-          letter-spacing: -0.02em;
-          background: linear-gradient(105deg, #ffffff 25%, var(--soft) 85%);
+        .hda-proyecto span {
+          background: linear-gradient(100deg, #ffffff 30%, var(--ac));
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
           color: transparent;
-          filter: drop-shadow(0 8px 34px var(--stat-glow));
         }
-        .casos-biglabel {
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 2.4px;
-          color: #b8c2d8;
-          margin-top: 16px;
+        .hda-desc {
+          margin: 2px 0 0;
+          font-size: 14.5px;
+          font-weight: 400;
+          line-height: 1.7;
+          color: #aebadb;
+          text-wrap: pretty;
+          max-width: 460px;
         }
-        .casos-bigsub {
-          font-family: var(--font-playfair), "Playfair Display", serif;
-          font-style: italic;
-          font-size: 15px;
-          color: #8593ac;
-          margin-top: 6px;
-        }
-        .casos-multi {
-          display: flex;
-          flex-direction: column;
-          gap: 22px;
-        }
-        .casos-mval {
-          font-size: 30px;
-          font-weight: 700;
-          line-height: 1;
-          color: #f2f5fb;
-          text-shadow: 0 0 26px rgba(255, 255, 255, 0.25);
-        }
-        .casos-mlabel {
-          margin-top: 6px;
+        .hda-tier {
+          margin-top: 8px;
+          padding: 6px 13px;
+          border-radius: 999px;
+          border: 1px solid color-mix(in srgb, var(--ac) 40%, transparent);
+          background: color-mix(in srgb, var(--ac) 8%, transparent);
           font-size: 10.5px;
           font-weight: 600;
-          letter-spacing: 1.8px;
-          color: #93a0b8;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: color-mix(in srgb, var(--ac) 80%, #ffffff);
         }
 
-        /* ── Número fantasma ── */
-        .casos-ghost {
-          position: absolute;
-          right: 28px;
-          bottom: -30px;
-          font-size: 200px;
+        .hda-stats {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 20px;
+          padding-left: 30px;
+          border-left: 1px solid rgba(255, 255, 255, 0.09);
+        }
+        .hda-stat {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .hda-stat-value {
+          font-size: 30px;
           font-weight: 700;
-          line-height: 0.75;
-          letter-spacing: -0.04em;
-          color: var(--ac);
-          opacity: 0.09;
-          pointer-events: none;
-          user-select: none;
-          z-index: 0;
+          letter-spacing: -0.01em;
+          line-height: 1;
+          font-variant-numeric: tabular-nums;
+          background: linear-gradient(120deg, #ffffff 15%, var(--ac) 85%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          filter: drop-shadow(0 0 22px var(--ag));
+        }
+        .hda-stat--hero .hda-stat-value {
+          font-size: clamp(52px, 5.8vw, 76px);
+        }
+        .hda-stat-label {
+          font-size: 10.5px;
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #8e9fbe;
+        }
+        .hda-stat-caption {
+          font-family: var(--font-newsreader), "Newsreader", serif;
+          font-style: italic;
+          font-size: 14px;
+          color: #64749a;
         }
 
-        /* ── <1024px: apilado vertical con barras horizontales ── */
-        @media (max-width: 1023px) {
-          .casos-row {
+        @keyframes hda-progress {
+          from {
+            transform: scaleX(0);
+          }
+          to {
+            transform: scaleX(1);
+          }
+        }
+        @keyframes hda-glass-shine {
+          0%,
+          55% {
+            transform: translateX(0) skewX(-18deg);
+          }
+          78%,
+          100% {
+            transform: translateX(430%) skewX(-18deg);
+          }
+        }
+
+        /* ── <980px: columna con bandas de 64px ── */
+        @media (max-width: 979px) {
+          .hda-stage {
             flex-direction: column;
             height: auto;
-            gap: 12px;
-            max-width: 660px;
+            gap: 10px;
           }
-          .casos-panel {
+          .hda-panel {
             flex: none;
-            width: 100%;
-            height: 72px;
+            height: 64px;
             transition:
-              height 0.5s cubic-bezier(0.25, 0.9, 0.3, 1),
-              border-color 0.4s,
-              box-shadow 0.5s;
+              height 0.85s cubic-bezier(0.66, 0, 0.22, 1),
+              border-color 0.5s,
+              box-shadow 0.6s;
           }
-          .casos-panel.on {
+          .hda-panel--on {
+            flex: none;
             height: auto;
-            min-height: 520px;
+            min-height: 480px;
           }
-          .casos-rail {
+          .hda-closed {
             flex-direction: row;
-            width: 100%;
-            height: 72px;
             justify-content: flex-start;
             align-items: center;
             gap: 14px;
-            padding: 0 24px;
+            padding: 0 22px;
           }
-          .casos-vlabel {
+          .hda-vlabel {
             writing-mode: horizontal-tb;
-            letter-spacing: 2px;
+            transform: none;
           }
-          .casos-idx {
-            margin-top: 0;
-            margin-left: auto;
-          }
-          .casos-content {
+          .hda-open {
             position: relative;
             inset: auto;
+            grid-template-columns: 1fr;
+            gap: 22px;
             width: 100%;
-            height: auto;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 26px;
-            padding: 30px 26px 34px;
+            padding: 26px 22px 30px;
           }
-          .casos-left {
-            width: 100%;
-          }
-          .casos-right {
-            width: 100%;
-            min-width: 0;
-            border-left: none;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+          .hda-stats {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 18px 28px;
             padding-left: 0;
-            padding-top: 26px;
+            padding-top: 20px;
+            border-left: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.09);
           }
-          .casos-bigval {
-            font-size: clamp(56px, 12vw, 82px);
+          .hda-stat--hero .hda-stat-value {
+            font-size: 48px;
           }
-          .casos-ghost {
-            font-size: 120px;
-            right: 16px;
-            bottom: -18px;
+          .hda-cliente-logo {
+            height: 52px;
           }
-          .casos-panel:not(.on) .casos-content {
+          .hda-cliente-chip {
+            width: 56px;
+            height: 56px;
+          }
+          .hda-cliente-chip img {
+            width: 42px;
+            height: 42px;
+          }
+          .hda-cliente-glass {
+            padding: 10px 18px;
+          }
+          .hda-cliente-glass img {
+            height: 38px;
+          }
+          .hda-ghost {
+            font-size: 130px;
+            bottom: -22px;
+          }
+          /* En columna, el panel activo crece: ocultar colapsado al instante */
+          .hda-panel--on .hda-closed {
             display: none;
           }
-          .casos-panel.on .casos-rail {
+          .hda-panel:not(.hda-panel--on) .hda-open {
             display: none;
           }
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .casos-panel,
-          .casos-content,
-          .casos-rail {
+          .hda-panel {
+            transition: none;
+          }
+          .hda-progress {
+            animation: none;
+            display: none;
+          }
+          .hda-cliente-glass::after {
+            animation: none;
+          }
+          .hda-open,
+          .hda-closed {
             transition: none;
           }
         }
