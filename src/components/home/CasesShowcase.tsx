@@ -102,7 +102,7 @@ const CASES: CasePanel[] = [
     id: "pyme",
     programa: "Programa Franquicias PyME",
     tier: "Marcas en crecimiento",
-    railLabel: "PyME",
+    railLabel: "Pequeñas y Medianas Empresas",
     logoChip: { src: "/saju/saju-mono.png", alt: "SAJÚ" },
     clienteText: "SAJÚ",
     proyecto: "Franquicias SAJÚ",
@@ -124,7 +124,7 @@ const CASES: CasePanel[] = [
     id: "micro",
     programa: "Programa Microfranquicias",
     tier: "Microempresas e impacto",
-    railLabel: "Micro",
+    railLabel: "Microfranquicias",
     logoGlass: {
       src: "https://propais.org.co/wp-content/themes/propais/img/logopro.png",
       alt: "Propaís",
@@ -220,12 +220,9 @@ export function CasesShowcase() {
       <div className="flex flex-col items-center gap-4 text-center">
         <em className="hdf-eyebrow-serif">Un caso para cada escala</em>
         <h2 className="hdf-h2">
-          De <span className="hdf-grad">enterprise global</span> a
-          microfranquicia.
+          Algunos de nuestros{" "}
+          <span className="hdf-grad">750 Casos de Éxito</span>
         </h2>
-        <span className="text-[17px] text-[#8E9FBE]">
-          El mismo estándar, en cuatro tamaños de operación.
-        </span>
       </div>
 
       <div
@@ -697,6 +694,10 @@ export function CasesShowcase() {
           .hda-vlabel {
             writing-mode: horizontal-tb;
             transform: none;
+            /* Etiquetas largas ("Pequeñas y Medianas Empresas") caben en
+               una banda de 390px. */
+            font-size: 12px;
+            letter-spacing: 0.12em;
           }
           .hda-open {
             position: relative;
