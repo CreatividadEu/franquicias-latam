@@ -2,8 +2,9 @@
    Todo scoped a .prop-root (o gated por body:has(.prop-root)) para no
    tocar nada global. Solo transform/opacity en animaciones. */
 
-/* El WhatsAppWidget global (anchor wa.me hijo directo de body) compite
+/* El WhatsAppWidget global (.wa-widget, hijo directo de body) compite
    con el CTA flotante de la propuesta — se oculta solo en esta ruta. */
+body:has(.prop-root) > .wa-widget,
 body:has(.prop-root) > a[href^="https://wa.me/"] {
   display: none;
 }

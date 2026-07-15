@@ -43,6 +43,6 @@ export const homeFooterCompanyLinks = [
 ];
 
 export const homeFooterLegalLinks = [
-  { href: "#", label: "Términos" },
-  { href: "#", label: "Privacidad" },
+  { href: "/terminos", label: "Términos y Condiciones", isInternal: true },
+  { href: "/privacidad", label: "Privacidad y Habeas Data", isInternal: true },
 ];

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Fragment, useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Space_Grotesk, Instrument_Serif } from "next/font/google";
@@ -11,6 +11,7 @@ import {
 import { EvaluationExperience } from "@/components/home/EvaluationExperience";
 import { OfficesSection } from "@/components/home/OfficesSection";
 import { CasesShowcase } from "@/components/home/CasesShowcase";
+import { HomeForkFooter } from "@/components/home/HomeForkFooter";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -170,15 +171,21 @@ function AwardLogo({
 const LAUREL_D =
   "M 17,117 A 55 55 0 0 0 17,13 M 27.5,112.6 Q 34,107.6 41.8,110.3 Q 33.7,116.7 27.5,112.6 Z M 36.8,105.9 Q 32.8,98.8 36.5,91.5 Q 41.7,100.4 36.8,105.9 Z M 44.5,97.3 Q 48.4,90.1 56.6,89.4 Q 51.8,98.5 44.5,97.3 Z M 50.2,87.4 Q 43.7,82.6 44.1,74.3 Q 52.4,80.4 50.2,87.4 Z M 53.8,76.4 Q 54.4,68.3 61.7,64.3 Q 60.9,74.5 53.8,76.4 Z M 55,65 Q 47.1,63.2 44.1,55.5 Q 54.1,57.7 55,65 Z M 53.8,53.6 Q 51.1,45.9 56,39.3 Q 59.6,49 53.8,53.6 Z M 50.2,42.6 Q 42.2,44.2 36.4,38.4 Q 46.4,36.3 50.2,42.6 Z M 44.5,32.7 Q 38.9,26.8 40.8,18.8 Q 47.9,26.1 44.5,32.7 Z M 36.8,24.1 Q 30.2,28.8 22.5,25.9 Q 30.8,19.8 36.8,24.1 Z M 27.5,17.4 Q 20,14.3 18.4,6.2 Q 27.9,10 27.5,17.4 Z M 17,12.7 Q 9.6,16.1 2.6,11.7 Q 11.9,7.4 17,12.7 Z";
 
-// El primer laurel define <defs> (gradiente lgold + path laurelB); los otros
-// siete lo reutilizan con <use>. El lado izquierdo va espejado.
+// El primer laurel de cada variante (fila desktop / carrusel mobile) define
+// <defs> (gradiente + path); los demás lo reutilizan con <use>. `idPrefix`
+// separa los ids entre variantes para no colisionar en el mismo documento.
+// El lado izquierdo va espejado.
 function LaurelSvg({
   flip = false,
   withDefs = false,
+  idPrefix = "",
 }: {
   flip?: boolean;
   withDefs?: boolean;
+  idPrefix?: string;
 }) {
+  const gradientId = `lgold${idPrefix}`;
+  const pathId = `laurelB${idPrefix}`;
   return (
     <svg
       width="58"
@@ -190,7 +197,7 @@ function LaurelSvg({
       {withDefs && (
         <defs>
           <linearGradient
-            id="lgold"
+            id={gradientId}
             gradientUnits="userSpaceOnUse"
             x1="0"
             y1="8"
@@ -202,8 +209,8 @@ function LaurelSvg({
             <stop offset="1" stopColor="rgba(217,178,106,.18)" />
           </linearGradient>
           <path
-            id="laurelB"
-            stroke="url(#lgold)"
+            id={pathId}
+            stroke={`url(#${gradientId})`}
             strokeWidth="1.7"
             fill="none"
             strokeLinecap="round"
@@ -212,13 +219,257 @@ function LaurelSvg({
           />
         </defs>
       )}
-      <use href="#laurelB" />
+      <use href={`#${pathId}`} />
     </svg>
   );
 }
 
 function PalmSep() {
   return <div className="hdf-palm-sep" aria-hidden />;
+}
+
+// Contenido de las cuatro insignias del palmarés. Se comparte entre la fila
+// de desktop y el carrusel de mobile (una insignia a la vez).
+type PalmBadgeData = {
+  key: string;
+  label: string;
+  stack: React.ReactNode;
+};
+
+const PALM_BADGES: PalmBadgeData[] = [
+  {
+    key: "bid",
+    label: "2× financiados por el Banco Interamericano de Desarrollo",
+    stack: (
+      <div className="hdf-palm-stack">
+        <div className="hdf-palm-eyebrow">2× FINANCIADOS POR</div>
+        <span
+          className="hdf-palm-glass"
+          style={{ "--sd": "0.15s" } as React.CSSProperties}
+        >
+          <Image
+            src={programInstitutionalLogos[0].src}
+            alt={programInstitutionalLogos[0].alt}
+            width={800}
+            height={300}
+            className="hdf-palm-bid"
+          />
+        </span>
+        <div className="hdf-palm-origin hdf-palm-origin--wrap">
+          BANCO INTERAMERICANO DE DESARROLLO
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "locomotora",
+    label: "Ganadores de Locomotora de la Innovación — MinTIC",
+    stack: (
+      <div className="hdf-palm-stack">
+        <div className="hdf-palm-eyebrow">GANADORES</div>
+        <div className="hdf-palm-name-serif hdf-palm-name-loco">
+          Locomotora de
+          <br />
+          la Innovación
+        </div>
+        <span
+          className="hdf-palm-glass hdf-palm-glass--seal"
+          style={{ "--sd": "0.45s" } as React.CSSProperties}
+        >
+          <Image
+            src={programInstitutionalLogos[2].src}
+            alt={programInstitutionalLogos[2].alt}
+            width={800}
+            height={300}
+          />
+        </span>
+      </div>
+    ),
+  },
+  {
+    key: "retos",
+    label: "Ganadores de Retos 4.0 — MinTIC",
+    stack: (
+      <div className="hdf-palm-stack">
+        <div className="hdf-palm-eyebrow">GANADORES</div>
+        <div className="hdf-palm-name-serif hdf-palm-name-retos">Retos 4.0</div>
+        <span
+          className="hdf-palm-glass hdf-palm-glass--seal"
+          style={{ "--sd": "0.75s" } as React.CSSProperties}
+        >
+          <Image
+            src={programInstitutionalLogos[2].src}
+            alt={programInstitutionalLogos[2].alt}
+            width={800}
+            height={300}
+          />
+        </span>
+      </div>
+    ),
+  },
+  {
+    key: "collision",
+    label: "Startup finalista en Collision Conf. — Toronto, Canadá",
+    stack: (
+      <div className="hdf-palm-stack">
+        <div className="hdf-palm-eyebrow">STARTUP FINALISTA</div>
+        <span
+          className="hdf-palm-glass"
+          style={{ "--sd": "1.05s" } as React.CSSProperties}
+        >
+          <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden>
+            <g stroke="#ff5d5d" strokeWidth="1.8" strokeLinecap="round">
+              <line x1="6" y1="1" x2="6" y2="11" />
+              <line x1="1.7" y1="3.5" x2="10.3" y2="8.5" />
+              <line x1="10.3" y1="3.5" x2="1.7" y2="8.5" />
+            </g>
+          </svg>
+          <Image
+            src="/logos/logo_collision.png"
+            alt="Collision Conf."
+            width={501}
+            height={98}
+            className="hdf-palm-collision-logo"
+          />
+        </span>
+        <div className="hdf-palm-origin">TORONTO · CANADÁ</div>
+      </div>
+    ),
+  },
+];
+
+function PalmBadge({
+  badge,
+  withDefs = false,
+  idPrefix = "",
+  delay,
+}: {
+  badge: PalmBadgeData;
+  withDefs?: boolean;
+  idPrefix?: string;
+  delay?: string;
+}) {
+  return (
+    <div className="hdf-palm" style={delay ? { animationDelay: delay } : undefined}>
+      <LaurelSvg flip withDefs={withDefs} idPrefix={idPrefix} />
+      {badge.stack}
+      <LaurelSvg idPrefix={idPrefix} />
+    </div>
+  );
+}
+
+// Mantener en sintonía con el CSS del dot activo
+// (.hdf-palmcar-dot--active::after → animation hdf-palmcar-fill 4.2s).
+const PALM_ADVANCE_MS = 4200;
+// Tras una interacción manual (swipe / dot), el auto-avance espera antes de
+// retomar para no pisar la lectura del usuario.
+const PALM_RESUME_MS = 9000;
+
+// Carrusel mobile del palmarés: una insignia a la vez en el mismo lugar.
+// Auto-avanza, responde a swipe y a los dots; la insignia saliente se desliza
+// hacia el lado por el que salió y la entrante llega desde el opuesto.
+function PalmCarousel() {
+  const count = PALM_BADGES.length;
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [reduced, setReduced] = useState(false);
+  const touchRef = useRef<{ x: number; y: number } | null>(null);
+  const resumeTimerRef = useRef(0);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(media.matches);
+    sync();
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", sync);
+      return () => media.removeEventListener("change", sync);
+    }
+    media.addListener(sync);
+    return () => media.removeListener(sync);
+  }, []);
+
+  // Auto-avance. Con reduced-motion el carrusel queda 100% manual.
+  useEffect(() => {
+    if (paused || reduced) return;
+    const id = window.setInterval(() => {
+      if (document.hidden) return;
+      setActive((i) => (i + 1) % count);
+    }, PALM_ADVANCE_MS);
+    return () => window.clearInterval(id);
+  }, [paused, reduced, count]);
+
+  useEffect(() => () => window.clearTimeout(resumeTimerRef.current), []);
+
+  const goTo = (index: number) => {
+    setActive(((index % count) + count) % count);
+    setPaused(true);
+    window.clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = window.setTimeout(
+      () => setPaused(false),
+      PALM_RESUME_MS,
+    );
+  };
+
+  // Posición relativa al activo: lo próximo espera a la derecha, lo ya visto
+  // queda a la izquierda — así el slide entra/sale por el lado correcto en
+  // ambas direcciones sin estado extra.
+  const positionOf = (index: number) => {
+    const offset = (index - active + count) % count;
+    if (offset === 0) return "active";
+    return offset <= count / 2 ? "next" : "prev";
+  };
+
+  return (
+    <div className="hdf-palmcar">
+      <div
+        className="hdf-palmcar-viewport"
+        onTouchStart={(e) => {
+          touchRef.current = {
+            x: e.touches[0].clientX,
+            y: e.touches[0].clientY,
+          };
+        }}
+        onTouchEnd={(e) => {
+          const start = touchRef.current;
+          touchRef.current = null;
+          if (!start) return;
+          const dx = e.changedTouches[0].clientX - start.x;
+          const dy = e.changedTouches[0].clientY - start.y;
+          // Solo swipes claramente horizontales; el scroll vertical manda.
+          if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+          goTo(active + (dx < 0 ? 1 : -1));
+        }}
+      >
+        {PALM_BADGES.map((badge, index) => (
+          <div
+            key={badge.key}
+            className={`hdf-palmcar-slide hdf-palmcar-slide--${positionOf(index)}`}
+            role="group"
+            aria-roledescription="insignia"
+            aria-label={`${index + 1} de ${count}: ${badge.label}`}
+            aria-hidden={index !== active}
+          >
+            <PalmBadge badge={badge} withDefs={index === 0} idPrefix="-m" />
+          </div>
+        ))}
+      </div>
+      <div className="hdf-palmcar-dots">
+        {PALM_BADGES.map((badge, index) => (
+          <button
+            key={badge.key}
+            type="button"
+            onClick={() => goTo(index)}
+            aria-label={`Ver reconocimiento ${index + 1} de ${count}`}
+            aria-current={index === active}
+            className={`hdf-palmcar-dot${
+              index === active ? " hdf-palmcar-dot--active" : ""
+            }${paused || reduced ? " hdf-palmcar-dot--paused" : ""}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function TypewriterEyebrow({ className }: { className: string }) {
@@ -697,107 +948,23 @@ export function HomeDecisionFork() {
 
       {/* ── Contenido principal ──────────────────────────────────────────── */}
       <main className="relative z-[2] flex flex-col items-center px-4 pb-16 pt-[52px] text-center sm:px-6 sm:pb-24 lg:pb-28">
-        {/* Palmarés: franja de laureles dorados */}
+        {/* Palmarés: franja de laureles dorados. En desktop, fila completa;
+            en mobile, carrusel de una insignia a la vez. */}
         <section className="hdf-palms" aria-label="Reconocimientos">
           <div className="hdf-palms-halo" aria-hidden />
           <div className="hdf-palms-row">
-            <div className="hdf-palm" style={{ animationDelay: "0.05s" }}>
-              <LaurelSvg flip withDefs />
-              <div className="hdf-palm-stack">
-                <div className="hdf-palm-eyebrow">2× FINANCIADOS POR</div>
-                <span
-                  className="hdf-palm-glass"
-                  style={{ "--sd": "0.15s" } as React.CSSProperties}
-                >
-                  <Image
-                    src={programInstitutionalLogos[0].src}
-                    alt={programInstitutionalLogos[0].alt}
-                    width={800}
-                    height={300}
-                    className="hdf-palm-bid"
-                  />
-                </span>
-                <div className="hdf-palm-origin hdf-palm-origin--wrap">
-                  BANCO INTERAMERICANO DE DESARROLLO
-                </div>
-              </div>
-              <LaurelSvg />
-            </div>
-            <PalmSep />
-            <div className="hdf-palm" style={{ animationDelay: "0.2s" }}>
-              <LaurelSvg flip />
-              <div className="hdf-palm-stack">
-                <div className="hdf-palm-eyebrow">GANADORES</div>
-                <div className="hdf-palm-name-serif hdf-palm-name-loco">
-                  Locomotora de
-                  <br />
-                  la Innovación
-                </div>
-                <span
-                  className="hdf-palm-glass hdf-palm-glass--seal"
-                  style={{ "--sd": "0.45s" } as React.CSSProperties}
-                >
-                  <Image
-                    src={programInstitutionalLogos[2].src}
-                    alt={programInstitutionalLogos[2].alt}
-                    width={800}
-                    height={300}
-                  />
-                </span>
-              </div>
-              <LaurelSvg />
-            </div>
-            <PalmSep />
-            <div className="hdf-palm" style={{ animationDelay: "0.35s" }}>
-              <LaurelSvg flip />
-              <div className="hdf-palm-stack">
-                <div className="hdf-palm-eyebrow">GANADORES</div>
-                <div className="hdf-palm-name-serif hdf-palm-name-retos">
-                  Retos 4.0
-                </div>
-                <span
-                  className="hdf-palm-glass hdf-palm-glass--seal"
-                  style={{ "--sd": "0.75s" } as React.CSSProperties}
-                >
-                  <Image
-                    src={programInstitutionalLogos[2].src}
-                    alt={programInstitutionalLogos[2].alt}
-                    width={800}
-                    height={300}
-                  />
-                </span>
-              </div>
-              <LaurelSvg />
-            </div>
-            <PalmSep />
-            <div className="hdf-palm" style={{ animationDelay: "0.5s" }}>
-              <LaurelSvg flip />
-              <div className="hdf-palm-stack">
-                <div className="hdf-palm-eyebrow">STARTUP FINALISTA</div>
-                <span
-                  className="hdf-palm-glass"
-                  style={{ "--sd": "1.05s" } as React.CSSProperties}
-                >
-                  <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden>
-                    <g stroke="#ff5d5d" strokeWidth="1.8" strokeLinecap="round">
-                      <line x1="6" y1="1" x2="6" y2="11" />
-                      <line x1="1.7" y1="3.5" x2="10.3" y2="8.5" />
-                      <line x1="10.3" y1="3.5" x2="1.7" y2="8.5" />
-                    </g>
-                  </svg>
-                  <Image
-                    src="/logos/logo_collision.png"
-                    alt="Collision Conf."
-                    width={501}
-                    height={98}
-                    className="hdf-palm-collision-logo"
-                  />
-                </span>
-                <div className="hdf-palm-origin">TORONTO · CANADÁ</div>
-              </div>
-              <LaurelSvg />
-            </div>
+            {PALM_BADGES.map((badge, index) => (
+              <Fragment key={badge.key}>
+                {index > 0 && <PalmSep />}
+                <PalmBadge
+                  badge={badge}
+                  withDefs={index === 0}
+                  delay={`${0.05 + index * 0.15}s`}
+                />
+              </Fragment>
+            ))}
           </div>
+          <PalmCarousel />
         </section>
 
         {/* Cupos capsule */}
@@ -1027,6 +1194,9 @@ export function HomeDecisionFork() {
         <OfficesSection />
       </main>
 
+      {/* Footer: sedes, ecosistema y legal */}
+      <HomeForkFooter />
+
       {/* Evaluación Privada (overlay inmersivo) */}
       <EvaluationExperience
         open={evalOpen}
@@ -1100,6 +1270,22 @@ export function HomeDecisionFork() {
                       placeholder="Instagram del Negocio"
                       className="hdf-input"
                     />
+                    {/* Autorización de datos: requerida por la Ley 1581 de
+                        2012 (CO) y el RGPD (ES) al recolectar datos. */}
+                    <label className="hdf-consent">
+                      <input type="checkbox" required className="hdf-consent-box" />
+                      <span>
+                        Autorizo el tratamiento de mis datos según la{" "}
+                        <Link href="/privacidad" target="_blank" className="hdf-consent-link">
+                          Política de Privacidad y Habeas Data
+                        </Link>{" "}
+                        y acepto los{" "}
+                        <Link href="/terminos" target="_blank" className="hdf-consent-link">
+                          Términos y Condiciones
+                        </Link>
+                        .
+                      </span>
+                    </label>
                     <button type="submit" disabled={submitting} className="hdf-submit-btn">
                       <span className="hdf-sheen hdf-sheen--fast" aria-hidden />
                       {submitting ? "Enviando…" : "Enviar →"}
@@ -1382,6 +1568,121 @@ export function HomeDecisionFork() {
             rgba(233, 207, 154, 0.26),
             transparent
           );
+        }
+
+        /* ── Carrusel mobile del palmarés ── */
+        .hdf-palmcar {
+          display: none;
+        }
+        @media (max-width: 759px) {
+          .hdf-palms {
+            margin-bottom: 30px;
+          }
+          .hdf-palms-row {
+            display: none;
+          }
+          .hdf-palms-halo {
+            width: min(94vw, 460px);
+            height: 170px;
+          }
+          .hdf-palmcar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 13px;
+            width: 100%;
+          }
+          /* Una sola insignia visible: puede ser más compacta que en desktop. */
+          .hdf-palmcar .hdf-palm {
+            animation: none;
+          }
+          .hdf-palmcar .hdf-palm-laurel {
+            width: 46px;
+            height: 86px;
+          }
+          .hdf-palmcar .hdf-palm-stack {
+            gap: 6px;
+            max-width: 190px;
+          }
+          .hdf-palmcar .hdf-palm-eyebrow {
+            font-size: 10.5px;
+          }
+          .hdf-palmcar .hdf-palm-name-loco {
+            font-size: 19px;
+          }
+          .hdf-palmcar .hdf-palm-name-retos {
+            font-size: 23px;
+          }
+        }
+        .hdf-palmcar-viewport {
+          display: grid;
+          width: 100%;
+          touch-action: pan-y;
+        }
+        .hdf-palmcar-slide {
+          grid-area: 1 / 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition:
+            opacity 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+            transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .hdf-palmcar-slide--active {
+          opacity: 1;
+          transform: none;
+        }
+        .hdf-palmcar-slide--next {
+          opacity: 0;
+          transform: translateX(38px) scale(0.96);
+          pointer-events: none;
+        }
+        .hdf-palmcar-slide--prev {
+          opacity: 0;
+          transform: translateX(-38px) scale(0.96);
+          pointer-events: none;
+        }
+        .hdf-palmcar-dots {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .hdf-palmcar-dot {
+          position: relative;
+          overflow: hidden;
+          width: 7px;
+          height: 7px;
+          padding: 0;
+          border: none;
+          border-radius: 999px;
+          background: rgba(233, 207, 154, 0.26);
+          cursor: pointer;
+          transition:
+            width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+            background 0.3s ease;
+        }
+        /* Área táctil ≥ 28px sin engordar el dot visible. */
+        .hdf-palmcar-dot::before {
+          content: "";
+          position: absolute;
+          inset: -11px;
+        }
+        .hdf-palmcar-dot--active {
+          width: 26px;
+          background: rgba(233, 207, 154, 0.2);
+        }
+        /* Barra de progreso del auto-avance (duración = PALM_ADVANCE_MS). */
+        .hdf-palmcar-dot--active::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: 999px;
+          background: linear-gradient(90deg, #d9b26a, #f5e9c8);
+          transform-origin: left;
+          animation: hdf-palmcar-fill 4.2s linear both;
+        }
+        .hdf-palmcar-dot--active.hdf-palmcar-dot--paused::after {
+          animation: none;
         }
 
         /* ── Cupos badge ── */
@@ -2116,6 +2417,33 @@ export function HomeDecisionFork() {
           background: #0a1224;
           box-shadow: 0 0 0 3px rgba(255, 122, 41, 0.18);
         }
+        .hdf-consent {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          text-align: left;
+          font-size: 12.5px;
+          line-height: 1.55;
+          color: #8e9fbe;
+          cursor: pointer;
+        }
+        .hdf-consent-box {
+          flex-shrink: 0;
+          width: 16px;
+          height: 16px;
+          margin-top: 2px;
+          accent-color: #ff8a3d;
+          cursor: pointer;
+        }
+        .hdf-consent-link {
+          color: #8fdcec;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          transition: color 0.2s ease;
+        }
+        .hdf-consent-link:hover {
+          color: #f2f5fc;
+        }
         .hdf-submit-btn {
           position: relative;
           overflow: hidden;
@@ -2291,6 +2619,14 @@ export function HomeDecisionFork() {
             opacity: 1;
           }
         }
+        @keyframes hdf-palmcar-fill {
+          from {
+            transform: scaleX(0);
+          }
+          to {
+            transform: scaleX(1);
+          }
+        }
         @keyframes hdf-palm-shine {
           0%,
           55% {
@@ -2401,6 +2737,7 @@ export function HomeDecisionFork() {
           .hdf-palm,
           .hdf-palms-halo,
           .hdf-palm-glass::after,
+          .hdf-palmcar-dot--active::after,
           .hdf-manifesto,
           .hdf-marquee,
           .hdf-stats-line,
@@ -2422,6 +2759,10 @@ export function HomeDecisionFork() {
           }
           .hdf-caret {
             display: none;
+          }
+          .hdf-palmcar-slide,
+          .hdf-palmcar-dot {
+            transition: none;
           }
         }
       `}</style>
