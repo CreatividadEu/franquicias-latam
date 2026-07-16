@@ -161,6 +161,9 @@
 .saju-btn--ghost:hover { box-shadow: none; }
 .saju-btn--on-dark.saju-btn--ghost { border-color: rgba(255, 255, 255, 0.5); }
 .saju-btn--block { width: 100%; justify-content: center; }
+/* <a>-based CTAs: outrank the generic `.saju-root a { color: inherit }` so
+   yellow pills keep ink text even inside dark (on-dark) sections. */
+.saju-root a.saju-btn { color: var(--btn-fg); }
 
 /* focus rings (brand-colored, visible) */
 .saju-root :focus-visible {
