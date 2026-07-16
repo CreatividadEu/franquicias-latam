@@ -21,7 +21,7 @@ const DESCRIPTION =
   "La marca de gafas de Colombia que se está convirtiendo en la No.1 de LATAM abre Franquicia Master. Inversión desde $35K. Aplica a la oportunidad presentada por Franquicias LATAM.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://franquiciaslatam.co"),
+  metadataBase: new URL("https://franquiciaslatam.com"),
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/saju" },

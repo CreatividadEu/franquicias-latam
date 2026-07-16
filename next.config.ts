@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // A stray lockfile in the home directory makes Turbopack infer the wrong
+  // workspace root (breaking tailwindcss resolution in dev); pin it here.
+  turbopack: { root: __dirname },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**" },

@@ -6,6 +6,7 @@ import { SajuNav } from "./_components/SajuNav";
 import { CtaLink } from "./_components/CtaLink";
 import { Faqs } from "./_components/Faqs";
 import { ApplyForm } from "./_components/ApplyForm";
+import { EpisodeCard } from "./_components/EpisodeCard";
 import { VerifiedBadge } from "./_components/VerifiedBadge";
 
 export default function SajuPage() {
@@ -201,6 +202,74 @@ export default function SajuPage() {
         </div>
       </section>
 
+      {/* ── TÁCHALO · EL PODCAST ─────────────────────────────────────────── */}
+      <section id="podcast" className="saju-section saju-bg-yellow">
+        <div className="saju-container">
+          <div className="saju-pod-head">
+            <div>
+              <Reveal>
+                <Eyebrow>{c.podcast.eyebrow}</Eyebrow>
+              </Reveal>
+              <Reveal delay={60}>
+                <h2 className="saju-h-sec" style={{ maxWidth: "18ch" }}>
+                  {c.podcast.titleBefore}
+                  <Strike>{c.podcast.titleStrike}</Strike>
+                  {c.podcast.titleAfter}
+                </h2>
+              </Reveal>
+              <Reveal delay={120}>
+                <p style={{ marginTop: "1.4rem", maxWidth: "52ch", fontSize: "1.02rem" }}>
+                  {c.podcast.body}
+                </p>
+              </Reveal>
+            </div>
+            <Reveal delay={160}>
+              <CtaLink
+                href={c.podcast.youtubeChannel}
+                className="saju-btn"
+                label="podcast_subscribe_youtube"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {c.podcast.youtubeCta} →
+              </CtaLink>
+            </Reveal>
+          </div>
+
+          <div className="saju-pod-grid">
+            {c.podcast.episodes.map((ep, i) => (
+              <Reveal as="div" key={ep.id} delay={i * 70}>
+                <EpisodeCard id={ep.id} kicker={ep.kicker} title={ep.title} />
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={100}>
+            <div className="saju-pod-spotify">
+              <div>
+                <div className="saju-pod-spotify__t">{c.podcast.spotify.title}</div>
+                <p className="saju-pod-spotify__b">{c.podcast.spotify.body}</p>
+                <CtaLink
+                  href={c.podcast.spotify.showUrl}
+                  className="saju-btn saju-btn--yellow"
+                  label="podcast_follow_spotify"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {c.podcast.spotify.cta} →
+                </CtaLink>
+              </div>
+              <iframe
+                src={c.podcast.spotify.embedUrl}
+                title="Táchalo — el podcast de Sajú en Spotify"
+                loading="lazy"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ── TRACK RECORD ─────────────────────────────────────────────────── */}
       <section className="saju-section saju-bg-ink2 on-dark">
         <div className="saju-container">
@@ -357,11 +426,6 @@ export default function SajuPage() {
                   </Reveal>
                 ))}
               </div>
-              <Reveal delay={120}>
-                <div className="saju-special">
-                  <s>USA · México</s> — {c.opportunity.special}
-                </div>
-              </Reveal>
             </div>
           </div>
         </div>
@@ -526,6 +590,9 @@ export default function SajuPage() {
                 <a href={c.social.youtube} target="_blank" rel="noopener noreferrer">
                   YouTube @tachalo
                 </a>
+                <a href={c.social.spotify} target="_blank" rel="noopener noreferrer">
+                  Táchalo en Spotify
+                </a>
                 <a href={c.social.tiktok} target="_blank" rel="noopener noreferrer">
                   TikTok @losdesaju
                 </a>
@@ -533,7 +600,7 @@ export default function SajuPage() {
               <div className="saju-footer__col">
                 <h5>Legal</h5>
                 <a href="/privacidad">Privacidad</a>
-                <a href="https://franquiciaslatam.co" target="_blank" rel="noopener noreferrer">
+                <a href="https://franquiciaslatam.com" target="_blank" rel="noopener noreferrer">
                   Franquicias LATAM
                 </a>
               </div>

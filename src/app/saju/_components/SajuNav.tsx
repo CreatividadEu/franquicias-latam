@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 const LINKS = [
+  { href: "#podcast", label: "Podcast" },
   { href: "#oportunidad", label: "Oportunidad" },
   { href: "#producto", label: "Producto" },
   { href: "#modelos", label: "Modelos" },
