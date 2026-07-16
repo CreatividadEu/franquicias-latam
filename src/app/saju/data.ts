@@ -56,6 +56,10 @@ export const SAJU = {
       "MINI",
       "Cerveza Corona",
     ],
+    reel: {
+      label: "Sajú en acción",
+      permalink: "https://www.instagram.com/reel/DZLnJ-ftJek/",
+    },
   },
 
   product: {

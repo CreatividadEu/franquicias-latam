@@ -7,6 +7,7 @@ import { CtaLink } from "./_components/CtaLink";
 import { Faqs } from "./_components/Faqs";
 import { ApplyForm } from "./_components/ApplyForm";
 import { EpisodeCard } from "./_components/EpisodeCard";
+import { InstagramReel } from "./_components/InstagramReel";
 import { VerifiedBadge } from "./_components/VerifiedBadge";
 
 export default function SajuPage() {
@@ -317,6 +318,15 @@ export default function SajuPage() {
                     </span>
                   ))}
                 </div>
+              </Reveal>
+              <Reveal delay={180}>
+                <p
+                  className="saju-eyebrow"
+                  style={{ marginTop: "2.4rem", color: "rgba(255,255,255,0.55)" }}
+                >
+                  {c.track.reel.label}
+                </p>
+                <InstagramReel permalink={c.track.reel.permalink} />
               </Reveal>
             </div>
           </div>

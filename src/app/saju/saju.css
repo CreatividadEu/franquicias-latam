@@ -358,6 +358,40 @@
   letter-spacing: 0.02em;
 }
 
+/* ── instagram reel (track record) ──────────────────────────────────────── */
+.saju-igreel {
+  margin-top: 1rem;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 12px 12px 0 var(--yellow);
+  transform: rotate(-0.8deg);
+  transition: transform 0.25s ease;
+}
+.saju-igreel:hover { transform: rotate(0deg); }
+/* Neutralize the embed's own frame so it fills our card cleanly — both the
+   placeholder blockquote and the iframe embed.js swaps in. */
+.saju-igreel .instagram-media {
+  margin: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: block;
+}
+.saju-igreel blockquote.instagram-media {
+  background: #fff !important;
+  padding: 1rem !important;
+}
+.saju-igreel blockquote.instagram-media a { color: var(--teal); font-size: 0.9rem; }
+@media (max-width: 900px) {
+  .saju-igreel { transform: none; margin-inline: auto; }
+}
+
 /* ── stat row ───────────────────────────────────────────────────────────── */
 .saju-stats {
   display: grid;
