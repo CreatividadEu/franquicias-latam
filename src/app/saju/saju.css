@@ -387,6 +387,9 @@
   background: #fff !important;
   padding: 1rem !important;
 }
+/* Reserve reel-ish space while Instagram measures itself: embed.js then sets
+   the exact inline height. Prevents a collapsed 32px sliver mid-load. */
+.saju-igreel iframe.instagram-media { min-height: 480px; }
 .saju-igreel blockquote.instagram-media a { color: var(--teal); font-size: 0.9rem; }
 @media (max-width: 900px) {
   .saju-igreel { transform: none; margin-inline: auto; }
