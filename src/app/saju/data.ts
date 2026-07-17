@@ -9,10 +9,10 @@ export const SAJU = {
 
   hero: {
     eyebrow: "El mono es el original · est. 2017",
-    // "tachar" is the word that carries the strikethrough motif.
-    headlineBefore: "Lánzate a ",
-    headlineStrike: "tachar",
-    headlineAfter: " con nosotros.",
+    // The struck phrase is the bucket-list item being crossed off.
+    headlineBefore: "Tacha ",
+    headlineStrike: "abrir Sajú en tu país",
+    headlineAfter: " con Nosotros.",
     subhead:
       "La marca de gafas de Colombia que se está convirtiendo en la número 1 de LATAM. Abrimos Franquicia Master para los principales mercados de la región.",
     primaryCta: "Aplica a la franquicia",

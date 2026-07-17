@@ -75,13 +75,15 @@
 .saju-h-sub  { font-size: clamp(1.35rem, 2.6vw, 2rem); }
 
 /* ── táchalo strike (the brand device) ──────────────────────────────────── */
-.saju-strike {
+/* The bar lives on per-word spans so multi-word phrases wrap on mobile;
+   alternating tilt keeps the hand-struck feel across words. */
+.saju-strike { font-style: normal; }
+.saju-strike__w {
   position: relative;
-  font-style: normal;
   white-space: nowrap;
   display: inline-block;
 }
-.saju-strike::after {
+.saju-strike__w::after {
   content: "";
   position: absolute;
   left: -0.06em;
@@ -93,7 +95,8 @@
   transform: rotate(-2.5deg) scaleX(var(--strike, 1));
   transform-origin: left center;
 }
-.saju-root .on-dark .saju-strike::after { background: var(--yellow); }
+.saju-strike__w:nth-child(even)::after { transform: rotate(1.8deg) scaleX(var(--strike, 1)); }
+.saju-root .on-dark .saju-strike__w::after { background: var(--yellow); }
 
 /* ── layout ─────────────────────────────────────────────────────────────── */
 .saju-section {
@@ -689,7 +692,7 @@
 
 /* ── podcast (Táchalo) ──────────────────────────────────────────────────── */
 .saju-bg-yellow .saju-eyebrow { color: var(--ink); opacity: 0.72; }
-.saju-bg-yellow .saju-strike::after { background: var(--ink); height: 0.09em; }
+.saju-bg-yellow .saju-strike__w::after { background: var(--ink); height: 0.09em; }
 
 .saju-pod-head {
   display: flex; flex-wrap: wrap; align-items: flex-end;
