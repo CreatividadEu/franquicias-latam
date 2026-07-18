@@ -20,6 +20,9 @@ import React, {
 import { homeClientLogos } from "@/components/home/homeBrandData";
 
 const SLUG = "the-body-concept";
+// La página es de link abierto; esta key existe solo para que los beacons de
+// apertura y CTA sigan atribuyendo (alerta por email vía FormLead).
+const BEACON_KEY = "tbc-pulso-k8w4mrq2";
 const DEADLINE_LABEL = "25 · JUL · 2026";
 const WA_URL =
   "https://wa.me/34695126804?text=" +
@@ -91,9 +94,8 @@ function CountdownBar({ deadlineIso }: { deadlineIso: string }) {
       interval = setInterval(() => {
         const t = Date.now();
         setNow(t);
-        if (deadline - t <= 0) {
-          if (interval) clearInterval(interval);
-          window.location.reload();
+        if (deadline - t <= 0 && interval) {
+          clearInterval(interval);
         }
       }, 1000);
     });
@@ -104,6 +106,27 @@ function CountdownBar({ deadlineIso }: { deadlineIso: string }) {
   }, [deadline]);
 
   const remaining = now === null ? null : Math.max(0, deadline - now);
+
+  // La ventana de pago inicial cierra, la página no: la barra pasa a ofrecer
+  // la reactivación en vez de bloquear la lectura.
+  if (remaining !== null && remaining <= 0) {
+    return (
+      <div className="tbc-bar tbc-bar--urgent" role="status">
+        <span className="tbc-bar-label">
+          La ventana de pago inicial ha <strong>cerrado</strong>
+        </span>
+        <a
+          className="tbc-bar-cta"
+          href={WA_URL}
+          target="_blank"
+          rel="noreferrer"
+          data-cta
+        >
+          Reactivarla por WhatsApp →
+        </a>
+      </div>
+    );
+  }
   const totalSeconds = remaining === null ? null : Math.floor(remaining / 1000);
   const days = totalSeconds === null ? null : Math.floor(totalSeconds / 86400);
   const hours =
@@ -484,36 +507,29 @@ function StripeBuyButton() {
 
 export function TheBodyConceptDossier({
   deadlineIso,
-  openKey,
-  inviteToken,
 }: {
   deadlineIso: string;
-  openKey?: string;
-  inviteToken?: string;
 }) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [progress, setProgress] = useState(0);
 
-  // Beacon de primera apertura: arma la ventana de lectura del link abierto.
+  // Beacon de primera apertura: registra el lead y dispara la alerta por email.
   useEffect(() => {
-    if (openKey) sendBeacon("/api/dossier/open", { k: openKey });
-  }, [openKey]);
+    sendBeacon("/api/dossier/open", { k: BEACON_KEY });
+  }, []);
 
-  // Tracking delegado de CTAs con atribución por credencial.
+  // Tracking delegado de CTAs.
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     const onClick = (e: MouseEvent) => {
       const el = (e.target as HTMLElement | null)?.closest("[data-cta]");
       if (!el) return;
-      const payload: Record<string, string> = {};
-      if (openKey) payload.k = openKey;
-      else if (inviteToken) payload.t = inviteToken;
-      if (Object.keys(payload).length) sendBeacon("/api/dossier/cta", payload);
+      sendBeacon("/api/dossier/cta", { k: BEACON_KEY });
     };
     root.addEventListener("click", onClick);
     return () => root.removeEventListener("click", onClick);
-  }, [openKey, inviteToken]);
+  }, []);
 
   // Reveal por scroll (patrón IntersectionObserver del historial).
   useEffect(() => {
