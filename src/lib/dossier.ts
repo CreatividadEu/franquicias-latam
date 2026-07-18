@@ -177,6 +177,23 @@ const OPEN_KEYS: Record<
     name: "Daniel",
     expiresAt: "2026-07-16T22:45:00Z",
   },
+  // The Body Concept — propuesta emitida el 18 de julio de 2026; los links
+  // vencen con la ventana de pago inicial (7 días → 25 de julio, 23:59 Madrid).
+  "tbc-pulso-k8w4mrq2": {
+    slug: "the-body-concept",
+    name: "The Body Concept — Dirección",
+    expiresAt: "2026-07-25T21:59:00Z",
+  },
+  "tbc-motor-v3t9xfp6": {
+    slug: "the-body-concept",
+    name: "Daniel",
+    expiresAt: "2026-07-25T21:59:00Z",
+  },
+  "tbc-sala-h6n2wdz8": {
+    slug: "the-body-concept",
+    name: "Invitados The Body Concept",
+    expiresAt: "2026-07-25T21:59:00Z",
+  },
 };
 
 export function resolveOpenKey(
