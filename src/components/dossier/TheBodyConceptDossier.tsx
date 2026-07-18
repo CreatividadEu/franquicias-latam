@@ -9,7 +9,7 @@
 // La página enseña alcance y rigor sin exponer método: los indicadores del
 // modelo aparecen bloqueados y el simulador es una demo ilustrativa.
 
-import Image from "next/image";
+import NextImage from "next/image";
 import React, {
   createElement,
   useEffect,
@@ -18,6 +18,14 @@ import React, {
   useState,
 } from "react";
 import { homeClientLogos } from "@/components/home/homeBrandData";
+
+// Todos los assets de esta página ya vienen comprimidos a su tamaño final
+// (webp/png pequeños), así que se sirven directos, sin pasar por
+// /_next/image: las transformaciones nuevas del optimizador fallaban en
+// producción (cuota de Image Optimization) y rompían las imágenes.
+const Image = (props: React.ComponentProps<typeof NextImage>) => (
+  <NextImage unoptimized {...props} />
+);
 
 const SLUG = "the-body-concept";
 // La página es de link abierto; esta key existe solo para que los beacons de
