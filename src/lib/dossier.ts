@@ -177,6 +177,13 @@ const OPEN_KEYS: Record<
     name: "Daniel",
     expiresAt: "2026-07-16T22:45:00Z",
   },
+  // The Body Concept — la propuesta es de link abierto (sin gate en la
+  // página); esta key existe solo para atribuir los beacons de apertura y
+  // CTA que el componente envía siempre. Sin vencimiento a propósito.
+  "tbc-pulso-k8w4mrq2": {
+    slug: "the-body-concept",
+    name: "The Body Concept — link abierto",
+  },
 };
 
 export function resolveOpenKey(
