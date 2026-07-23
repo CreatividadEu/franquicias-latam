@@ -1,0 +1,103 @@
+/* ── Pitch “burn after viewing” (/p/[slug]) — estilos de ruta ────────────────
+   Todo scoped a [data-pitch-scope] (o gated por body:has) para no tocar nada
+   global del sitio. Animaciones solo con transform/opacity. */
+
+/* El WhatsAppWidget global (.wa-widget, hijo directo de body) no pinta nada
+   en una presentación de una sola vista — fuera en esta ruta. */
+body:has([data-pitch-scope]) > .wa-widget,
+body:has([data-pitch-scope]) > a[href^="https://wa.me/"] {
+  display: none;
+}
+
+/* Fondo oscuro también detrás del overscroll (rubber band de iOS). */
+body:has([data-pitch-scope]) {
+  background: #0b0f0a;
+  overscroll-behavior: none;
+}
+
+[data-pitch-scope] {
+  --pt-bg: #0b0f0a;
+  --pt-acento: #a8f542;
+  --pt-blanco: #f4f7f0;
+  --pt-muted: #9aa894;
+  font-family: var(--font-poppins), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  background: var(--pt-bg);
+  color: var(--pt-blanco);
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-pitch-scope] ::selection {
+  background: var(--pt-acento);
+  color: var(--pt-bg);
+}
+
+/* Anti-FOUC: si el guard inline (servido antes del flujo) detecta el flag
+   antes del primer paint, el flujo completo jamás llega a pintarse mientras
+   `location.replace` trae la versión reducida servida por el server. */
+html[data-pitch-burned] [data-pitch-flow] {
+  display: none !important;
+}
+
+/* Grid sutil de líneas de fondo, desvanecido hacia los bordes. */
+.pt-grid {
+  background-image:
+    linear-gradient(to right, rgba(244, 247, 240, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(244, 247, 240, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(130% 105% at 50% 42%, #000 52%, transparent 98%);
+  mask-image: radial-gradient(130% 105% at 50% 42%, #000 52%, transparent 98%);
+}
+
+/* Área con scroll interno sin barra visible. */
+.pt-scroll {
+  scrollbar-width: none;
+}
+.pt-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Marquee infinito de logos ────────────────────────────────────────────
+   La pista renderiza el set dos veces y desplaza -50% en loop continuo. */
+@keyframes pt-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.pt-marquee-track {
+  animation: pt-marquee var(--pt-marquee-dur, 38s) linear infinite;
+  will-change: transform;
+}
+
+/* Logos en grayscale que “encienden” con glow del acento al pasar.
+   Los vectores oscuros (#3d3d3d de /logos_clientes) llevan --invert. */
+.pt-logo {
+  opacity: 0.5;
+  filter: grayscale(1);
+  transition: opacity 0.35s ease, filter 0.35s ease;
+}
+.pt-logo--invert {
+  opacity: 0.55;
+  filter: grayscale(1) invert(1) brightness(1.15);
+}
+.pt-marquee-item:hover .pt-logo {
+  opacity: 1;
+  filter: grayscale(0)
+    drop-shadow(0 0 12px color-mix(in srgb, var(--pt-acento) 60%, transparent));
+}
+.pt-marquee-item:hover .pt-logo--invert {
+  opacity: 1;
+  filter: grayscale(1) invert(1) brightness(1.35)
+    drop-shadow(0 0 12px color-mix(in srgb, var(--pt-acento) 60%, transparent));
+}
+
+/* Reduced motion: el marquee queda quieto (el resto lo maneja framer). */
+@media (prefers-reduced-motion: reduce) {
+  .pt-marquee-track {
+    animation: none;
+  }
+}
