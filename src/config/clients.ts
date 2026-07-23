@@ -8,6 +8,8 @@
 //     (`flatam_<slug>_burned`) y su propio color de acento.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { homeClientLogos } from "@/components/home/homeBrandData";
+
 export type ClientConfig = {
   slug: string;
   nombre: string;
@@ -50,10 +52,11 @@ export function burnKey(slug: string): string {
 }
 
 // ── Marquee de marcas ────────────────────────────────────────────────────────
-// Se leen de /public. Si `archivo` falta o el archivo no existe, se renderiza
-// el nombre en tipografía elegante como fallback. `invertir` es para los
-// vectores oscuros (#3d3d3d) de /public/logos_clientes, que se invierten para
-// leerse sobre el fondo oscuro del pitch.
+// Misma fuente de verdad que el carrusel del home (homeBrandData): los
+// clientes más representativos de la plataforma. Todos los vectores de
+// /logos_clientes son oscuros (#3d3d3d), así que se invierten para leerse
+// sobre el fondo oscuro del pitch. Si un archivo falta o 404ea, se renderiza
+// el nombre en tipografía elegante como fallback.
 
 export type Marca = {
   nombre: string;
@@ -61,22 +64,11 @@ export type Marca = {
   invertir?: boolean;
 };
 
-export const marcasPortafolio: Marca[] = [
-  { nombre: "SAJÚ", archivo: "/logos/saju.svg" },
-  { nombre: "Totto", archivo: "/logos_clientes/logo_totto.svg", invertir: true },
-  { nombre: "Sodexo", archivo: "/logos_clientes/logo_sodexo.svg", invertir: true },
-  { nombre: "Mercado Libre", archivo: "/logos_clientes/logo_mercado_libre.svg", invertir: true },
-  { nombre: "Casano", archivo: "/logos/casano.svg" },
-  { nombre: "Grupo Nutresa", archivo: "/logos_clientes/logo_nutresa.svg", invertir: true },
-  { nombre: "Subway", archivo: "/logos_clientes/logo_subway.svg", invertir: true },
-  { nombre: "Andrés Carne de Res", archivo: "/logos_clientes/logo_andres.svg", invertir: true },
-  { nombre: "BID", archivo: "/logos_clientes/logo_bid.svg", invertir: true },
-  // Slots libres: agrega el .svg en /public/logos y referencia aquí.
-  { nombre: "Propaís" },
-  { nombre: "Don Benitez" },
-  { nombre: "Pampa Malbec" },
-  { nombre: "The Body Concept" },
-];
+export const marcasPortafolio: Marca[] = homeClientLogos.map((logo) => ({
+  nombre: logo.alt,
+  archivo: logo.src,
+  invertir: true,
+}));
 
 // ── Las 5 fases del Bootcamp ─────────────────────────────────────────────────
 // Solo nombre + misión + beneficio. Nada de metodología, herramientas ni
