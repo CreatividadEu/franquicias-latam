@@ -21,7 +21,7 @@ function MarcaItem({ marca }: { marca: Marca }) {
         <img
           src={marca.archivo}
           alt={marca.nombre}
-          className={`pt-logo h-8 w-auto max-w-[120px] object-contain${marca.invertir ? " pt-logo--invert" : ""}`}
+          className={`pt-logo h-9 w-auto max-w-[140px] object-contain${marca.invertir ? " pt-logo--invert" : ""}`}
           loading="lazy"
           draggable={false}
           onError={() => setFallback(true)}

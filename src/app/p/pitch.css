@@ -69,7 +69,7 @@ html[data-pitch-burned] [data-pitch-flow] {
 }
 
 .pt-marquee-track {
-  animation: pt-marquee var(--pt-marquee-dur, 38s) linear infinite;
+  animation: pt-marquee var(--pt-marquee-dur, 26s) linear infinite;
   will-change: transform;
 }
 
