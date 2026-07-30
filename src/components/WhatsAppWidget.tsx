@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 // ── Botón flotante de WhatsApp ───────────────────────────────────────────────
 // Botón con halo pulsante + burbuja teaser estilo chat (typing → mensaje) que
 // aparece una vez por sesión y se puede descartar. Todo el árbol vive bajo
 // `.wa-widget` (hijo directo de <body>): las rutas que ocultan el widget
 // (p. ej. propuesta.css) apuntan a esa clase.
+
+// Rutas que se presentan solas, sin chrome de la plataforma: aquí el widget no
+// se oculta por CSS, simplemente no se monta (ni DOM, ni timers, ni teaser).
+const STANDALONE_PREFIXES = ["/intel"];
 
 const WA_PHONE = "34695126804";
 const WA_MESSAGE = "Quiero más información sobre Franquicias LATAM.";
@@ -48,6 +53,11 @@ function WhatsAppIcon({ size = 30 }: { size?: number }) {
 }
 
 export default function WhatsAppWidget() {
+  const pathname = usePathname();
+  const standalone = STANDALONE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname?.startsWith(`${prefix}/`),
+  );
+
   // idle → typing → shown → dismissed
   const [teaser, setTeaser] = useState<"idle" | "typing" | "shown" | "dismissed">(
     "idle",
@@ -55,6 +65,8 @@ export default function WhatsAppWidget() {
   const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
+    if (standalone) return;
+
     const media =
       typeof window.matchMedia === "function"
         ? window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -81,7 +93,7 @@ export default function WhatsAppWidget() {
       window.clearTimeout(showTimer);
       window.clearTimeout(typingTimer);
     };
-  }, []);
+  }, [standalone]);
 
   const dismissTeaser = () => {
     rememberDismissed();
@@ -89,6 +101,8 @@ export default function WhatsAppWidget() {
   };
 
   const teaserVisible = teaser === "typing" || teaser === "shown";
+
+  if (standalone) return null;
 
   return (
     <div className="wa-widget">

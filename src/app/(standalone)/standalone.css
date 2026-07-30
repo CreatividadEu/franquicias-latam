@@ -1,0 +1,428 @@
+/* ── SENECA · IP Intelligence — sistema de diseño de la ruta standalone ──────
+   Todo vive bajo `.intel-root`. Nada de esto se filtra al resto de la
+   plataforma y, a la inversa, aquí se neutraliza lo que globals.css impone a
+   nivel de <body> (capa blanca de fondo y letter-spacing global).
+   Estética: Linear — oscuro, calmado, bordes en vez de sombras — con una
+   escala tipográfica más grande y legible que la UI original. */
+
+/* ── Tokens ───────────────────────────────────────────────────────────────── */
+.intel-root {
+  --bg: #08090a;
+  --surface: #0f1011;
+  --surface-2: #16171a;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #f7f8f8;
+  --text-2: #8a8f98;
+  --text-3: #62666d;
+  --accent: #5e6ad2;
+  --accent-hover: #6e79d6;
+  --bleed: #f2994a;
+  --pos: #4cb782;
+  --neg: #eb5757;
+
+  /* Un solo punto de intercambio de fuentes: dejar caer un Berkeley Mono
+     licenciado en /public/fonts y reapuntar --font-intel-mono en el layout. */
+  --font-display: var(--font-intel-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-body: var(--font-intel-sans, ui-sans-serif, system-ui, sans-serif);
+  --font-mono: var(--font-intel-mono, ui-monospace, "SFMono-Regular", monospace);
+
+  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dur: 170ms;
+
+  --radius-card: 12px;
+  --radius-control: 8px;
+
+  color-scheme: dark;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  /* globals.css aprieta el tracking a -0.04em en <body>; aquí se recupera el
+     valor natural y solo los display lo aprietan a -0.02em. */
+  letter-spacing: normal;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* globals.css pinta un ::before blanco fijo detrás de todo; en esta ruta va
+   oscuro para que el overscroll no destelle en blanco. */
+html:has(.intel-root),
+body:has(.intel-root) {
+  background: #08090a;
+}
+
+body:has(.intel-root)::before {
+  background: #08090a;
+}
+
+/* El WhatsAppWidget global es chrome de la plataforma: no aparece aquí. */
+body:has(.intel-root) > .wa-widget,
+body:has(.intel-root) > a[href^="https://wa.me/"] {
+  display: none;
+}
+
+/* ── Primitivas tipográficas ──────────────────────────────────────────────── */
+.intel-root .mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.intel-display {
+  font-family: var(--font-display);
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+
+.intel-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.intel-section-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.intel-section-note {
+  font-size: 13px;
+  color: var(--text-3);
+  text-align: right;
+}
+
+.intel-body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.intel-hint {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+/* ── Superficies ──────────────────────────────────────────────────────────── */
+.intel-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.intel-card-pad {
+  padding: 24px;
+}
+
+.intel-rule-bleed {
+  border-left: 3px solid var(--bleed);
+}
+
+.intel-rule-accent {
+  border-left: 3px solid var(--accent);
+}
+
+.intel-hover-lift {
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.intel-hover-lift:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Foco visible, uniforme en toda la ruta ───────────────────────────────── */
+.intel-root :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Punto latiendo del ticker ────────────────────────────────────────────── */
+@keyframes intel-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.82);
+  }
+}
+
+.intel-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--bleed);
+  animation: intel-pulse 1.8s var(--ease) infinite;
+}
+
+/* ── Control segmentado ───────────────────────────────────────────────────── */
+.intel-segmented {
+  display: grid;
+  /* En móvil los 4 escenarios no caben en fila sin partir los precios: pasan a
+     una cuadrícula 2×2 y solo a partir de 640px se vuelven una tira. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+@media (min-width: 640px) {
+  .intel-segmented {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.intel-segment {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.intel-segment:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.intel-segment-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-2);
+  transition: color var(--dur) var(--ease);
+}
+
+.intel-segment-price {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.intel-segment[data-active="true"] {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+.intel-segment[data-active="true"] .intel-segment-name {
+  color: var(--accent);
+}
+
+.intel-segment[data-active="true"][data-tone="bleed"] .intel-segment-name {
+  color: var(--bleed);
+}
+
+.intel-segment[data-active="true"] .intel-segment-price {
+  color: var(--text-2);
+}
+
+/* ── Sliders ──────────────────────────────────────────────────────────────── */
+.intel-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  background: transparent;
+  cursor: pointer;
+  /* El track se pinta con un gradiente cuyo corte lo fija --fill. */
+  --fill: 0%;
+}
+
+.intel-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) var(--fill),
+    rgba(255, 255, 255, 0.1) var(--fill),
+    rgba(255, 255, 255, 0.1) 100%
+  );
+}
+
+.intel-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5.5px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: transform var(--dur) var(--ease);
+}
+
+.intel-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+.intel-slider::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.intel-slider::-moz-range-progress {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.intel-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.intel-slider:focus-visible {
+  outline: none;
+}
+
+.intel-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.55);
+}
+
+.intel-slider:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.55);
+}
+
+/* ── Barras de la anatomía del daño ──────────────────────────────────────── */
+.intel-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.intel-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--bleed);
+  transition: width 200ms var(--ease);
+}
+
+/* ── Tabla del P&L ───────────────────────────────────────────────────────── */
+.intel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.intel-table th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  text-align: right;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.intel-table th:first-child {
+  text-align: left;
+}
+
+.intel-table td {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.intel-table td:first-child {
+  text-align: left;
+  color: var(--text-2);
+  white-space: normal;
+}
+
+.intel-table tr:last-child td {
+  border-bottom: none;
+}
+
+.intel-table tr[data-emphasis="true"] td {
+  border-top: 1px solid var(--border-strong);
+  padding-top: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.intel-table tr[data-emphasis="true"] td:first-child {
+  color: var(--text);
+}
+
+/* ── Acordeones (rail en móvil) ──────────────────────────────────────────── */
+.intel-accordion > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.intel-accordion > summary::-webkit-details-marker {
+  display: none;
+}
+
+.intel-chevron {
+  transition: transform var(--dur) var(--ease);
+  color: var(--text-3);
+  flex: none;
+}
+
+.intel-accordion[open] .intel-chevron {
+  transform: rotate(180deg);
+}
+
+/* ── Respeto total a prefers-reduced-motion ──────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .intel-root *,
+  .intel-root *::before,
+  .intel-root *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .intel-dot {
+    animation: none;
+    opacity: 1;
+  }
+}
