@@ -28,6 +28,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // The SAJÚ command center is an internal panel: never index it, whatever the
+  // metadata says. Complements the `robots: noindex` of its layout.
+  async headers() {
+    return [
+      {
+        source: "/saju/dashboard/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+        ],
+      },
+    ];
+  },
   // Redirect the country vanity domains to their market sections. Each rule
   // fires only when the request Host matches, so they have no effect on the
   // primary franquiciaslatam.com domain. Each domain must be attached to this
