@@ -429,3 +429,136 @@ model SmsVerification {
   @@index([phone, createdAt])
   @@map("sms_verifications")
 }
+
+// ── SAJÚ Franchise Command Center ───────────────────────────────────────────
+// Centro de mando interno de la expansión internacional de Sajú: CRM de leads,
+// esfuerzos por canal y agenda institucional. Todo el namespace va prefijado
+// `Saju` para poder replicar el módulo por marca más adelante.
+
+enum SajuStage {
+  PROSPECTO
+  CONTACTADO
+  MATERIAL_ENVIADO
+  PRESENTADO
+  EVALUACION_INTERNA // decisión en familia / comité — etapa real y crítica en este pipeline
+  NEGOCIACION
+  FIRMADO
+}
+
+enum SajuLeadStatus {
+  ACTIVO
+  PAUSADO
+  GANADO
+  PERDIDO
+}
+
+enum SajuLeadType {
+  PUNTO_UNICO
+  MULTI_UNIDAD
+  MASTER_FRANQUICIA
+}
+
+enum SajuInterest {
+  ALTO
+  MEDIO
+  BAJO
+}
+
+enum SajuChannel {
+  OUTREACH_SELECTIVO
+  PR
+  REELS_ADS
+  LINKEDIN
+  LANDING_FORM
+}
+
+enum SajuEffortStatus {
+  PLANEADO
+  EN_CURSO
+  COMPLETADO
+}
+
+enum SajuEventType {
+  NOTA
+  TOUCHPOINT
+  CAMBIO_ETAPA
+  REUNION
+}
+
+enum SajuMilestoneStatus {
+  PROXIMO
+  REALIZADO
+  REPROGRAMADO
+}
+
+model SajuLead {
+  id             String          @id @default(cuid())
+  name           String
+  company        String? // empresa / contexto
+  role           String?
+  country        String // ISO-3166 alpha-2: PA, GT, ES
+  city           String?
+  type           SajuLeadType    @default(PUNTO_UNICO)
+  stage          SajuStage       @default(PROSPECTO)
+  status         SajuLeadStatus  @default(ACTIVO)
+  interest       SajuInterest    @default(MEDIO)
+  keyInsight     String? // palanca de cierre
+  nextAction     String?
+  nextActionDate DateTime?
+  source         SajuChannel?
+  notes          String?
+  events         SajuLeadEvent[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@unique([name, country]) // idempotencia del seed
+  @@index([country, stage])
+  @@map("saju_leads")
+}
+
+model SajuLeadEvent {
+  id          String        @id @default(cuid())
+  lead        SajuLead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId      String
+  type        SajuEventType
+  description String
+  occurredAt  DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+
+  @@index([leadId, occurredAt])
+  @@map("saju_lead_events")
+}
+
+model SajuChannelEffort {
+  id          String           @id @default(cuid())
+  channel     SajuChannel
+  country     String? // null = global
+  title       String
+  outlet      String? // Forbes, equivalente local a La República, etc.
+  description String?
+  status      SajuEffortStatus @default(PLANEADO)
+  plannedFor  DateTime?
+  metrics     Json? // reach, leads_generated, spend — flexible
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([channel, title])
+  @@index([channel, status])
+  @@map("saju_channel_efforts")
+}
+
+model SajuMilestone {
+  id          String              @id @default(cuid())
+  title       String
+  counterpart String // persona + cargo
+  org         String?
+  country     String?
+  date        DateTime
+  tentative   Boolean             @default(false)
+  status      SajuMilestoneStatus @default(PROXIMO)
+  notes       String?
+
+  @@unique([title, date])
+  @@index([date])
+  @@map("saju_milestones")
+}
