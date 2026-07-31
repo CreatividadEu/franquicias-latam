@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { matchesFranchiseSlug } from "@/lib/franchiseSlug";
 import { sendFormLeadNotification } from "@/lib/resend";
+import { isSajuListing, mirrorLandingLeadToSaju } from "@/lib/saju/landing-lead";
 import {
   getLeadSourceType,
   resolveListingState,
@@ -139,6 +140,20 @@ export async function POST(request: Request) {
       sourceType,
       listingType: resolvedListing.listingType,
     });
+
+    // SAJÚ: replicate the application into the expansion pipeline as PROSPECTO
+    // / LANDING_FORM. Fire-and-forget — never blocks or fails the form.
+    if (isSajuListing(listingSlug) || isSajuListing(rawSlug)) {
+      mirrorLandingLeadToSaju({
+        name: created.lead.name,
+        country: created.lead.country,
+        city: created.lead.cityInterest ?? created.lead.city,
+        email: created.lead.email,
+        phone: created.lead.phone,
+        investmentRange: created.lead.investmentRange,
+        message: created.lead.message,
+      }).catch(console.error);
+    }
 
     // Notify the sales inbox (async, don't block the response).
     sendFormLeadNotification({
