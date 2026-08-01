@@ -542,7 +542,11 @@ model SajuChannelEffort {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  @@unique([channel, title])
+  // Sin unique sobre [channel, title]: el mismo esfuerzo se repite con idéntico
+  // título en varios países (p. ej. la pauta PR de Forbes en PA y en GT), y el
+  // país no puede entrar en la clave porque los globales lo tienen a NULL —
+  // Postgres trata cada NULL como distinto y la idempotencia se rompería.
+  // El seed es idempotente por id fijo; la UI evita duplicados por canal+país.
   @@index([channel, status])
   @@map("saju_channel_efforts")
 }

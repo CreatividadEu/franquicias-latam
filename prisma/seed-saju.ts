@@ -151,7 +151,13 @@ const LEADS: LeadSeed[] = [
   },
 ];
 
+/**
+ * Los esfuerzos llevan id fijo: dos países pueden compartir título y canal
+ * (la pauta de Forbes corre igual en PA y en GT), así que la idempotencia no
+ * puede colgar del texto — cuelga de este identificador.
+ */
 type EffortSeed = {
+  id: string;
   channel: SajuChannel;
   title: string;
   country?: string;
@@ -162,24 +168,28 @@ type EffortSeed = {
 
 const EFFORTS: EffortSeed[] = [
   {
+    id: "saju-eff-outreach-pa",
     channel: "OUTREACH_SELECTIVO",
     country: "PA",
     title: "Outreach selectivo Panamá — red Falic, Betesh, Cerámica Italia",
     status: "EN_CURSO",
   },
   {
+    id: "saju-eff-outreach-gt",
     channel: "OUTREACH_SELECTIVO",
     country: "GT",
     title: "Outreach Tendencia S.A. (masters Totto)",
     status: "EN_CURSO",
   },
   {
+    id: "saju-eff-outreach-es",
     channel: "OUTREACH_SELECTIVO",
     country: "ES",
     title: "Outreach inversionistas BCN / MAD / VLC",
     status: "EN_CURSO",
   },
   {
+    id: "saju-eff-pr-foro-es",
     channel: "PR",
     country: "ES",
     title: "Foro de Marcas Renombradas — presentación institucional",
@@ -187,6 +197,7 @@ const EFFORTS: EffortSeed[] = [
     plannedFor: onDate(2026, 8, 10),
   },
   {
+    id: "saju-eff-pr-pa",
     channel: "PR",
     country: "PA",
     title: "Pauta PR — Forbes + equivalente local a La República",
@@ -194,6 +205,7 @@ const EFFORTS: EffortSeed[] = [
     status: "PLANEADO",
   },
   {
+    id: "saju-eff-pr-gt",
     channel: "PR",
     country: "GT",
     title: "Pauta PR — Forbes + equivalente local a La República",
@@ -201,21 +213,36 @@ const EFFORTS: EffortSeed[] = [
     status: "PLANEADO",
   },
   {
+    id: "saju-eff-pr-es",
     channel: "PR",
     country: "ES",
     title: "Pauta PR — Forbes España + prensa económica",
     outlet: "Forbes España",
     status: "PLANEADO",
   },
-  { channel: "REELS_ADS", country: "PA", title: "Campaña Reels / Ads — Panamá", status: "PLANEADO" },
   {
+    id: "saju-eff-reels-pa",
+    channel: "REELS_ADS",
+    country: "PA",
+    title: "Campaña Reels / Ads — Panamá",
+    status: "PLANEADO",
+  },
+  {
+    id: "saju-eff-reels-gt",
     channel: "REELS_ADS",
     country: "GT",
     title: "Campaña Reels / Ads — Guatemala",
     status: "PLANEADO",
   },
-  { channel: "REELS_ADS", country: "ES", title: "Campaña Reels / Ads — España", status: "PLANEADO" },
   {
+    id: "saju-eff-reels-es",
+    channel: "REELS_ADS",
+    country: "ES",
+    title: "Campaña Reels / Ads — España",
+    status: "PLANEADO",
+  },
+  {
+    id: "saju-eff-linkedin-global",
     channel: "LINKEDIN",
     title: "Calendario de posts LinkedIn + contenido patrocinado",
     status: "PLANEADO",
@@ -290,15 +317,17 @@ async function main() {
 
   for (const effort of EFFORTS) {
     const data = {
+      channel: effort.channel,
+      title: effort.title,
       country: effort.country ?? null,
       outlet: effort.outlet ?? null,
       status: effort.status,
       plannedFor: effort.plannedFor ?? null,
     };
     await prisma.sajuChannelEffort.upsert({
-      where: { channel_title: { channel: effort.channel, title: effort.title } },
+      where: { id: effort.id },
       update: data,
-      create: { channel: effort.channel, title: effort.title, ...data },
+      create: { id: effort.id, ...data },
     });
   }
   console.log(`  ✓ ${EFFORTS.length} esfuerzos de canal`);
