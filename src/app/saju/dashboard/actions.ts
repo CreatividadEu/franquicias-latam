@@ -331,11 +331,15 @@ export async function createEffort(input: {
   }
 
   try {
-    const existing = await prisma.sajuChannelEffort.findUnique({
-      where: { channel_title: { channel: input.channel, title } },
+    // El mismo título puede repetirse en otro país (una pauta que corre en
+    // varios mercados); sólo se bloquea el duplicado exacto canal+país+título.
+    const existing = await prisma.sajuChannelEffort.findFirst({
+      where: { channel: input.channel, title, country },
       select: { id: true },
     });
-    if (existing) return { ok: false, error: "Ya hay un esfuerzo con ese título en el canal." };
+    if (existing) {
+      return { ok: false, error: "Ya hay un esfuerzo igual en ese canal y país." };
+    }
 
     await prisma.sajuChannelEffort.create({
       data: {
