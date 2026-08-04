@@ -38,6 +38,15 @@ const nextConfig: NextConfig = {
           { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
         ],
       },
+      // El expediente Caso 001 es confidencial y circula por enlace no listado:
+      // nunca se indexa, pase lo que pase con la metadata de la página.
+      {
+        source: "/totto/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
     ];
   },
   // Redirect the country vanity domains to their market sections. Each rule
