@@ -257,8 +257,17 @@ function ActOne() {
               ))}
             </div>
 
-            <div style={{ marginTop: 24 }}>
+            <div className={s.panelSplit} style={{ marginTop: 24 }}>
               <Evidence slug={ACT_I.hiding.evidence} lead={ACT_I.hiding.evidenceLead} />
+              <div>
+                <Evidence slug={ACT_I.hiding.contextEvidence} />
+                <div style={{ marginTop: 18 }}>
+                  <Evidence slug={ACT_I.hiding.triageEvidence} />
+                </div>
+                <p className={cx(s.body, s.paper)} style={{ marginTop: 14, fontWeight: 600 }}>
+                  {ACT_I.hiding.triageNote}
+                </p>
+              </div>
             </div>
           </div>
         </Reveal>
@@ -495,14 +504,25 @@ function ActThree() {
 
             <div className={s.panelSplit} style={{ marginTop: 22 }}>
               <Evidence slug={ENTRY_POINT.evidence} lead={ENTRY_POINT.badge} />
-              <div>
-                <p className={cx(s.body, s.paper)} style={{ fontWeight: 600 }}>
+              <div className={cx(s.card, s.cardPad)}>
+                <p className={s.eyebrow}>{ENTRY_POINT.crossLinksTitle}</p>
+                <dl className={cx(s.defList, s.defListWide)} style={{ marginTop: 16 }}>
+                  {ENTRY_POINT.crossLinks.map((link) => (
+                    <div key={link.front} className={s.defRow}>
+                      <dt className={s.defKey}>{link.front}</dt>
+                      <dd style={{ margin: 0 }}>{link.detail}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className={cx(s.body, s.paper)} style={{ marginTop: 18, fontWeight: 600 }}>
                   {ENTRY_POINT.note}
                 </p>
-                <div style={{ marginTop: 18 }}>
-                  <Evidence slug={ENTRY_POINT.secondEvidence} />
-                </div>
               </div>
+            </div>
+
+            <div className={s.panelSplit} style={{ marginTop: 20 }}>
+              <Evidence slug="fb-jlshoes-contacto" />
+              <Evidence slug="dropi-leydi-card" />
             </div>
           </div>
         </Reveal>

@@ -7,18 +7,24 @@ nombre semántico; si un archivo no está montado, el marco lo declara como
 
 ## Archivos esperados
 
-| Archivo                        | Qué muestra                                                        |
-| ------------------------------ | ------------------------------------------------------------------ |
-| `fb-post-modal-trio.webp`      | Post de Facebook «TRIO TOTTO TIPO RÉPLICA $55.000»                  |
-| `corpus-grid.webp`             | Mosaico del corpus de falsificaciones etiquetadas a mano            |
-| `dropi-leydi-header.webp`      | Encabezado del perfil de proveedor: órdenes, revendedores, despacho |
-| `dropi-catalogo-stocks.webp`   | Catálogo con el stock por referencia                                |
-| `wa-leidy-fabricante.webp`     | Perfil «Fabricante de Bolsos · Cel 3223551657»                      |
-| `incautacion-bodega.webp`      | Incautación de la Policía Nacional                                  |
-| `dropi-cristobal-perfil.webp`  | Perfil de proveedor del segundo hermano                             |
-| `dropi-cards-200.webp`         | Tarjetas de los revendedores asociados a la cuenta                  |
-| `fb-jlshoes-contacto.webp`     | Ficha de contacto de la página JL Shoes                             |
-| `fb-post-sonia.webp`           | Publicación de otra vendedora con la misma foto de fábrica          |
+| Archivo                        | Qué muestra                                                          |
+| ------------------------------ | -------------------------------------------------------------------- |
+| `fb-post-modal-trio.webp`      | Post «BAJO PEDIDO · TRIO TOTTO TIPO RÉPLICA $55.000» con sus medidas   |
+| `fb-grupo-bucaramanga.webp`    | Portada del grupo público donde corre el anuncio (26,7 mil miembros)  |
+| `stoik-triage-row.webp`        | Fila de triage de Stoik Intel: 31% bajo la mediana, score 90, réplica |
+| `corpus-grid.webp`             | Mosaico del corpus de falsificaciones etiquetadas a mano              |
+| `dropi-leydi-header.webp`      | Encabezado del perfil de proveedor: órdenes, revendedores, despacho   |
+| `dropi-leydi-card.webp`        | Ficha «Morral Totto Trio 3×1» · DISTRIBUCIONES LEYDI · stock 28.362   |
+| `dropi-catalogo-stocks.webp`   | Catálogo «Bolso Totto Trio 3×1» · proveedor CRISTOBAL · stock/precio  |
+| `wa-leidy-fabricante.webp`     | Perfil «Fabricante de Bolsos · Cel 3223551657»                        |
+| `incautacion-bodega.webp`      | Incautación de la Policía Nacional                                    |
+| `dropi-cristobal-perfil.webp`  | Perfil de proveedor del segundo hermano                               |
+| `dropi-cards-200.webp`         | Tarjetas de los revendedores asociados a la cuenta                    |
+| `fb-jlshoes-contacto.webp`     | JL Shoes (Cúcuta): tel. 322 3551657 y distribucionesleydi@gmail.com   |
+| `fb-post-sonia.webp`           | Publicación de otra vendedora con la misma foto de fábrica            |
+
+> Las capturas pegadas en un chat no llegan al repositorio: hay que dejarlas en
+> esta carpeta con el nombre de la tabla, o adjuntarlas como archivo.
 
 ## Reglas
 

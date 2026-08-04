@@ -1387,6 +1387,20 @@
   color: var(--g3);
 }
 
+/* Los rótulos de los frentes cruzados son más largos que los de las tarjetas. */
+.defListWide .defRow {
+  grid-template-columns: 168px minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (max-width: 560px) {
+  .defRow,
+  .defListWide .defRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+}
+
 /* ── Stocks ─────────────────────────────────────────────────────────────── */
 
 .stockRow {

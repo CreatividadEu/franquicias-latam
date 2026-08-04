@@ -20,8 +20,11 @@ export const EVIDENCE_DIR = "/totto/caso-001";
 
 export type EvidenceSlug =
   | "fb-post-modal-trio"
+  | "fb-grupo-bucaramanga"
+  | "stoik-triage-row"
   | "corpus-grid"
   | "dropi-leydi-header"
+  | "dropi-leydi-card"
   | "dropi-catalogo-stocks"
   | "wa-leidy-fabricante"
   | "incautacion-bodega"
@@ -44,9 +47,24 @@ export type EvidenceItem = {
 export const EVIDENCE: Record<EvidenceSlug, EvidenceItem> = {
   "fb-post-modal-trio": {
     slug: "fb-post-modal-trio",
-    alt: "Publicación de Facebook que ofrece un trío de morrales bajo el título TRIO TOTTO TIPO RÉPLICA por 55.000 pesos",
-    caption: "El anuncio no esconde la palabra: la usa como argumento de venta.",
-    source: "Facebook · grupo de venta · captura congelada",
+    alt: "Publicación de Facebook titulada BAJO PEDIDO · TRIO TOTTO TIPO RÉPLICA por 55.000 pesos, que detalla morral, lonchera y cartuchera con sus medidas, el material y un número de WhatsApp de contacto",
+    caption:
+      "El anuncio no esconde la palabra: la usa como argumento de venta, con ficha técnica y teléfono a la vista.",
+    source: "Facebook · grupo público de venta · captura congelada",
+  },
+  "fb-grupo-bucaramanga": {
+    slug: "fb-grupo-bucaramanga",
+    alt: "Portada del grupo público de Facebook Bucaramanga Comercializando En Santander, con 26,7 mil miembros y visibilidad abierta",
+    caption:
+      "26.700 miembros, grupo público y visible. Uno de los 73 que el barrido mantiene vigilados.",
+    source: "Facebook · grupo público · captura congelada",
+  },
+  "stoik-triage-row": {
+    slug: "stoik-triage-row",
+    alt: "Fila de resultados de Stoik Intel para el anuncio del trío, con precio de 55.000 pesos, 31 por ciento bajo la mediana, identificador del grupo, score de triage 90 y señal réplica",
+    caption:
+      "El mismo anuncio, ya dentro de la máquina: precio contra la mediana, grupo de origen, score 90 y la señal que lo delató.",
+    source: "Stoik Intel · cola de triage · captura de la plataforma",
   },
   "corpus-grid": {
     slug: "corpus-grid",
@@ -62,10 +80,18 @@ export const EVIDENCE: Record<EvidenceSlug, EvidenceItem> = {
       "Una sola cuenta de la red, vista desde adentro: órdenes, revendedores y despacho.",
     source: "Dropi · perfil de proveedor · captura congelada",
   },
+  "dropi-leydi-card": {
+    slug: "dropi-leydi-card",
+    alt: "Ficha de producto en Dropi del Morral Totto Trio 3x1, con proveedor DISTRIBUCIONES LEYDI, stock de 28.362 unidades, sello de verificado y precio de proveedor de 37.000 pesos",
+    caption:
+      "28.362 unidades en una sola referencia, con el sello de proveedor verificado de la plataforma.",
+    source: "Dropi · ficha de producto · captura congelada",
+  },
   "dropi-catalogo-stocks": {
     slug: "dropi-catalogo-stocks",
-    alt: "Catálogo de Dropi mostrando el stock disponible por referencia de morral",
-    caption: "El inventario declarado, referencia por referencia.",
+    alt: "Catálogo de Dropi con múltiples fichas del Bolso Totto Trio 3x1 bajo el proveedor CRISTOBAL, cada una con su stock disponible y su precio de proveedor frente al precio al cliente",
+    caption:
+      "El inventario declarado, referencia por referencia, y el salto de precio en cada ficha.",
     source: "Dropi · catálogo de proveedor · captura congelada",
   },
   "wa-leidy-fabricante": {
@@ -95,8 +121,9 @@ export const EVIDENCE: Record<EvidenceSlug, EvidenceItem> = {
   },
   "fb-jlshoes-contacto": {
     slug: "fb-jlshoes-contacto",
-    alt: "Ficha de contacto de la página de Facebook JL Shoes con sus datos de bodega",
-    caption: "La bodega también tiene vitrina propia.",
+    alt: "Página de Facebook de JL Shoes, empresa cucuteña de calzado, cuya información de contacto publica el teléfono +57 322 3551657 y el correo distribucionesleydi arroba gmail punto com",
+    caption:
+      "Una zapatería de Cúcuta que publica el mismo teléfono del anuncio de morrales y un correo a nombre de Distribuciones Leydi. Dos negocios distintos, un solo contacto.",
     source: "Facebook · página de negocio · captura congelada",
   },
   "fb-post-sonia": {
@@ -216,6 +243,12 @@ export const ACT_I = {
     ],
     evidence: "fb-post-modal-trio" as EvidenceSlug,
     evidenceLead: "TRIO TOTTO TIPO RÉPLICA · $55.000",
+    // El anuncio no vive en un rincón: corre en un grupo público de decenas de
+    // miles de miembros, y la máquina lo saca de ahí con score y señal.
+    contextEvidence: "fb-grupo-bucaramanga" as EvidenceSlug,
+    triageEvidence: "stoik-triage-row" as EvidenceSlug,
+    triageNote:
+      "El mismo anuncio visto desde la consola: 31% bajo la mediana de la referencia, score 90, señal réplica.",
   },
 } as const;
 
@@ -432,12 +465,32 @@ export const STOCKS = {
 } as const;
 
 export const ENTRY_POINT = {
-  title: "El punto de entrada — un post",
-  body: "Todo el expediente arranca en una publicación pública y en un número de celular que el propio infractor repite en cada frente.",
+  title: "El punto de entrada — un contacto",
+  body: "La red no se delató por lo que vende sino por cómo la contactan. El rubro cambia, la razón social cambia, la vitrina cambia; el teléfono y el correo no.",
   evidence: "wa-leidy-fabricante" as EvidenceSlug,
   badge: "Fabricante de Bolsos · Cel 3223551657",
-  note: "El mismo teléfono aparece en el anuncio, en la cuenta de venta y en el perfil que se rotula fabricante. Tres frentes, una sola persona.",
-  secondEvidence: "fb-jlshoes-contacto" as EvidenceSlug,
+  crossLinksTitle: "Un solo contacto, tres frentes",
+  crossLinks: [
+    {
+      front: "El perfil de fabricante",
+      detail:
+        "Un WhatsApp Business rotulado Fabricante de Bolsos, con el celular 322 3551657.",
+      evidence: "wa-leidy-fabricante" as EvidenceSlug,
+    },
+    {
+      front: "La zapatería",
+      detail:
+        "JL Shoes, empresa cucuteña de calzado, publica ese mismo celular y el correo distribucionesleydi@gmail.com.",
+      evidence: "fb-jlshoes-contacto" as EvidenceSlug,
+    },
+    {
+      front: "La bodega",
+      detail:
+        "Distribuciones Leydi abastece en Dropi con 28.362 unidades en una sola referencia.",
+      evidence: "dropi-leydi-card" as EvidenceSlug,
+    },
+  ],
+  note: "Morrales por un lado, calzado por el otro, y un mayorista detrás: tres negocios que no se parecen en nada, salvo en el número al que se llama y en el correo que los recibe. Eso es resolución de entidad, y no requiere que nadie confiese.",
 } as const;
 
 export const SEIZURE = {
