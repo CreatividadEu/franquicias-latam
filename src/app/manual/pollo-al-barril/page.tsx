@@ -114,8 +114,6 @@ export default function ManualPolloAlBarrilPage() {
             <span className="badge">{piezas} PIEZAS</span>
             <span className="badge">{SETS.length} SETS</span>
             <span className="badge">{PROMOS.length} PROMOS</span>
-            <span className="badge">DIFICULTAD ★★☆</span>
-            <span className="badge">EDAD 8+</span>
           </div>
         </div>
       </header>
