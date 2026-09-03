@@ -10,6 +10,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
   { href: "/admin/franquicias", label: "Franquicias", icon: "🏢" },
   { href: "/admin/evaluaciones", label: "Evaluaciones", icon: "🎯" },
+  { href: "/admin/sandbox", label: "Sandbox", icon: "🧪" },
   { href: "/admin/leads", label: "Form Leads", icon: "📋" },
   { href: "/quiz", label: "Ver Quiz", icon: "💬" },
 ];
