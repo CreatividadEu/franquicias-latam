@@ -12,7 +12,9 @@ import { z } from "zod";
 export const confidenceSchema = z.enum(["low", "med", "high"]);
 export type Confidence = z.infer<typeof confidenceSchema>;
 
-export const dataSourceSchema = z.enum(["doc", "benchmark", "fallback"]);
+/** doc = extraído de documentos · inputs = quick-form del consultor · benchmark / fallback = sin datos. */
+export const dataSourceSchema = z.enum(["doc", "inputs", "benchmark", "fallback"]);
+export type DataSource = z.infer<typeof dataSourceSchema>;
 
 // ── 3a. Oferta (menú / catálogo / servicios) ─────────────────────────────────
 
@@ -38,6 +40,8 @@ export const offeringItemSchema = z.object({
 });
 
 export const offeringSchema = z.object({
+  /** Moneda dominante de los precios (ISO 4217). Cada ítem conserva la suya. */
+  currency: z.string().default("USD"),
   items: z.array(offeringItemSchema).default([]),
   topByMargin: z.array(z.string()).default([]),
   topByPopularityGuess: z.array(z.string()).default([]),
@@ -125,10 +129,14 @@ export const marketingIdeaSchema = z.object({
   metric: z.string().default(""),
 });
 
+export const POSTING_CADENCES = ["diaria", "semanal", "quincenal", "esporadica", "ninguna"] as const;
+export const postingCadenceSchema = z.enum(POSTING_CADENCES);
+export type PostingCadence = z.infer<typeof postingCadenceSchema>;
+
 export const marketingInputsSchema = z.object({
   instagramHandle: z.string().default(""),
   followers: z.number().nonnegative().default(0),
-  postingCadence: z.string().default(""),
+  postingCadence: postingCadenceSchema.default("esporadica"),
   hasWebsite: z.boolean().default(false),
   googleRating: z.number().min(0).max(5).nullable().default(null),
   adSpendGuess: z.number().nonnegative().default(0),
@@ -177,6 +185,7 @@ export const opexSkeletonSchema = z.object({
 });
 
 export type OpexSkeleton = z.infer<typeof opexSkeletonSchema>;
+export type OpexLineSchemaInput = z.infer<typeof opexLineSchema>;
 
 // ── Preload completo ─────────────────────────────────────────────────────────
 
@@ -244,3 +253,49 @@ export const strategyOutputSchema = z.object({
   unexpectedInsight: z.string().default(""),
 });
 export type StrategyOutput = z.infer<typeof strategyOutputSchema>;
+
+// ── Admin: alta y edición de sesiones ────────────────────────────────────────
+
+export const SANDBOX_SECTOR_IDS = ["restaurante", "retail", "servicios", "otro"] as const;
+export const SANDBOX_STATUS_IDS = ["draft", "ready", "live", "done", "archived"] as const;
+export const SANDBOX_ASSET_KIND_IDS = [
+  "menu",
+  "catalog",
+  "price_list",
+  "sales_notes",
+  "opex_notes",
+  "osint",
+  "marketing_audit",
+  "other",
+] as const;
+export type SandboxAssetKindId = (typeof SANDBOX_ASSET_KIND_IDS)[number];
+
+const hexColorSchema = z
+  .string()
+  .trim()
+  .regex(/^#?[0-9a-fA-F]{6}$/, "Color hex de 6 dígitos")
+  .transform((v) => (v.startsWith("#") ? v : `#${v}`).toUpperCase());
+
+const optionalText = (max: number) => z.string().trim().max(max).nullable().optional();
+
+export const sessionCreateSchema = z.object({
+  brandName: z.string().trim().min(2, "Mínimo 2 caracteres").max(80),
+  sector: z.enum(SANDBOX_SECTOR_IDS),
+  country: z.string().trim().min(2, "País requerido").max(60),
+  city: optionalText(80),
+  logoUrl: optionalText(600),
+  accentColor: hexColorSchema.default("#00F0FF"),
+  consultantName: optionalText(80),
+  /** ISO 8601 o valor de <input type="datetime-local">; se valida como fecha en el servidor. */
+  scheduledAt: optionalText(40),
+  locale: z.enum(["es", "en"]).default("es"),
+  pin: z.string().regex(/^\d{4}$/, "PIN de 4 dígitos").nullable().optional(),
+  franchiseId: optionalText(64),
+});
+export type SessionCreateInput = z.infer<typeof sessionCreateSchema>;
+
+export const sessionUpdateSchema = sessionCreateSchema.partial().extend({
+  status: z.enum(SANDBOX_STATUS_IDS).optional(),
+  marketingInputs: marketingInputsSchema.partial().nullable().optional(),
+});
+export type SessionUpdateInput = z.infer<typeof sessionUpdateSchema>;

@@ -12,7 +12,7 @@ brief funcional completo vive en el prompt de producto.
 | # | Hito | Estado |
 |---|------|--------|
 | 1 | Esqueleto: schema + migración, `/sandbox/[slug]`, rail de progreso, i18n, tokens, modo presentador, PIN, Intro y Reporte | **Hecho** |
-| 2 | Admin `/admin/sandbox` + pipeline de preload (uploads, extracción, preview editable) | Pendiente |
+| 2 | Admin `/admin/sandbox` + pipeline de preload (uploads, extracción, preview editable) | **Hecho** |
 | 3 | Estrategia (swipe deck, titular, radar, ruta) | Pendiente |
 | 4 | Finanzas (`lib/sandbox/finance.ts` + tests, sliders, motor de escala) | Pendiente |
 | 5 | Operaciones (dolor → estándar en 3 formatos, chat agéntico, auditoría) | Pendiente |
@@ -37,7 +37,18 @@ src/lib/sandbox/schemas.ts            zod: preload (§3) y salidas de IA (§4)
 src/lib/sandbox/session.ts            loader + proyección pública + cookie PIN
 src/lib/sandbox/actions.ts            server actions (eventos, PIN, idioma, email)
 src/lib/sandbox/slug.ts               slugs base58 no adivinables
-src/components/sandbox/*              todo el UI del sandbox (nada compartido)
+src/lib/sandbox/admin.ts              guarda de API admin + DTO del panel
+src/lib/sandbox/storage.ts            bucket privado sandbox-assets (subida firmada, lectura server)
+src/lib/sandbox/extract.ts            archivo → bloques para Claude (PDF/imagen nativos, DOCX, XLSX, texto)
+src/lib/sandbox/ai.ts                 único punto de entrada a Claude: structured outputs + zod + cache + reintentos
+src/lib/sandbox/prompts.ts            prompts del preload y esquemas estrictos de salida
+src/lib/sandbox/fallbacks.ts          ítems genéricos, dolores universales, benchmarks OPEX por sector/país
+src/lib/sandbox/pipeline-core.ts      fusión pura (héroes, dolores, marketing, OPEX) — testeada
+src/lib/sandbox/pipeline.ts           orquestación server: extraer asset, construir preload
+src/app/admin/sandbox/**              lista, alta y ficha de sesión
+src/app/api/admin/sandbox/**          API del admin (sesión, assets, extract, preload)
+src/components/admin/sandbox/*        UI del panel (form, controles, assets, quick-form, editor, timeline)
+src/components/sandbox/*              todo el UI del sandbox público (nada compartido)
 tests/sandbox-*.test.ts
 ```
 
@@ -62,6 +73,51 @@ tests/sandbox-*.test.ts
 
 Las seis tablas tienen RLS habilitado sin políticas: Prisma entra como owner;
 la Data API de Supabase no puede leerlas.
+
+## Admin y pipeline de preload (hito 2)
+
+Flujo del consultor (§7), pensado para preparar una sesión en 5 minutos:
+
+1. **Nueva sesión** en `/admin/sandbox/new`: marca del marketplace (autocompleta
+   nombre, logo y sector; queda `franchiseId`) o datos a mano, país, ciudad,
+   logo (se sube al bucket público de logos vía `/api/admin/upload`), acento,
+   consultor, fecha, idioma y PIN opcional. El slug se genera solo.
+2. **Documentos por tipo** (menú, catálogo, lista de precios, notas de ventas,
+   notas de gastos, OSINT, auditoría de marketing, otro). `POST …/assets`
+   crea las filas y devuelve URLs firmadas; el navegador sube directo al
+   bucket privado `sandbox-assets` (no pasa por Vercel, sin límite de 4.5 MB).
+   Límites: PDF 25 MB, imágenes 5 MB, resto 10 MB.
+3. **Quick-form de marketing** (IG, seguidores, cadencia, web, Google
+   Business, pauta) → `SandboxSession.marketingInputs`.
+4. **Procesar**: el panel llama `POST …/assets/[id]/extract` por cada archivo
+   pendiente (una request por asset, idempotente: DONE se respeta salvo
+   `?force=1`) y luego `POST …/preload`, que fusiona todo, genera las 3 ideas
+   de campaña y hace upsert de `SandboxPreload`. El estado se ve por archivo.
+5. **Editor de preload**: cuatro pestañas JSON validadas con los esquemas zod
+   antes de guardar (`PUT …/preload`).
+6. **Enlace, PIN y estado** con copia del enlace, modo presentador y vista de
+   cliente; **timeline de eventos** y resultado al final de la ficha.
+
+Extracción por tipo de archivo (`extract.ts`): PDF e imágenes se envían
+nativos a Claude (bloque `document` / `image`, igual que la ruta de autofill
+del repo); DOCX con `mammoth`; XLSX/CSV con `xlsx`; TXT/MD/JSON como texto
+(tope 80k caracteres, se marca truncado). **Desviación del brief:** no se usa
+`pdf-parse`; los menús suelen ser PDF de imágenes donde el texto extraído es
+inútil y la lectura nativa de Claude cubre ambos casos con menos dependencias.
+
+Llamadas a Claude (`ai.ts`): modelo `claude-sonnet-4-6` (`SANDBOX_AI_MODEL`
+para cambiarlo), structured outputs con el esquema zod (`zodOutputFormat`) +
+adaptive thinking, esfuerzo `medium` en extracción y `low` en ideas; si el JSON
+no cumple el esquema hay un segundo intento con los errores como feedback.
+Cache en `SandboxAiCache` por `(sessionId, kind, sha256(inputs))`; subir
+`PROMPT_VERSION` invalida todo. Toda cifra generada sale con `estimate: true`.
+
+Fallbacks (§8, `fallbacks.ts`): sin menú → ítems genéricos del sector en USD
+(`source: fallback`); sin OSINT → 6 dolores universales sin citas; sin
+auditoría → puntajes deterministas desde el quick-form (`source: inputs`) o
+defaults (`fallback`); sin notas de gastos → OPEX benchmark del sector sobre
+ventas de referencia por país (`source: benchmark`). Las ideas de campaña
+también tienen plantillas si Claude no está disponible.
 
 ## Ruta pública: qué viaja al cliente
 
@@ -99,8 +155,10 @@ take-homes ya guardados en `SandboxResult`. Nunca `pin`, assets,
 | Variable | Uso |
 |----------|-----|
 | `SANDBOX_CALENDAR_URL` | Enlace de «Agendar siguiente paso» en Reporte. Sin ella cae a `https://franquiciaslatam.com/franquiciar`. |
+| `SANDBOX_AI_MODEL` | Modelo de Claude del preload (default `claude-sonnet-4-6`). |
+| `SUPABASE_SANDBOX_BUCKET` | Nombre del bucket privado de documentos (default `sandbox-assets`; se crea solo). |
 | `JWT_SECRET` | Ya existe (admin). Firma la cookie del PIN. |
-| `ANTHROPIC_API_KEY` | Ya existe. Hitos 2–5. |
+| `ANTHROPIC_API_KEY` | Ya existe. Extracción del preload e ideas; sin ella el admin avisa y usa fallbacks. |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Ya existen. Bucket `sandbox-assets` (hito 2). |
 
 ## Operación local
@@ -129,6 +187,13 @@ responde; para migrar usa el *session pooler* (puerto 5432 del host
   tocar el layout raíz y el routing del resto de la plataforma.
 - **Migración aditiva e idempotente** siguiendo la convención del repo
   (`DO $$ … EXCEPTION WHEN duplicate_object`, `IF NOT EXISTS`).
-- **Sin cambios en componentes compartidos.** Se añadió la relación inversa
+- **Extracción asset por asset desde el navegador.** Cada request del admin
+  hace un solo trabajo (un archivo o el ensamble) y persiste su estado: si
+  Vercel corta una función, «Procesar» retoma donde quedó.
+- **Ideas de campaña con IA, puntajes de marketing sin IA.** Los cinco ejes
+  del quick-form se calculan de forma determinista (defendibles y testeables);
+  la auditoría cargada, si existe, manda.
+- **Sin cambios en componentes compartidos.** Hito 2 añade un ítem de menú en
+  `AdminSidebar` y reutiliza `ImageUpload` sin modificarlo. Se añadió la relación inversa
   `sandboxSessions` al modelo `Franchise` (schema, sin cambio de tabla) y una
   dependencia explícita a `zod` (ya estaba instalada de forma transitiva).
