@@ -1,0 +1,302 @@
+{
+  "common": {
+    "next": "Siguiente",
+    "back": "Atrás",
+    "start": "Empezar",
+    "skip": "Saltar fase",
+    "continue": "Continuar",
+    "estimate": "est.",
+    "minutesShort": "{{n}}'",
+    "language": "EN",
+    "languageName": "English",
+    "franquiciasLatam": "Franquicias LATAM",
+    "sessionOf": "Sandbox de {{brand}}",
+    "loading": "Cargando…",
+    "retry": "Reintentar",
+    "generating": "Lo generamos en un momento…",
+    "soon": "Disponible en el siguiente hito"
+  },
+  "chrome": {
+    "progressLabel": "Progreso de la sesión",
+    "phaseOf": "Fase {{n}} de {{total}}",
+    "presenterToggle": "Notas",
+    "closePresenter": "Cerrar notas"
+  },
+  "phases": {
+    "intro": {
+      "label": "Intro",
+      "title": "Abrimos tu negocio",
+      "method": [
+        "Tú traes la experiencia",
+        "Nosotros el método"
+      ]
+    },
+    "estrategia": {
+      "label": "Estrategia",
+      "title": "El Pulso y el Titular",
+      "method": [
+        "Dónde estás",
+        "Dónde quieres estar",
+        "Por qué modelo"
+      ]
+    },
+    "finanzas": {
+      "label": "Finanzas",
+      "title": "El 2% que vale millones",
+      "method": [
+        "COGS por ítem",
+        "Estructura OPEX",
+        "Mini P&L",
+        "Escala"
+      ]
+    },
+    "operaciones": {
+      "label": "Operaciones",
+      "title": "Del dolor al hábito",
+      "method": [
+        "Dolor",
+        "Palanca",
+        "Conocimiento",
+        "Entrenamiento",
+        "Hábito"
+      ]
+    },
+    "legal": {
+      "label": "Legal",
+      "title": "La anatomía del contrato",
+      "method": [
+        "Marca",
+        "Know-how",
+        "Contrato",
+        "Territorio"
+      ]
+    },
+    "marketing": {
+      "label": "Marketing",
+      "title": "Cómo te encuentra un franquiciado",
+      "method": [
+        "Marca",
+        "Atracción",
+        "Conversión"
+      ]
+    },
+    "reporte": {
+      "label": "Reporte",
+      "title": "Lo que te llevas",
+      "method": [
+        "Diagnóstico",
+        "Modelo",
+        "Ruta"
+      ]
+    }
+  },
+  "intro": {
+    "kicker": "Sandbox de franquicia",
+    "headline": "En los próximos 15 minutos vamos a abrir tu negocio como lo haríamos en un proyecto real.",
+    "body": "Cinco fases. Tú traes la experiencia; nosotros el método.",
+    "chipsLabel": "Las cinco fases",
+    "cta": "Empezar"
+  },
+  "placeholder": {
+    "kicker": "Fase en construcción",
+    "title": "{{phase}} llega en el siguiente hito",
+    "body": "El esqueleto ya recorre las siete paradas. Esta fase se activa cuando integremos su ejercicio en vivo.",
+    "takeHome": "Take-home de esta fase"
+  },
+  "report": {
+    "kicker": "Reporte",
+    "title": "Esto fue el 1% del proyecto.",
+    "subtitle": "Ya viste el método.",
+    "takeHomesLabel": "Tus cinco take-home",
+    "takeHomePending": "Se genera al completar la fase",
+    "takeHomes": {
+      "estrategia": "Radar de preparación + Ruta 2027–2029",
+      "finanzas": "Tu mini P&L + el escenario optimizado",
+      "operaciones": "Tu estándar + el KPI que lo audita",
+      "legal": "Checklist legal de tu franquicia",
+      "marketing": "Tu ficha + la idea que elegiste"
+    },
+    "radarLabel": "Radar de preparación",
+    "radarPending": "El radar se dibuja al terminar Estrategia.",
+    "radarAxes": {
+      "operaciones": "Operaciones",
+      "finanzas": "Finanzas",
+      "marca": "Marca",
+      "equipo": "Equipo",
+      "modelo": "Modelo"
+    },
+    "nextStepLabel": "Siguiente paso",
+    "cta": {
+      "bootcamp": "Bootcamp Flash",
+      "bootcampMeta": "15 días",
+      "consultoria": "Consultoría 360",
+      "consultoriaMeta": "Proyecto completo",
+      "schedule": "Agendar siguiente paso"
+    },
+    "email": {
+      "label": "Enviar reporte",
+      "placeholder": "tu@correo.com",
+      "cta": "Enviar reporte",
+      "saved": "Listo. Te llega el PDF con todos los take-home al cerrar la sesión.",
+      "error": "No pudimos guardar el correo. Inténtalo otra vez."
+    },
+    "closing": "Esto fue el 1% del proyecto. Ya viste el método."
+  },
+  "pin": {
+    "kicker": "Sesión privada",
+    "title": "Ingresa el PIN de la sesión",
+    "body": "Tu consultor te lo comparte en la llamada.",
+    "cta": "Entrar",
+    "error": "Ese PIN no corresponde a esta sesión."
+  },
+  "notFound": {
+    "title": "Esta sesión no existe o ya se cerró.",
+    "body": "Pide a tu consultor un enlace nuevo.",
+    "cta": "Ir a franquiciaslatam.com"
+  },
+  "presenter": {
+    "title": "Modo presentador",
+    "elapsed": "Transcurrido",
+    "budget": "Presupuesto",
+    "total": "Sesión",
+    "overBudget": "Fuera de tiempo",
+    "beats": "Beats",
+    "notes": "Notas",
+    "jump": "Ir a fase",
+    "forceNext": "Forzar siguiente",
+    "shortcuts": "← → cambian de fase · N muestra u oculta este panel",
+    "phases": {
+      "intro": {
+        "beats": [
+          {
+            "label": "Logo × FL, encuadre",
+            "sec": 30
+          },
+          {
+            "label": "Las cinco fases",
+            "sec": 30
+          }
+        ],
+        "notes": [
+          "Encuadra: «vamos a hacer en 15 minutos una versión en miniatura de lo que hacemos en un proyecto real».",
+          "Nombra las cinco fases con una palabra cada una. No expliques todavía.",
+          "Pide que tengan a mano el celular: el link se lo llevan al final."
+        ]
+      },
+      "estrategia": {
+        "beats": [
+          {
+            "label": "El Pulso (swipe deck)",
+            "sec": 60
+          },
+          {
+            "label": "El Titular 2029",
+            "sec": 90
+          },
+          {
+            "label": "Reveal: radar, modelo, ruta",
+            "sec": 60
+          }
+        ],
+        "notes": [
+          "Aquí hablas de modelos de negocio: franquicia clásica, master, licencia, corners, dark kitchen, sucursales propias.",
+          "El truco es el back-casting: ellos escriben el final y nosotros dibujamos el camino desde hoy.",
+          "Deja que el insight inesperado aterrice solo. No lo expliques de inmediato."
+        ]
+      },
+      "finanzas": {
+        "beats": [
+          {
+            "label": "Costeo en vivo (3 ítems héroe)",
+            "sec": 90
+          },
+          {
+            "label": "Mini P&L con sliders",
+            "sec": 60
+          },
+          {
+            "label": "Motor de escala",
+            "sec": 60
+          }
+        ],
+        "notes": [
+          "Pide una corrección en vivo: «¿cuánto te cuesta realmente el pollo?». Ese momento es la demo.",
+          "Todo número generado lleva la etiqueta est. No lo presentes como dato.",
+          "Cierra con la idea: lo que escala es la estructura, no el número."
+        ]
+      },
+      "operaciones": {
+        "beats": [
+          {
+            "label": "Elige el dolor",
+            "sec": 30
+          },
+          {
+            "label": "Palanca → Estándar (3 formatos)",
+            "sec": 120
+          },
+          {
+            "label": "Auditoría: conocimiento → resultado",
+            "sec": 60
+          }
+        ],
+        "notes": [
+          "El dolor preseleccionado conecta con el ítem héroe de Finanzas: mantén el hilo.",
+          "Formato agéntico: deja que el cliente le hable al manual. Ahí se vende la plataforma de entrenamiento.",
+          "Frase clave: «cada estándar tiene un indicador. Si no se puede medir, no es un estándar»."
+        ]
+      },
+      "legal": {
+        "beats": [
+          {
+            "label": "Anatomía del contrato (8 puntos)",
+            "sec": 60
+          },
+          {
+            "label": "Seneor Lawyers + marca",
+            "sec": 30
+          }
+        ],
+        "notes": [
+          "Solo anatomía: qué protege cada cláusula y para quién. Nada de texto contractual.",
+          "Seneor Lawyers: más de 6.500 marcas, incluyendo Totto, Sodexo y Mercado Libre.",
+          "Si la verificación de marca no está disponible, di que la revisamos en la sesión. No inventes resultados."
+        ]
+      },
+      "marketing": {
+        "beats": [
+          {
+            "label": "Tu marca hoy (5 barras)",
+            "sec": 30
+          },
+          {
+            "label": "Tu ficha en el marketplace",
+            "sec": 45
+          },
+          {
+            "label": "Tres ideas en 60 segundos",
+            "sec": 45
+          }
+        ],
+        "notes": [
+          "Reencuadre: no es una auditoría. Es «si alguien quisiera comprar tu franquicia hoy, ¿te encontraría?».",
+          "La ficha ya existe: solo falta activarla. Ese es el cierre comercial suave.",
+          "Que elijan una idea favorita: queda guardada en el reporte."
+        ]
+      },
+      "reporte": {
+        "beats": [
+          {
+            "label": "Take-home + CTA",
+            "sec": 60
+          }
+        ],
+        "notes": [
+          "Recorre los cinco take-home en 20 segundos. Ya los vieron.",
+          "Ofrece los dos caminos: Bootcamp Flash (15 días) o Consultoría 360. Agenda el siguiente paso aquí mismo.",
+          "Cierra con: «esto fue el 1% del proyecto. Ya viste el método»."
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,252 @@
+/* ── Sandbox (/sandbox/[slug]) — sistema visual de la ruta ───────────────────
+   Chrome = Franquicias LATAM (navy + teal, tokens fl-* de globals.css).
+   Canvas = cliente: --sb-accent lo inyecta la sesión (ya contrastado sobre el
+   navy por lib/sandbox/color.ts). Todo scoped a [data-sandbox-scope]; nada se
+   filtra al resto de la plataforma. Animaciones solo con transform/opacity. */
+
+body:has([data-sandbox-scope]) > .wa-widget,
+body:has([data-sandbox-scope]) > a[href^="https://wa.me/"] {
+  display: none;
+}
+
+/* globals.css pinta un ::before blanco fijo detrás de todo. */
+html:has([data-sandbox-scope]),
+body:has([data-sandbox-scope]),
+body:has([data-sandbox-scope])::before {
+  background: #0a0f1e;
+}
+body:has([data-sandbox-scope]) {
+  overscroll-behavior-y: none;
+}
+
+[data-sandbox-scope] {
+  --sb-bg: #0a0f1e;
+  --sb-bg-2: #0d1326;
+  --sb-surface: rgba(255, 255, 255, 0.03);
+  --sb-surface-2: rgba(255, 255, 255, 0.055);
+  --sb-border: rgba(255, 255, 255, 0.08);
+  --sb-border-strong: rgba(255, 255, 255, 0.16);
+  --sb-text: #f0f0f5;
+  --sb-muted: #8a8f9e;
+  --sb-teal: #00f0ff;
+  --sb-purple: #7b61ff;
+  --sb-amber: #ffb547;
+  /* Acento del cliente; lo sobreescribe el style inline de la sesión. */
+  --sb-accent: #00f0ff;
+  --sb-accent-raw: #00f0ff;
+
+  --sb-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sb-serif: var(--font-sandbox-serif), "Iowan Old Style", Georgia, serif;
+  --sb-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  color-scheme: dark;
+  min-height: 100dvh;
+  /* Un logo de cliente demasiado ancho nunca debe abrir scroll horizontal. */
+  overflow-x: clip;
+  background: var(--sb-bg);
+  color: var(--sb-text);
+  font-family: var(--sb-sans);
+  /* globals.css aprieta el tracking a -0.04em; aquí lo relajamos para lectura. */
+  letter-spacing: -0.012em;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+[data-sandbox-scope] ::selection {
+  background: var(--sb-accent);
+  color: var(--sb-bg);
+}
+
+[data-sandbox-scope] :focus-visible {
+  outline: 2px solid var(--sb-teal);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ── Tipografía editorial ─────────────────────────────────────────────────── */
+.sb-serif {
+  font-family: var(--sb-serif);
+  letter-spacing: -0.01em;
+}
+
+.sb-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--sb-muted);
+}
+
+.sb-title {
+  font-family: var(--sb-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 4.6vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.sb-display {
+  font-family: var(--sb-serif);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 5.4vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.sb-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Superficies ──────────────────────────────────────────────────────────── */
+.sb-card {
+  background: var(--sb-surface);
+  border: 1px solid var(--sb-border);
+  border-radius: 18px;
+}
+
+.sb-card-strong {
+  background: var(--sb-surface-2);
+  border: 1px solid var(--sb-border-strong);
+  border-radius: 18px;
+}
+
+/* ── Botones ──────────────────────────────────────────────────────────────── */
+.sb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 1.4rem;
+  border-radius: 9999px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition:
+    transform 180ms var(--sb-ease),
+    background-color 180ms var(--sb-ease),
+    border-color 180ms var(--sb-ease),
+    opacity 180ms var(--sb-ease);
+  cursor: pointer;
+}
+.sb-btn:active {
+  transform: translateY(1px);
+}
+.sb-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sb-btn-primary {
+  background: var(--sb-accent);
+  color: var(--sb-bg);
+  box-shadow: 0 14px 40px -18px color-mix(in srgb, var(--sb-accent) 70%, transparent);
+}
+.sb-btn-primary:hover {
+  background: color-mix(in srgb, var(--sb-accent) 88%, white);
+}
+
+.sb-btn-ghost {
+  background: var(--sb-surface);
+  border: 1px solid var(--sb-border-strong);
+  color: var(--sb-text);
+}
+.sb-btn-ghost:hover {
+  background: var(--sb-surface-2);
+}
+
+.sb-btn-teal {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--sb-teal) 55%, transparent);
+  color: var(--sb-teal);
+}
+.sb-btn-teal:hover {
+  background: color-mix(in srgb, var(--sb-teal) 10%, transparent);
+}
+
+/* ── Fondo: grid sutil + glow del acento + viñeta ─────────────────────────── */
+.sb-grid {
+  background-image:
+    linear-gradient(to right, rgba(240, 240, 245, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(240, 240, 245, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 30%, #000 45%, transparent 100%);
+  mask-image: radial-gradient(120% 90% at 50% 30%, #000 45%, transparent 100%);
+}
+
+/* ── Chips de método y rail ───────────────────────────────────────────────── */
+.sb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid var(--sb-border);
+  background: var(--sb-surface);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--sb-text);
+}
+
+.sb-chip-accent {
+  border-color: color-mix(in srgb, var(--sb-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--sb-accent) 10%, transparent);
+}
+
+/* ── Scroll interno sin barra visible ─────────────────────────────────────── */
+.sb-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+.sb-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sb-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+/* ── Inputs ───────────────────────────────────────────────────────────────── */
+.sb-input {
+  width: 100%;
+  height: 3rem;
+  padding: 0 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--sb-border-strong);
+  background: var(--sb-surface);
+  color: var(--sb-text);
+  font-size: 15px;
+}
+.sb-input::placeholder {
+  color: var(--sb-muted);
+}
+.sb-input:focus {
+  border-color: var(--sb-teal);
+  outline: none;
+}
+
+/* PIN gate: celdas grandes, legibles a dos metros. */
+.sb-pin-slot {
+  width: 3.5rem;
+  height: 4.25rem;
+  border: 1px solid var(--sb-border-strong);
+  background: var(--sb-surface);
+  color: var(--sb-text);
+  font-family: var(--sb-serif);
+  font-size: 2rem;
+  border-radius: 14px;
+  box-shadow: none;
+}
+.sb-pin-slot[data-active="true"] {
+  border-color: var(--sb-teal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sb-teal) 25%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-sandbox-scope] * {
+    transition-duration: 0.01ms !important;
+  }
+}
