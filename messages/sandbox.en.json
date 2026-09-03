@@ -1,0 +1,302 @@
+{
+  "common": {
+    "next": "Next",
+    "back": "Back",
+    "start": "Start",
+    "skip": "Skip phase",
+    "continue": "Continue",
+    "estimate": "est.",
+    "minutesShort": "{{n}}'",
+    "language": "ES",
+    "languageName": "Español",
+    "franquiciasLatam": "Franquicias LATAM",
+    "sessionOf": "{{brand}} Sandbox",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "generating": "Generating in a moment…",
+    "soon": "Available in the next milestone"
+  },
+  "chrome": {
+    "progressLabel": "Session progress",
+    "phaseOf": "Phase {{n}} of {{total}}",
+    "presenterToggle": "Notes",
+    "closePresenter": "Close notes"
+  },
+  "phases": {
+    "intro": {
+      "label": "Intro",
+      "title": "We open up your business",
+      "method": [
+        "You bring the experience",
+        "We bring the method"
+      ]
+    },
+    "estrategia": {
+      "label": "Strategy",
+      "title": "The Pulse and the Headline",
+      "method": [
+        "Where you are",
+        "Where you want to be",
+        "Which model"
+      ]
+    },
+    "finanzas": {
+      "label": "Finance",
+      "title": "The 2% worth millions",
+      "method": [
+        "COGS per item",
+        "OPEX structure",
+        "Mini P&L",
+        "Scale"
+      ]
+    },
+    "operaciones": {
+      "label": "Operations",
+      "title": "From pain to habit",
+      "method": [
+        "Pain",
+        "Lever",
+        "Knowledge",
+        "Training",
+        "Habit"
+      ]
+    },
+    "legal": {
+      "label": "Legal",
+      "title": "Anatomy of the contract",
+      "method": [
+        "Brand",
+        "Know-how",
+        "Contract",
+        "Territory"
+      ]
+    },
+    "marketing": {
+      "label": "Marketing",
+      "title": "How a franchisee finds you",
+      "method": [
+        "Brand",
+        "Attraction",
+        "Conversion"
+      ]
+    },
+    "reporte": {
+      "label": "Report",
+      "title": "What you take home",
+      "method": [
+        "Diagnosis",
+        "Model",
+        "Route"
+      ]
+    }
+  },
+  "intro": {
+    "kicker": "Franchise sandbox",
+    "headline": "Over the next 15 minutes we will open up your business the way we would in a real project.",
+    "body": "Five phases. You bring the experience; we bring the method.",
+    "chipsLabel": "The five phases",
+    "cta": "Start"
+  },
+  "placeholder": {
+    "kicker": "Phase under construction",
+    "title": "{{phase}} arrives in the next milestone",
+    "body": "The skeleton already walks the seven stops. This phase switches on once its live exercise is integrated.",
+    "takeHome": "Take-home for this phase"
+  },
+  "report": {
+    "kicker": "Report",
+    "title": "This was 1% of the project.",
+    "subtitle": "You have seen the method.",
+    "takeHomesLabel": "Your five take-homes",
+    "takeHomePending": "Generated when the phase is completed",
+    "takeHomes": {
+      "estrategia": "Readiness radar + 2027–2029 route",
+      "finanzas": "Your mini P&L + the optimised scenario",
+      "operaciones": "Your standard + the KPI that audits it",
+      "legal": "Legal checklist for your franchise",
+      "marketing": "Your listing + the idea you chose"
+    },
+    "radarLabel": "Readiness radar",
+    "radarPending": "The radar is drawn once Strategy is done.",
+    "radarAxes": {
+      "operaciones": "Operations",
+      "finanzas": "Finance",
+      "marca": "Brand",
+      "equipo": "Team",
+      "modelo": "Model"
+    },
+    "nextStepLabel": "Next step",
+    "cta": {
+      "bootcamp": "Bootcamp Flash",
+      "bootcampMeta": "15 days",
+      "consultoria": "Consultoría 360",
+      "consultoriaMeta": "Full project",
+      "schedule": "Book the next step"
+    },
+    "email": {
+      "label": "Send report",
+      "placeholder": "you@email.com",
+      "cta": "Send report",
+      "saved": "Done. The PDF with every take-home arrives when the session closes.",
+      "error": "We could not save the email. Please try again."
+    },
+    "closing": "This was 1% of the project. You have seen the method."
+  },
+  "pin": {
+    "kicker": "Private session",
+    "title": "Enter the session PIN",
+    "body": "Your consultant shares it on the call.",
+    "cta": "Enter",
+    "error": "That PIN does not match this session."
+  },
+  "notFound": {
+    "title": "This session does not exist or has closed.",
+    "body": "Ask your consultant for a new link.",
+    "cta": "Go to franquiciaslatam.com"
+  },
+  "presenter": {
+    "title": "Presenter mode",
+    "elapsed": "Elapsed",
+    "budget": "Budget",
+    "total": "Session",
+    "overBudget": "Over time",
+    "beats": "Beats",
+    "notes": "Notes",
+    "jump": "Jump to phase",
+    "forceNext": "Force next",
+    "shortcuts": "← → switch phase · N shows or hides this panel",
+    "phases": {
+      "intro": {
+        "beats": [
+          {
+            "label": "Logo × FL, framing",
+            "sec": 30
+          },
+          {
+            "label": "The five phases",
+            "sec": 30
+          }
+        ],
+        "notes": [
+          "Frame it: “in 15 minutes we will do a miniature version of what we do in a real project”.",
+          "Name the five phases with one word each. Do not explain yet.",
+          "Ask them to keep their phone at hand: they take the link home at the end."
+        ]
+      },
+      "estrategia": {
+        "beats": [
+          {
+            "label": "The Pulse (swipe deck)",
+            "sec": 60
+          },
+          {
+            "label": "The 2029 headline",
+            "sec": 90
+          },
+          {
+            "label": "Reveal: radar, model, route",
+            "sec": 60
+          }
+        ],
+        "notes": [
+          "This is where you talk business models: classic franchise, master, licence, corners, dark kitchen, own branches.",
+          "The trick is back-casting: they write the ending and we draw the path from today.",
+          "Let the unexpected insight land on its own. Do not explain it right away."
+        ]
+      },
+      "finanzas": {
+        "beats": [
+          {
+            "label": "Live costing (3 hero items)",
+            "sec": 90
+          },
+          {
+            "label": "Mini P&L with sliders",
+            "sec": 60
+          },
+          {
+            "label": "Scale engine",
+            "sec": 60
+          }
+        ],
+        "notes": [
+          "Ask for one live correction: “what does the chicken really cost you?”. That moment is the demo.",
+          "Every generated number carries the est. tag. Never present it as fact.",
+          "Close with the idea: the structure is what scales, not the number."
+        ]
+      },
+      "operaciones": {
+        "beats": [
+          {
+            "label": "Pick the pain",
+            "sec": 30
+          },
+          {
+            "label": "Lever → Standard (3 formats)",
+            "sec": 120
+          },
+          {
+            "label": "Audit: knowledge → result",
+            "sec": 60
+          }
+        ],
+        "notes": [
+          "The preselected pain connects with the hero item from Finance: keep the thread.",
+          "Agentic format: let the client talk to the manual. That is where the training platform sells itself.",
+          "Key line: “every standard has an indicator. If it cannot be measured, it is not a standard”."
+        ]
+      },
+      "legal": {
+        "beats": [
+          {
+            "label": "Contract anatomy (8 hot-spots)",
+            "sec": 60
+          },
+          {
+            "label": "Seneor Lawyers + trademark",
+            "sec": 30
+          }
+        ],
+        "notes": [
+          "Anatomy only: what each clause protects and for whom. No contract text.",
+          "Seneor Lawyers: more than 6,500 trademarks, including Totto, Sodexo and Mercado Libre.",
+          "If the trademark check is unavailable, say we review it in the session. Never invent results."
+        ]
+      },
+      "marketing": {
+        "beats": [
+          {
+            "label": "Your brand today (5 bars)",
+            "sec": 30
+          },
+          {
+            "label": "Your marketplace listing",
+            "sec": 45
+          },
+          {
+            "label": "Three ideas in 60 seconds",
+            "sec": 45
+          }
+        ],
+        "notes": [
+          "Reframe: this is not an audit. It is “if someone wanted to buy your franchise today, would they find you?”.",
+          "The listing already exists: it only needs activating. That is the soft commercial close.",
+          "Have them pick a favourite idea: it is saved into the report."
+        ]
+      },
+      "reporte": {
+        "beats": [
+          {
+            "label": "Take-homes + CTA",
+            "sec": 60
+          }
+        ],
+        "notes": [
+          "Walk the five take-homes in 20 seconds. They have already seen them.",
+          "Offer the two paths: Bootcamp Flash (15 days) or Consultoría 360. Book the next step right here.",
+          "Close with: “this was 1% of the project. You have seen the method”."
+        ]
+      }
+    }
+  }
+}

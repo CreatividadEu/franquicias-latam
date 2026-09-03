@@ -121,6 +121,7 @@ model Franchise {
   featureFlags      FranchiseFeatureFlags?
   botConfig         FranchiseBotConfig?
   botFaqs           FranchiseBotFaq[]
+  sandboxSessions   SandboxSession[]
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
@@ -565,4 +566,176 @@ model SajuMilestone {
   @@unique([title, date])
   @@index([date])
   @@map("saju_milestones")
+}
+
+// ── Sandbox — microsite interactivo por cliente (/sandbox/[slug]) ───────────
+// Namespace `sandbox_*`, aditivo. Una sesión = un prospecto; los documentos
+// crudos viven en Storage (bucket privado) y NUNCA llegan a la ruta pública:
+// el cliente solo recibe los campos de marca de la sesión + SandboxPreload.
+
+enum SandboxStatus {
+  DRAFT
+  READY
+  LIVE
+  DONE
+  ARCHIVED
+}
+
+enum SandboxSector {
+  RESTAURANTE
+  RETAIL
+  SERVICIOS
+  OTRO
+}
+
+enum SandboxLocale {
+  ES
+  EN
+}
+
+enum SandboxAssetKind {
+  MENU
+  CATALOG
+  PRICE_LIST
+  SALES_NOTES
+  OPEX_NOTES
+  OSINT
+  MARKETING_AUDIT
+  OTHER
+}
+
+enum SandboxExtractionStatus {
+  PENDING
+  RUNNING
+  DONE
+  ERROR
+}
+
+enum SandboxPhase {
+  INTRO
+  ESTRATEGIA
+  FINANZAS
+  OPERACIONES
+  LEGAL
+  MARKETING
+  REPORTE
+}
+
+model SandboxSession {
+  id              String        @id @default(cuid())
+  /// Slug público no adivinable (base58, 12 chars). Es la única llave de acceso.
+  slug            String        @unique
+  /// PIN opcional de 4 dígitos. Texto plano a propósito: el consultor tiene que
+  /// poder leerlo para compartirlo; es fricción de enlace, no autenticación.
+  pin             String?
+  status          SandboxStatus @default(DRAFT)
+  franchiseId     String?
+  franchise       Franchise?    @relation(fields: [franchiseId], references: [id], onDelete: SetNull)
+  brandName       String
+  sector          SandboxSector @default(RESTAURANTE)
+  country         String
+  city            String?
+  logoUrl         String?
+  accentColor     String        @default("#00F0FF")
+  consultantName  String?
+  scheduledAt     DateTime?
+  locale          SandboxLocale @default(ES)
+  /// Quick-form de marketing del admin (IG, seguidores, cadencia, web, GBP, pauta).
+  marketingInputs Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  assets  SandboxAsset[]
+  preload SandboxPreload?
+  events  SandboxEvent[]
+  result  SandboxResult?
+  aiCache SandboxAiCache[]
+
+  @@index([status])
+  @@index([franchiseId])
+  @@map("sandbox_sessions")
+}
+
+model SandboxAsset {
+  id               String                  @id @default(cuid())
+  sessionId        String
+  session          SandboxSession          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  kind             SandboxAssetKind        @default(OTHER)
+  storagePath      String
+  originalName     String
+  mime             String
+  sizeBytes        Int                     @default(0)
+  uploadedAt       DateTime                @default(now())
+  extractedJson    Json?
+  extractionStatus SandboxExtractionStatus @default(PENDING)
+  extractionError  String?
+
+  @@index([sessionId])
+  @@map("sandbox_assets")
+}
+
+/// Una fila por sesión: salida normalizada del preprocesamiento (§3).
+model SandboxPreload {
+  id           String         @id @default(cuid())
+  sessionId    String         @unique
+  session      SandboxSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  offering     Json
+  pains        Json
+  marketing    Json
+  opexSkeleton Json
+  generatedAt  DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@map("sandbox_preloads")
+}
+
+/// Log append-only de interacciones del cliente (replay + reporte).
+model SandboxEvent {
+  id        String         @id @default(cuid())
+  sessionId String
+  session   SandboxSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  phase     SandboxPhase
+  type      String
+  payload   Json?
+  createdAt DateTime       @default(now())
+
+  @@index([sessionId, createdAt])
+  @@map("sandbox_events")
+}
+
+/// Resultado calculado al final: los take-home de cada fase.
+model SandboxResult {
+  id              String         @id @default(cuid())
+  sessionId       String         @unique
+  session         SandboxSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  readinessScores Json?
+  headline        String?
+  route           Json?
+  financials      Json?
+  chosenPain      Json?
+  chosenIdea      Json?
+  manual          Json?
+  legalChecklist  Json?
+  reportPdfPath   String?
+  sentToEmail     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("sandbox_results")
+}
+
+/// Cache por sesión de las llamadas a Claude, clave = tipo + hash de inputs
+/// (reabrir una fase no vuelve a generar).
+model SandboxAiCache {
+  id        String         @id @default(cuid())
+  sessionId String
+  session   SandboxSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  kind      String
+  inputHash String
+  model     String
+  response  Json
+  createdAt DateTime       @default(now())
+
+  @@unique([sessionId, kind, inputHash])
+  @@map("sandbox_ai_cache")
 }
