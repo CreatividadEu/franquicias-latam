@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:'Centra No1';src:url('./assets/fonts/CentraNo1-Medium.ttf') format('truetype');font-weight:500}
+@font-face{font-family:'Centra No1';src:url('./assets/fonts/CentraNo1-Regular.ttf') format('truetype');font-weight:400}
+body{margin:0;background:#F4F4F4;font-family:'Centra No1','Helvetica Neue',Arial,sans-serif;color:#000;-webkit-font-smoothing:antialiased}
+a{color:#000}a:hover{color:#F6303E}
+*{box-sizing:border-box}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fadeUp{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+::-webkit-scrollbar{width:0;height:0}
+@media (max-width:820px){[data-hide-mobile]{display:none!important}[data-show-mobile]{display:flex!important}[data-cols]{grid-template-columns:minmax(0,1fr)!important}[data-main]{padding:16px 16px 92px!important}[data-hdr]{padding:0 16px!important}[data-hdr] [data-hdr-meta]{display:none!important}}
+@media (min-width:821px){[data-kpi]{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+</style>
+</helmet>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Login" data-cols="true" style="min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:#000">
+  <div style="position:relative;overflow:hidden;background:#000;display:flex;flex-direction:column;justify-content:space-between;padding:44px 48px;color:#fff;min-height:420px">
+    <img src="./assets/photo-mision.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55">
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,.9))"></div>
+    <div style="position:relative;display:flex;align-items:center;gap:14px"><img src="./assets/logo-white.png" alt="TOTTO" style="width:96px"><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#FCCE01;font-weight:500">Way · Plataforma de formación</span></div>
+    <div style="position:relative">
+      <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#FCCE01;font-weight:500">Lema</div>
+      <h1 style="margin:10px 0 0;font-size:clamp(48px,7vw,96px);line-height:.95;letter-spacing:-.04em;font-weight:500">¿LISTOS?<br><span style="color:#FCCE01">¡VAMOS!</span></h1>
+      <p style="margin:18px 0 0;max-width:420px;font-size:16px;line-height:1.45;color:#D9D9D9">Siete capítulos, una expedición. Aprende la forma TOTTO de hacer las cosas, gana XP y sube en la Liga con tu tienda.</p>
+    </div>
+  </div>
+  <div style="background:#fff;display:flex;align-items:center;justify-content:center;padding:48px 32px">
+    <div style="width:100%;max-width:380px">
+      <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#F6303E;font-weight:500">Ingreso</div>
+      <h2 style="margin:8px 0 0;font-size:34px;line-height:1.05;letter-spacing:-.03em;font-weight:500">Bienvenido a la expedición.</h2>
+      <p style="margin:12px 0 28px;font-size:14px;color:#666;line-height:1.5">Usa tu correo corporativo o tu código de colaborador.</p>
+      <label style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:#666">Correo o código</label>
+      <input value="{{ email }}" onChange="{{ setEmail }}" placeholder="camila.rojas@totto.com" style="margin-top:6px;width:100%;height:48px;border:1.5px solid #D9D9D9;border-radius:10px;padding:0 14px;font-size:15px;outline:none" style-focus="border-color:#000">
+      <label style="display:block;margin-top:16px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:#666">Contraseña</label>
+      <input type="password" value="{{ pwd }}" onChange="{{ setPwd }}" placeholder="••••••••" style="margin-top:6px;width:100%;height:48px;border:1.5px solid #D9D9D9;border-radius:10px;padding:0 14px;font-size:15px;outline:none" style-focus="border-color:#000">
+      <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}"><div style="margin-top:10px;font-size:13px;color:#F6303E">Completa correo y contraseña.</div></sc-if>
+      <button onClick="{{ login }}" style="margin-top:22px;width:100%;height:52px;border:0;border-radius:12px;background:#000;color:#fff;font-size:15px;font-weight:500;letter-spacing:-.01em;display:flex;align-items:center;justify-content:center;gap:10px" style-hover="background:#F6303E">Entrar a Totto Way <span style="font-size:18px">→</span></button>
+      <div style="margin-top:22px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:#999">Entrar como (demo)</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <sc-for list="{{ users }}" as="u" hint-placeholder-count="3">
+            <button onClick="{{ u.pick }}" style="border:1.5px solid #E5E5E5;background:#fff;border-radius:999px;padding:8px 12px;font-size:12px;display:flex;gap:8px;align-items:center" style-hover="border-color:#000"><span style="width:22px;height:22px;border-radius:50%;background:#FCCE01;font-size:10px;font-weight:500;display:grid;place-items:center">{{ u.avatar }}</span>{{ u.role }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="margin-top:32px;display:flex;justify-content:space-between;font-size:11px;color:#999;letter-spacing:.06em"><span>Franquicias LATAM · SSO</span><a href="#" style="color:#999;text-decoration:none">¿Olvidaste tu clave?</a></div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ═══════════ APP SHELL ═══════════ -->
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;display:flex;background:#F4F4F4">
+  <!-- Sidebar -->
+  <nav style="width:236px;flex:none;background:#000;color:#fff;display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh" data-hide-mobile="true">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 8px"><img src="./assets/logo-white.png" alt="TOTTO" style="width:78px"><span style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#FCCE01;font-weight:500">Way</span></div>
+    <div style="margin-top:28px;display:flex;flex-direction:column;gap:2px">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+        <button onClick="{{ n.go }}" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border:0;border-radius:10px;background:{{ n.bg }};color:{{ n.fg }};font-size:14px;font-weight:500;text-align:left;width:100%" style-hover="background:#1a1a1a">
+          <span style="width:20px;height:20px;display:grid;place-items:center">{{ n.icon }}</span>{{ n.label }}
+          <sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;background:#F6303E;color:#fff;font-size:10px;padding:2px 7px;border-radius:999px">{{ n.badge }}</span></sc-if>
+        </button>
+      </sc-for>
+    </div>
+    <div style="margin-top:auto;background:#141414;border-radius:14px;padding:14px">
+      <div style="display:flex;align-items:center;gap:10px"><span style="width:36px;height:36px;border-radius:50%;background:#FCCE01;color:#000;font-size:12px;font-weight:500;display:grid;place-items:center">{{ me.avatar }}</span><div><div style="font-size:13px;font-weight:500">{{ me.name }}</div><div style="font-size:11px;color:#999">{{ me.role }}</div></div></div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;font-size:11px;color:#999"><span>{{ me.level }}</span><span style="color:#FCCE01;font-weight:500">{{ me.xp }} XP</span></div>
+      <div style="margin-top:6px;height:5px;background:#2a2a2a;border-radius:3px;overflow:hidden"><div style="height:100%;width:{{ levelPct }};background:#FCCE01;border-radius:3px"></div></div>
+      <button onClick="{{ logout }}" style="margin-top:12px;width:100%;border:0;background:transparent;color:#999;font-size:12px;text-align:left;padding:0" style-hover="color:#fff">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <header data-hdr="true" style="height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#fff;border-bottom:1px solid #E5E5E5;position:sticky;top:0;z-index:5">
+      <div style="display:flex;align-items:center;gap:12px"><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#F6303E;font-weight:500">{{ screenEyebrow }}</span><span style="font-size:18px;font-weight:500;letter-spacing:-.02em">{{ screenTitle }}</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div data-hdr-meta="true" style="display:flex;align-items:center;gap:6px;background:#FCCE01;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:500"><span>🔥</span>{{ me.streak }} días</div>
+        <div style="display:flex;align-items:center;gap:6px;background:#000;color:#fff;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:500">{{ me.xp }} XP</div>
+        <button onClick="{{ toggleChat }}" style="height:34px;border:1.5px solid #000;background:#fff;border-radius:999px;padding:0 14px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px" style-hover="background:#000;color:#fff"><span style="width:8px;height:8px;border-radius:50%;background:#F6303E"></span>Asistente</button>
+      </div>
+    </header>
+
+    <div data-main="true" style="padding:28px;flex:1;animation:fadeUp .35s ease">
+
+      <!-- ─── DASHBOARD ─── -->
+      <sc-if value="{{ s.dashboard }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Dashboard" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px">
+        <div data-cols="true" style="grid-column:1/-1;background:#000;color:#fff;border-radius:20px;padding:30px 32px;position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:center">
+          <div style="position:absolute;right:-120px;bottom:-160px;width:300px;height:300px;border-radius:50%;background:#FCCE01;opacity:.18"></div>
+          <div style="position:absolute;left:36%;top:-80px;width:110px;height:110px;border-radius:50%;background:#F6303E;opacity:.9"></div>
+          <div style="position:relative">
+            <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#FCCE01;font-weight:500">Hola, {{ me.first }} · Continúa donde ibas</div>
+            <h2 style="margin:10px 0 0;font-size:clamp(28px,3.4vw,44px);line-height:1;letter-spacing:-.03em;font-weight:500">Capítulo 01 · Misión 04<br>Ecosistema SER</h2>
+            <p style="margin:14px 0 0;max-width:460px;font-size:15px;color:#C6C6C6;line-height:1.45">Te faltan 3 lecciones para cerrar el capítulo. La siguiente es un video de 9 minutos con quiz al final: +120 XP.</p>
+            <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap">
+              <button onClick="{{ openNext }}" style="height:46px;border:0;border-radius:12px;background:#FCCE01;color:#000;padding:0 20px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px" style-hover="background:#fff">▶ Continuar lección</button>
+              <button onClick="{{ goLearn }}" style="height:46px;border:1.5px solid #444;border-radius:12px;background:transparent;color:#fff;padding:0 18px;font-size:14px;font-weight:500" style-hover="border-color:#fff">Ver los 7 capítulos</button>
+            </div>
+          </div>
+          <div style="position:relative;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="background:rgba(255,255,255,.08);backdrop-filter:blur(6px);border-radius:14px;padding:16px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C6C6C6">Progreso total</div><div style="margin-top:6px;font-size:36px;letter-spacing:-.03em;font-weight:500">9<span style="font-size:18px;color:#C6C6C6">%</span></div><div style="font-size:12px;color:#C6C6C6">5 de 55 lecciones</div></div>
+            <div style="background:rgba(255,255,255,.08);backdrop-filter:blur(6px);border-radius:14px;padding:16px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C6C6C6">Liga · tienda</div><div style="margin-top:6px;font-size:36px;letter-spacing:-.03em;font-weight:500">#2</div><div style="font-size:12px;color:#C6C6C6">Totto Andino · a 510 pts del #1</div></div>
+            <div style="background:rgba(255,255,255,.08);backdrop-filter:blur(6px);border-radius:14px;padding:16px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C6C6C6">Racha</div><div style="margin-top:6px;font-size:36px;letter-spacing:-.03em;font-weight:500">{{ me.streak }}</div><div style="font-size:12px;color:#C6C6C6">días seguidos</div></div>
+            <div style="background:rgba(255,255,255,.08);backdrop-filter:blur(6px);border-radius:14px;padding:16px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#C6C6C6">Siguiente insignia</div><div style="margin-top:6px;font-size:22px;letter-spacing:-.02em;font-weight:500;line-height:1.1">Guía</div><div style="font-size:12px;color:#C6C6C6">faltan 2.550 XP</div></div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:18px;padding:22px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:#F6303E">Hoy en tienda</div><span style="font-size:12px;color:#999">Sáb 6 sep</span></div>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ today }}" as="t" hint-placeholder-count="4">
+              <button onClick="{{ t.go }}" style="display:flex;align-items:center;gap:12px;border:0;background:#F4F4F4;border-radius:12px;padding:12px 14px;text-align:left;width:100%" style-hover="background:#FCCE01">
+                <span style="width:26px;height:26px;border-radius:8px;background:{{ t.c }};color:{{ t.fc }};display:grid;place-items:center;font-size:12px;font-weight:500;flex:none">{{ t.n }}</span>
+                <span style="flex:1;font-size:14px;font-weight:500;letter-spacing:-.01em">{{ t.title }}</span>
+                <span style="font-size:12px;color:#666;white-space:nowrap">{{ t.meta }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:18px;padding:22px">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:#F6303E">Frase del día</div>
+          <p style="margin:14px 0 0;font-size:26px;line-height:1.15;letter-spacing:-.025em;font-weight:500;text-wrap:balance">"Hay que subir por las escaleras y no por el ascensor."</p>
+          <div style="margin-top:12px;font-size:13px;color:#666">Natán Bursztyn · Fundador</div>
+          <button onClick="{{ goInspire }}" style="margin-top:18px;height:40px;border:1.5px solid #000;background:#fff;border-radius:10px;padding:0 14px;font-size:13px;font-weight:500" style-hover="background:#000;color:#fff">Escuchar el podcast · 24 min</button>
+        </div>
+
+        <div style="background:#FCCE01;border-radius:18px;padding:22px;display:flex;flex-direction:column">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500">Tu equipo · Totto Andino</div>
+          <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ team }}" as="p" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px"><span style="width:30px;height:30px;border-radius:50%;background:#000;color:#fff;font-size:11px;font-weight:500;display:grid;place-items:center">{{ p.avatar }}</span><span style="flex:1;font-size:14px;font-weight:500">{{ p.name }}</span><span style="font-size:13px">{{ p.pts }} pts</span></div>
+            </sc-for>
+          </div>
+          <button onClick="{{ goLeague }}" style="margin-top:auto;padding-top:16px;border:0;background:transparent;font-size:13px;font-weight:500;text-align:left;text-decoration:underline">Ver la Liga completa →</button>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ─── APRENDER ─── -->
+      <sc-if value="{{ s.learn }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Aprender">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#F6303E;font-weight:500">La expedición</div><h2 style="margin:6px 0 0;font-size:clamp(28px,3.4vw,40px);line-height:1;letter-spacing:-.03em;font-weight:500">Siete capítulos. Un camino.</h2></div>
+          <div style="font-size:13px;color:#666">Los capítulos se desbloquean en orden. Cada lección da XP; cada quiz aprobado, bonus.</div>
+        </div>
+        <div style="margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
+          <sc-for list="{{ chapters }}" as="c" hint-placeholder-count="7">
+            <button onClick="{{ c.open }}" style="text-align:left;border:0;border-radius:18px;padding:20px;background:{{ c.bg }};color:{{ c.fg }};opacity:{{ c.op }};display:flex;flex-direction:column;min-height:200px;position:relative;overflow:hidden" style-hover="transform:translateY(-2px)">
+              <div style="position:absolute;right:-10px;top:-24px;font-size:120px;line-height:1;letter-spacing:-.06em;font-weight:500;opacity:.12">{{ c.n }}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;position:relative"><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500">Capítulo {{ c.n }}</span><span style="font-size:11px;font-weight:500">{{ c.status }}</span></div>
+              <div style="margin-top:auto;position:relative"><div style="font-size:24px;line-height:1.05;letter-spacing:-.025em;font-weight:500">{{ c.title }}</div><div style="margin-top:6px;font-size:13px;opacity:.75;line-height:1.35">{{ c.sub }}</div></div>
+              <div style="margin-top:14px;display:flex;align-items:center;gap:10px;position:relative"><div style="flex:1;height:5px;background:rgba(127,127,127,.25);border-radius:3px;overflow:hidden"><div style="height:100%;width:{{ c.pctW }};background:{{ c.bar }}"></div></div><span style="font-size:12px;font-weight:500">{{ c.done }}/{{ c.lessons }}</span></div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ─── CAPÍTULO (lista de lecciones) ─── -->
+      <sc-if value="{{ s.chapter }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Capítulo" data-cols="true" style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px">
+        <div>
+          <button onClick="{{ goLearn }}" style="border:0;background:transparent;font-size:13px;color:#666;padding:0" style-hover="color:#000">← Todos los capítulos</button>
+          <div style="margin-top:12px;background:#000;color:#fff;border-radius:18px;padding:26px 28px;display:flex;gap:20px;align-items:flex-end;position:relative;overflow:hidden">
+            <div style="font-size:96px;line-height:.8;letter-spacing:-.06em;font-weight:500;color:#FCCE01">01</div>
+            <div><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#FCCE01;font-weight:500">Capítulo 01</div><div style="font-size:34px;letter-spacing:-.03em;font-weight:500;line-height:1">Introducción</div><div style="margin-top:6px;font-size:14px;color:#C6C6C6">8 lecciones · 6 misiones · 710 XP posibles</div></div>
+          </div>
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ lessons }}" as="l" hint-placeholder-count="8">
+              <button onClick="{{ l.open }}" style="display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;border:0;background:#fff;border-radius:14px;padding:14px 16px;text-align:left;width:100%" style-hover="background:#FCCE01">
+                <span style="width:44px;height:44px;border-radius:12px;background:{{ l.iconBg }};color:{{ l.iconFg }};display:grid;place-items:center;font-size:16px">{{ l.icon }}</span>
+                <span><span style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#F6303E;font-weight:500">{{ l.m }} · {{ l.type }}</span><span style="display:block;margin-top:3px;font-size:16px;font-weight:500;letter-spacing:-.015em">{{ l.title }}</span></span>
+                <span style="display:flex;align-items:center;gap:12px;font-size:12px;color:#666"><span>{{ l.min }} min</span><span style="background:#000;color:#fff;border-radius:999px;padding:3px 9px;font-weight:500">+{{ l.xp }}</span><span style="width:22px;height:22px;border-radius:50%;background:{{ l.doneBg }};color:#fff;display:grid;place-items:center;font-size:11px">{{ l.doneMark }}</span></span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <aside style="display:flex;flex-direction:column;gap:14px">
+          <div style="background:#fff;border-radius:16px;padding:18px"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:#F6303E">Manual impreso</div><p style="margin:8px 0 0;font-size:14px;line-height:1.45;color:#333">Este capítulo también existe en tienda como manual de 54 páginas. La plataforma y el papel dicen exactamente lo mismo.</p><a href="./TottoWay-Capitulo-01.dc.html" style="display:inline-block;margin-top:12px;font-size:13px;font-weight:500">Abrir manual PDF →</a></div>
+          <div style="background:#FCCE01;border-radius:16px;padding:18px"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500">Checkpoint del capítulo</div><p style="margin:8px 0 0;font-size:20px;line-height:1.15;letter-spacing:-.02em;font-weight:500">Recita las 4 frases a tu líder de tienda.</p><div style="margin-top:10px;font-size:13px">+150 XP · lo valida tu líder desde su panel</div></div>
+        </aside>
+      </div>
+      </sc-if>
+
+      <!-- ─── LECCIÓN ─── -->
+      <sc-if value="{{ s.lesson }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Lección" style="max-width:920px;margin:0 auto">
+        <button onClick="{{ openChapter }}" style="border:0;background:transparent;font-size:13px;color:#666;padding:0" style-hover="color:#000">← Capítulo 01</button>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#F6303E;font-weight:500">{{ L.m }} · {{ L.type }} · {{ L.min }} min</div><h2 style="margin:6px 0 0;font-size:clamp(26px,3.2vw,38px);line-height:1.05;letter-spacing:-.03em;font-weight:500">{{ L.title }}</h2></div>
+          <span style="background:#000;color:#fff;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:500">+{{ L.xp }} XP</span>
+        </div>
+        <sc-if value="{{ L.isVideo }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:20px;position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:16/9">
+            <div style="position:absolute;inset:0;background:url({{ L.img }}) center/contain no-repeat;opacity:.85"></div>
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.75))"></div>
+            <button onClick="{{ playVideo }}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;border:0;background:#FCCE01;font-size:26px;display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.4)" style-hover="background:#fff">▶</button>
+            <div style="position:absolute;left:20px;right:20px;bottom:18px;color:#fff"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FCCE01;font-weight:500">Video · Paso a paso en pantalla</div><div style="margin-top:8px;height:4px;background:rgba(255,255,255,.25);border-radius:2px;overflow:hidden"><div style="height:100%;width:{{ videoPct }};background:#FCCE01;transition:width .4s"></div></div><div style="margin-top:6px;display:flex;justify-content:space-between;font-size:12px"><span>{{ videoTime }}</span><span>{{ L.min }}:00</span></div></div>
+          </div>
+        </sc-if>
+        <div data-cols="true" style="margin-top:20px;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px">
+          <div style="background:#fff;border-radius:18px;padding:26px 28px">
+            <sc-for list="{{ L.body }}" as="p" hint-placeholder-count="2"><p style="margin:0 0 14px;font-size:17px;line-height:1.5;letter-spacing:-.005em;color:#111">{{ p }}</p></sc-for>
+            <div style="margin-top:16px;background:#000;color:#fff;border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start"><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FCCE01;font-weight:500;white-space:nowrap;padding-top:4px">Traducción simple</span><p style="margin:0;font-size:17px;line-height:1.35;letter-spacing:-.01em;font-weight:500">{{ L.key }}</p></div>
+          </div>
+          <aside style="display:flex;flex-direction:column;gap:12px">
+            <sc-if value="{{ L.hasQuiz }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border-radius:16px;padding:18px">
+                <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:#F6303E">Quiz · {{ quizStep }}</div>
+                <sc-if value="{{ quizActive }}" hint-placeholder-val="{{ true }}">
+                  <p style="margin:10px 0 0;font-size:16px;line-height:1.3;font-weight:500;letter-spacing:-.01em">{{ Q.q }}</p>
+                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ Q.opts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.pick }}" style="border:1.5px solid {{ o.border }};background:{{ o.bg }};color:{{ o.fg }};border-radius:10px;padding:10px 12px;font-size:14px;text-align:left" style-hover="border-color:#000">{{ o.t }}</button></sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ quizDone }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:10px;font-size:34px;letter-spacing:-.03em;font-weight:500;line-height:1">{{ quizScore }}<span style="font-size:16px;color:#666">/3</span></div>
+                  <p style="margin:6px 0 0;font-size:14px;color:#333;line-height:1.4">{{ quizMsg }}</p>
+                </sc-if>
+              </div>
+            </sc-if>
+            <button onClick="{{ completeLesson }}" style="height:52px;border:0;border-radius:14px;background:{{ completeBg }};color:{{ completeFg }};font-size:15px;font-weight:500" style-hover="opacity:.9">{{ completeLabel }}</button>
+            <div style="background:#F4F4F4;border:1.5px dashed #C6C6C6;border-radius:14px;padding:14px;font-size:13px;color:#666;line-height:1.4">¿Dudas sobre este proceso? Pregúntale al <button onClick="{{ toggleChat }}" style="border:0;background:transparent;padding:0;font-size:13px;font-weight:500;text-decoration:underline">Asistente Totto Way</button>: conoce todo el manual.</div>
+          </aside>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ─── LIGA ─── -->
+      <sc-if value="{{ s.league }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Liga">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+          <div><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#F6303E;font-weight:500">Liga de la Expedición · Q3 2026</div><h2 style="margin:6px 0 0;font-size:clamp(28px,3.4vw,40px);line-height:1;letter-spacing:-.03em;font-weight:500">Tu tienda compite. Tú también.</h2></div>
+          <div style="display:flex;background:#fff;border-radius:999px;padding:4px"><button onClick="{{ leagueStores }}" style="border:0;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:500;background:{{ lsBg }};color:{{ lsFg }}">Por tienda</button><button onClick="{{ leaguePeople }}" style="border:0;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:500;background:{{ lpBg }};color:{{ lpFg }}">Individual</button></div>
+        </div>
+        <div data-cols="true" style="margin-top:22px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px">
+          <div style="background:#fff;border-radius:18px;overflow:hidden">
+            <sc-for list="{{ leagueRows }}" as="r" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:48px minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:14px 20px;border-bottom:1px solid #F0F0F0;background:{{ r.bg }}">
+                <span style="font-size:24px;letter-spacing:-.03em;font-weight:500;color:{{ r.posColor }}">{{ r.pos }}</span>
+                <span><span style="display:block;font-size:16px;font-weight:500;letter-spacing:-.01em">{{ r.name }}</span><span style="display:block;font-size:12px;color:#666">{{ r.sub }}</span></span>
+                <span style="font-size:12px;color:{{ r.deltaColor }};font-weight:500">{{ r.delta }}</span>
+                <span style="font-size:16px;font-weight:500">{{ r.pts }} <span style="font-size:11px;color:#666">pts</span></span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="background:#000;color:#fff;border-radius:18px;padding:22px"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FCCE01;font-weight:500">Cómo se ganan puntos</div>
+              <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;font-size:14px">
+                <div style="display:flex;justify-content:space-between"><span>Lección completada</span><b style="font-weight:500;color:#FCCE01">+50 a +120</b></div>
+                <div style="display:flex;justify-content:space-between"><span>Quiz 3/3</span><b style="font-weight:500;color:#FCCE01">+40</b></div>
+                <div style="display:flex;justify-content:space-between"><span>Checkpoint validado por líder</span><b style="font-weight:500;color:#FCCE01">+150</b></div>
+                <div style="display:flex;justify-content:space-between"><span>Marcación puntual Geovictoria</span><b style="font-weight:500;color:#FCCE01">+10 / día</b></div>
+                <div style="display:flex;justify-content:space-between"><span>NPS ≥ 9 del mes</span><b style="font-weight:500;color:#FCCE01">+300 tienda</b></div>
+              </div></div>
+            <div style="background:#FCCE01;border-radius:18px;padding:22px"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500">Premio del trimestre</div><p style="margin:8px 0 0;font-size:22px;line-height:1.15;letter-spacing:-.02em;font-weight:500">Tienda #1: día de equipo + kit TOTTO para cada uno.</p><div style="margin-top:8px;font-size:13px">Cierra el 30 de septiembre · faltan 24 días</div></div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ─── MI VIAJE ─── -->
+      <sc-if value="{{ s.journey }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Mi viaje" data-cols="true" style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px">
+        <div>
+          <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#F6303E;font-weight:500">Tu historia en TOTTO</div>
+          <h2 style="margin:6px 0 0;font-size:clamp(28px,3.4vw,40px);line-height:1;letter-spacing:-.03em;font-weight:500">Desde marzo 2025, sin detenerte.</h2>
+          <div style="margin-top:26px;position:relative;padding-left:34px">
+            <div style="position:absolute;left:11px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,#000 0%,#000 66%,#D9D9D9 66%)"></div>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <sc-for list="{{ journey }}" as="j" hint-placeholder-count="7">
+                <div style="position:relative">
+                  <span style="position:absolute;left:-34px;top:12px;width:24px;height:24px;border-radius:50%;background:{{ j.dot }};border:3px solid #F4F4F4;display:grid;place-items:center;font-size:10px;color:#fff">{{ j.mark }}</span>
+                  <div style="background:{{ j.bg }};color:{{ j.fg }};border-radius:16px;padding:16px 18px;display:grid;grid-template-columns:90px minmax(0,1fr);gap:14px;align-items:center;opacity:{{ j.op }}">
+                    <span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;opacity:.7">{{ j.date }}</span>
+                    <span><span style="display:block;font-size:18px;font-weight:500;letter-spacing:-.015em;line-height:1.15">{{ j.title }}</span><span style="display:block;margin-top:3px;font-size:13px;opacity:.75">{{ j.desc }}</span></span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <aside style="display:flex;flex-direction:column;gap:14px">
+          <div style="background:#000;color:#fff;border-radius:18px;padding:22px;text-align:center"><div style="width:96px;height:96px;margin:0 auto;border-radius:50%;background:#FCCE01;display:grid;place-items:center;font-size:40px">🧭</div><div style="margin-top:14px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#FCCE01;font-weight:500">Insignia actual</div><div style="font-size:30px;letter-spacing:-.03em;font-weight:500">Explorador</div><div style="margin-top:6px;font-size:13px;color:#C6C6C6">2.450 / 5.000 XP para Guía</div><div style="margin-top:12px;height:6px;background:#2a2a2a;border-radius:3px;overflow:hidden"><div style="height:100%;width:49%;background:#FCCE01"></div></div></div>
+          <div style="background:#fff;border-radius:18px;padding:20px"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:#F6303E">Ruta de carrera</div><div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;font-size:14px"><div style="display:flex;justify-content:space-between"><span style="font-weight:500">Asesor comercial</span><span style="color:#F6303E">● ahora</span></div><div style="display:flex;justify-content:space-between;color:#666"><span>Asesor senior</span><span>Cap. 03</span></div><div style="display:flex;justify-content:space-between;color:#666"><span>Líder de tienda</span><span>Cap. 07</span></div><div style="display:flex;justify-content:space-between;color:#666"><span>Jefe comercial</span><span>Ruta 2027</span></div></div></div>
+        </aside>
+      </div>
+      </sc-if>
+
+      <!-- ─── INSPIRA ─── -->
+      <sc-if value="{{ s.inspire }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Inspira">
+        <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#F6303E;font-weight:500">Inspira · voces de la marca</div>
+        <h2 style="margin:6px 0 0;font-size:clamp(28px,3.4vw,40px);line-height:1;letter-spacing:-.03em;font-weight:500">Lo que no está en el manual.</h2>
+        <div data-cols="true" style="margin-top:22px;background:#000;color:#fff;border-radius:20px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px;align-items:center;position:relative;overflow:hidden">
+          <img src="./assets/photo-vision.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25">
+          <div style="position:relative"><div style="display:flex;gap:8px;align-items:center"><span style="background:#F6303E;border-radius:6px;padding:4px 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500">Podcast</span><span style="font-size:12px;color:#C6C6C6">Episodio 01 · 24 min</span></div><h3 style="margin:12px 0 0;font-size:clamp(28px,3.4vw,44px);line-height:1;letter-spacing:-.035em;font-weight:500">Hecho para durar</h3><p style="margin:10px 0 0;font-size:15px;color:#D9D9D9;line-height:1.45;max-width:520px">Natán Bursztyn cuenta cómo una marroquinera en quiebra en Samper Mendoza se convirtió en una marca de 45 países, y qué espera de cada persona que viste la camiseta TOTTO.</p>
+            <div style="margin-top:18px;display:flex;align-items:center;gap:14px"><button onClick="{{ togglePod }}" style="width:52px;height:52px;border-radius:50%;border:0;background:#FCCE01;font-size:20px;display:grid;place-items:center" style-hover="background:#fff">{{ podIcon }}</button><div style="flex:1"><div style="height:4px;background:rgba(255,255,255,.25);border-radius:2px;overflow:hidden"><div style="height:100%;width:{{ podPct }};background:#FCCE01;transition:width .4s"></div></div><div style="margin-top:6px;display:flex;justify-content:space-between;font-size:12px;color:#C6C6C6"><span>{{ podTime }}</span><span>24:00</span></div></div></div></div>
+          <div style="position:relative;background:#FCCE01;color:#000;border-radius:16px;padding:20px"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:500">Cita</div><p style="margin:8px 0 0;font-size:22px;line-height:1.15;letter-spacing:-.02em;font-weight:500">"Hay que subir por las escaleras y no por el ascensor."</p></div>
+        </div>
+        <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px">
+          <sc-for list="{{ inspire }}" as="i" hint-placeholder-count="5">
+            <a href="{{ i.href }}" target="_blank" style="text-decoration:none;color:#000;background:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;min-height:170px" style-hover="background:#FCCE01">
+              <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500"><span style="color:#F6303E">{{ i.type }}</span><span style="color:#666">{{ i.len }}</span></div>
+              <div style="margin-top:12px;font-size:20px;line-height:1.1;letter-spacing:-.02em;font-weight:500">{{ i.title }}</div>
+              <div style="margin-top:6px;font-size:12px;color:#666">{{ i.who }}</div>
+              <p style="margin:10px 0 0;font-size:13px;line-height:1.4;color:#333">{{ i.desc }}</p>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ─── BENEFICIOS ─── -->
+      <sc-if value="{{ s.benefits }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Beneficios">
+        <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#F6303E;font-weight:500">Beneficios del colaborador</div>
+        <h2 style="margin:6px 0 0;font-size:clamp(28px,3.4vw,40px);line-height:1;letter-spacing:-.03em;font-weight:500">La esencia de TOTTO es su gente.</h2>
+        <p style="margin:10px 0 0;max-width:600px;font-size:15px;color:#666;line-height:1.45">El 96 % del equipo dice que este es un excelente lugar para trabajar. Esto es lo que hay detrás.</p>
+        <div style="margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">
+          <sc-for list="{{ benefits }}" as="b" hint-placeholder-count="8">
+            <div style="background:{{ b.bg }};color:{{ b.fg }};border-radius:16px;padding:20px;min-height:180px;display:flex;flex-direction:column">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;opacity:.7">{{ b.cat }}</span><span style="font-size:22px">{{ b.glyph }}</span></div>
+              <div style="margin-top:auto;padding-top:14px;font-size:20px;line-height:1.1;letter-spacing:-.02em;font-weight:500">{{ b.title }}</div>
+              <p style="margin:8px 0 0;font-size:13px;line-height:1.4;opacity:.8">{{ b.desc }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ─── PERFIL ─── -->
+      <sc-if value="{{ s.profile }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Perfil" style="max-width:820px">
+        <div style="background:#fff;border-radius:20px;padding:26px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px;align-items:center">
+          <span style="width:84px;height:84px;border-radius:50%;background:#FCCE01;font-size:26px;font-weight:500;display:grid;place-items:center">{{ me.avatar }}</span>
+          <div><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#F6303E;font-weight:500">{{ me.role }}</div><div style="font-size:30px;letter-spacing:-.03em;font-weight:500;line-height:1">{{ me.name }}</div><div style="margin-top:6px;font-size:14px;color:#666">{{ me.store }} · {{ me.city }} · desde {{ me.since }}</div></div>
+          <div style="text-align:right"><div style="font-size:36px;letter-spacing:-.03em;font-weight:500;line-height:1">{{ me.xp }}</div><div style="font-size:12px;color:#666">XP · {{ me.level }}</div></div>
+        </div>
+        <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+          <div style="background:#000;color:#fff;border-radius:16px;padding:18px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FCCE01;font-weight:500">Insignias</div><div style="margin-top:10px;display:flex;gap:8px"><span style="width:44px;height:44px;border-radius:50%;background:#FCCE01;display:grid;place-items:center;font-size:20px">🧭</span><span style="width:44px;height:44px;border-radius:50%;background:#F6303E;display:grid;place-items:center;font-size:20px">📖</span><span style="width:44px;height:44px;border-radius:50%;background:#333;display:grid;place-items:center;font-size:20px">⭐</span><span style="width:44px;height:44px;border-radius:50%;border:1.5px dashed #555"></span></div></div>
+          <div style="background:#fff;border-radius:16px;padding:18px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#F6303E;font-weight:500">Certificaciones</div><div style="margin-top:10px;font-size:14px;line-height:1.5">Capítulo 01 · en curso (62 %)<br><span style="color:#999">Capítulo 02 · pendiente</span></div></div>
+          <div style="background:#fff;border-radius:16px;padding:18px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#F6303E;font-weight:500">Preferencias</div><div style="margin-top:10px;font-size:14px;line-height:1.7">Idioma · Español<br>Recordatorio diario · 8:30 am<br>Notificaciones Liga · activas</div></div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ─── ADMIN (Líder / Formador) ─── -->
+      <sc-if value="{{ s.admin }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Panel líder">
+        <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#F6303E;font-weight:500">Panel de líder · Totto Andino</div>
+        <h2 style="margin:6px 0 0;font-size:clamp(28px,3.4vw,40px);line-height:1;letter-spacing:-.03em;font-weight:500">Tu equipo, de un vistazo.</h2>
+        <div data-kpi="true" style="margin-top:22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+          <div style="background:#000;color:#fff;border-radius:16px;padding:18px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#FCCE01;font-weight:500">Equipo activo</div><div style="margin-top:8px;font-size:36px;letter-spacing:-.03em;font-weight:500;line-height:1">8<span style="font-size:16px;color:#C6C6C6">/8</span></div></div>
+          <div style="background:#fff;border-radius:16px;padding:18px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#F6303E;font-weight:500">Progreso medio</div><div style="margin-top:8px;font-size:36px;letter-spacing:-.03em;font-weight:500;line-height:1">41<span style="font-size:16px;color:#666">%</span></div></div>
+          <div style="background:#fff;border-radius:16px;padding:18px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#F6303E;font-weight:500">Checkpoints por validar</div><div style="margin-top:8px;font-size:36px;letter-spacing:-.03em;font-weight:500;line-height:1">3</div></div>
+          <div style="background:#FCCE01;border-radius:16px;padding:18px"><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500">Liga</div><div style="margin-top:8px;font-size:36px;letter-spacing:-.03em;font-weight:500;line-height:1">#2</div></div>
+        </div>
+        <div style="margin-top:16px;background:#fff;border-radius:18px;overflow:hidden">
+          <sc-for list="{{ adminRows }}" as="r" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:auto minmax(0,1fr) 160px auto auto;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid #F0F0F0">
+              <span style="width:36px;height:36px;border-radius:50%;background:#000;color:#fff;font-size:12px;font-weight:500;display:grid;place-items:center">{{ r.avatar }}</span>
+              <span><span style="display:block;font-size:15px;font-weight:500">{{ r.name }}</span><span style="display:block;font-size:12px;color:#666">{{ r.role }} · {{ r.cur }}</span></span>
+              <span style="height:6px;background:#F0F0F0;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:{{ r.pct }};background:#000"></span></span>
+              <span style="font-size:13px;font-weight:500">{{ r.pts }} pts</span>
+              <button onClick="{{ r.validate }}" style="height:34px;border:1.5px solid {{ r.vb }};background:{{ r.vbg }};color:{{ r.vfg }};border-radius:999px;padding:0 14px;font-size:12px;font-weight:500" style-hover="background:#000;color:#fff;border-color:#000">{{ r.vlabel }}</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+
+    <!-- Mobile bottom nav -->
+    <div data-show-mobile="true" style="display:none;position:fixed;left:0;right:0;bottom:0;height:72px;background:#000;border-top:1px solid #222;z-index:40;justify-content:space-around;align-items:center;padding:0 6px 6px">
+      <sc-for list="{{ navMobile }}" as="n" hint-placeholder-count="5">
+        <button onClick="{{ n.go }}" style="border:0;background:transparent;color:{{ n.mfg }};display:flex;flex-direction:column;align-items:center;gap:4px;min-width:56px;min-height:44px;justify-content:center;font-size:10px;font-weight:500;letter-spacing:.04em"><span style="width:30px;height:30px;border-radius:9px;background:{{ n.mbg }};display:grid;place-items:center;font-size:14px">{{ n.icon }}</span>{{ n.label }}</button>
+      </sc-for>
+    </div>
+  </main>
+
+  <!-- ─── ASISTENTE ─── -->
+  <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
+  <aside data-screen-label="Asistente" style="position:fixed;right:20px;bottom:20px;width:380px;max-width:calc(100vw - 40px);height:min(620px,calc(100vh - 40px));background:#fff;border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;z-index:50;animation:pop .25s ease">
+    <div style="background:#000;color:#fff;padding:16px 18px;display:flex;align-items:center;gap:12px"><span style="width:38px;height:38px;border-radius:50%;background:#FCCE01;display:grid;place-items:center;font-size:18px">✦</span><div style="flex:1"><div style="font-size:14px;font-weight:500">Asistente Totto Way</div><div style="font-size:11px;color:#C6C6C6">Conoce los 7 manuales, procesos y herramientas SER</div></div><button onClick="{{ toggleChat }}" style="border:0;background:transparent;color:#fff;font-size:20px;padding:0" style-hover="color:#FCCE01">×</button></div>
+    <div ref="{{ chatRef }}" style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#F4F4F4">
+      <sc-for list="{{ chat }}" as="m" hint-placeholder-count="2">
+        <div style="align-self:{{ m.side }};max-width:86%;background:{{ m.bg }};color:{{ m.fg }};border-radius:14px;padding:10px 14px;font-size:14px;line-height:1.45;white-space:pre-wrap">{{ m.text }}</div>
+      </sc-for>
+      <sc-if value="{{ thinking }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-start;background:#fff;border-radius:14px;padding:10px 14px;font-size:14px;color:#999">Consultando el manual…</div></sc-if>
+    </div>
+    <div style="padding:10px 12px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #F0F0F0">
+      <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.ask }}" style="border:1.5px solid #E5E5E5;background:#fff;border-radius:999px;padding:6px 10px;font-size:12px" style-hover="border-color:#000">{{ c.t }}</button></sc-for>
+    </div>
+    <form onSubmit="{{ sendChat }}" style="display:flex;gap:8px;padding:0 12px 12px"><input value="{{ draft }}" onChange="{{ setDraft }}" placeholder="Pregunta sobre cualquier proceso…" style="flex:1;height:44px;border:1.5px solid #E5E5E5;border-radius:12px;padding:0 14px;font-size:14px;outline:none" style-focus="border-color:#000"><button type="submit" style="height:44px;width:44px;border:0;border-radius:12px;background:#000;color:#fff;font-size:18px" style-hover="background:#F6303E">↑</button></form>
+  </aside>
+  </sc-if>
+
+  <!-- XP toast -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#FCCE01;color:#000;border-radius:999px;padding:12px 22px;font-size:15px;font-weight:500;box-shadow:0 12px 40px rgba(0,0,0,.25);z-index:60;animation:pop .3s ease;display:flex;gap:10px;align-items:center"><span>✦</span>{{ toast }}</div>
+  </sc-if>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showGamification&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Comportamiento&quot;},&quot;assistantModel&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;claude-haiku-4-5&quot;,&quot;options&quot;:[&quot;claude-haiku-4-5&quot;,&quot;claude-sonnet-4-5&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Asistente&quot;}}">
+class Component extends DCLogic {
+  state = { screen:'login', email:'', pwd:'', loginError:false, me:null, chapter:null, lesson:null, quizI:0, quizPicked:null, quizScore:0, quizDone:false, videoT:0, videoOn:false, podT:0, podOn:false, leagueMode:'stores', chatOpen:false, chat:[], draft:'', thinking:false, toast:'', done:{}, validated:{}, xpDelta:0, data:null };
+  chatRef = React.createRef();
+  async componentDidMount(){ const d = await import('./tottoway-data.js'); this.setState({ data:d }); this.tick = setInterval(()=>this.step(), 1000); }
+  componentWillUnmount(){ clearInterval(this.tick); }
+  step(){ const s=this.state; if(s.videoOn && s.videoT<540) this.setState({videoT:s.videoT+6}); if(s.podOn && s.podT<1440) this.setState({podT:s.podT+12}); }
+  fmt(t){ return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`; }
+  go(screen, extra={}){ this.setState({ screen, chatOpen:this.state.chatOpen, ...extra }); window.scrollTo(0,0); }
+  showToast(t){ this.setState({toast:t}); clearTimeout(this.tt); this.tt=setTimeout(()=>this.setState({toast:''}),2600); }
+  async ask(q){
+    const d=this.state.data; if(!q.trim()) return;
+    const chat=[...this.state.chat,{role:'user',text:q}]; this.setState({chat,draft:'',thinking:true});
+    const kb=d.KB.map(k=>`- ${k.t}: ${k.a}`).join('\n');
+    const lessons=d.LESSONS.map(l=>`- ${l.title}: ${l.body.join(' ')} Clave: ${l.key}`).join('\n');
+    let text;
+    try{
+      text = await window.claude.complete({ model:this.props.assistantModel??'claude-haiku-4-5', system:`Eres el Asistente Totto Way, el guía de formación de TOTTO en tienda. Responde en español, breve (máx 90 palabras), cálido y directo, en tono de marca ("¿Listos? ¡Vamos!"). Usa SOLO esta base de conocimiento; si no está, dilo y sugiere preguntar al líder de tienda. Termina con una línea "Traducción simple:" cuando expliques un proceso.\n\nBASE:\n${kb}\n\nLECCIONES CAPÍTULO 01:\n${lessons}\n\nBeneficios: ${d.BENEFITS.map(b=>b.title+' — '+b.desc).join('; ')}`, messages:chat.map(m=>({role:m.role,content:m.text})), max_tokens:400 });
+    }catch(e){
+      const hit=d.KB.find(k=>q.toLowerCase().includes(k.t.toLowerCase().split(' ')[0]));
+      text = hit ? `${hit.t}: ${hit.a}\n\nTraducción simple: si lo puedes recitar, lo puedes aplicar.` : 'No encuentro eso en el manual todavía. Pregúntale a tu líder de tienda o revisa el Capítulo 01, Misión 04.';
+    }
+    this.setState({chat:[...chat,{role:'assistant',text}],thinking:false},()=>{ const el=this.chatRef.current; if(el) el.scrollTop=el.scrollHeight; });
+  }
+  renderVals(){
+    const s=this.state, d=s.data;
+    const users=(d?d.USERS:[]).map(u=>({...u,pick:()=>this.setState({me:u,screen:'dashboard',chat:[{role:'assistant',text:`Hola ${u.name.split(' ')[0]}. Soy tu asistente Totto Way. Pregúntame por cualquier proceso, herramienta SER o beneficio.`}]})}));
+    const login=()=>{ if(!s.email||!s.pwd){this.setState({loginError:true});return;} users[0].pick(); };
+    if(!d) return { isLogin:true, isApp:false, users:[], email:s.email, pwd:s.pwd, setEmail:e=>this.setState({email:e.target.value}), setPwd:e=>this.setState({pwd:e.target.value}), login, loginError:s.loginError };
+    const me = s.me ? {...s.me, first:s.me.name.split(' ')[0], xp:s.me.xp+s.xpDelta} : null;
+    const isLead = me && (me.role==='Líder de tienda'||me.role==='Formador / Admin'||me.role==='Jefe comercial'||me.role==='Franquiciado');
+    const icons={dashboard:'▦',learn:'◔',league:'▲',journey:'◎',inspire:'♪',benefits:'♥',profile:'●',admin:'☷'};
+    const gam=this.props.showGamification??true;
+    const navDef=[['dashboard','Inicio'],['learn','Aprender','3'],...(gam?[['league','Liga']]:[]),['journey','Mi viaje'],['inspire','Inspira'],['benefits','Beneficios'],['profile','Perfil']]; if(isLead) navDef.push(['admin','Panel líder']);
+    const active = ['chapter','lesson'].includes(s.screen)?'learn':s.screen;
+    const nav=navDef.map(([k,label,badge])=>({label,badge,icon:icons[k],bg:active===k?'#FCCE01':'transparent',fg:active===k?'#000':'#fff',mbg:active===k?'#FCCE01':'transparent',mfg:active===k?'#fff':'#C6C6C6',go:()=>this.go(k)}));
+    const navMobile=nav.filter(n=>['Inicio','Aprender','Liga','Mi viaje','Perfil'].includes(n.label)).slice(0,5);
+    const titles={dashboard:['Inicio','Tu expedición'],learn:['Aprender','Los 7 capítulos'],chapter:['Aprender','Capítulo 01 · Introducción'],lesson:['Aprender','Lección'],league:['Liga','Liga de la Expedición'],journey:['Mi viaje','Tu historia en TOTTO'],inspire:['Inspira','Voces de la marca'],benefits:['Beneficios','Colaborador TOTTO'],profile:['Perfil',me?me.name:''],admin:['Panel','Líder de tienda']};
+    const [screenEyebrow,screenTitle]=titles[s.screen]||['',''];
+    const S={}; S[s.screen]=true;
+    const lessonsRaw=d.LESSONS.map(l=>({...l,done:l.done||!!s.done[l.id]}));
+    const openLesson=l=>this.go('lesson',{lesson:l.id,quizI:0,quizPicked:null,quizScore:0,quizDone:false,videoT:0,videoOn:false});
+    const lessons=lessonsRaw.map(l=>({...l,icon:l.type==='video'?'▶':'≡',iconBg:l.type==='video'?'#000':'#F4F4F4',iconFg:l.type==='video'?'#FCCE01':'#000',doneBg:l.done?'#000':'#D9D9D9',doneMark:l.done?'✓':'',open:()=>openLesson(l)}));
+    const doneCount=lessonsRaw.filter(l=>l.done).length;
+    const chapters=d.CHAPTERS.map(c=>{const dn=c.n==='01'?doneCount:c.done;const pct=Math.round(dn/c.lessons*100);const dark=c.color==='#000';return {...c,done:dn,pctW:pct+'%',bg:c.unlocked?(c.n==='01'?'#FCCE01':'#fff'):'#E9E9E9',fg:'#000',bar:c.n==='01'?'#000':'#F6303E',op:c.unlocked?1:.6,status:c.unlocked?(pct?pct+' %':'Disponible'):'🔒 Bloqueado',open:()=>c.n==='01'&&this.go('chapter')};});
+    const next=lessonsRaw.find(l=>!l.done)||lessonsRaw[0];
+    const L0=lessonsRaw.find(l=>l.id===s.lesson)||next;
+    const quiz=d.QUIZ[L0.id]; const Q0=quiz?quiz[s.quizI]:null;
+    const Q=Q0?{q:Q0.q,opts:Q0.a.map((t,i)=>{const picked=s.quizPicked===i;const ok=i===Q0.ok;return {t,border:picked?(ok?'#000':'#F6303E'):'#E5E5E5',bg:picked?(ok?'#FCCE01':'#F6303E'):'#fff',fg:picked&&!ok?'#fff':'#000',pick:()=>{if(s.quizPicked!==null)return;this.setState({quizPicked:i,quizScore:s.quizScore+(ok?1:0)});setTimeout(()=>{if(s.quizI+1<quiz.length)this.setState({quizI:s.quizI+1,quizPicked:null});else this.setState({quizDone:true});},700);}};})}:{q:'',opts:[]};
+    const L={...L0,isVideo:L0.type==='video',hasQuiz:!!quiz,body:L0.body};
+    const alreadyDone=L0.done;
+    const completeLesson=()=>{ if(alreadyDone) return this.go('chapter'); const bonus=s.quizDone&&s.quizScore===3?40:0; this.setState({done:{...s.done,[L0.id]:true},xpDelta:s.xpDelta+L0.xp+bonus}); this.showToast(`+${L0.xp+bonus} XP · ${L0.title}`); setTimeout(()=>this.go('chapter'),900); };
+    const rows = s.leagueMode==='stores' ? d.LEAGUE_STORES.map(r=>({pos:r.pos,name:r.name,sub:`${r.city} · ${r.team} personas`,pts:r.pts.toLocaleString('es-CO'),delta:r.delta>0?`▲ ${r.delta}`:r.delta<0?`▼ ${-r.delta}`:'—',deltaColor:r.delta>0?'#0a8f3c':r.delta<0?'#F6303E':'#999',bg:r.me?'#FCCE01':'#fff',posColor:r.pos===1?'#F6303E':'#000'})) : d.LEAGUE_PEOPLE.map(r=>({pos:r.pos,name:r.name,sub:r.store,pts:r.pts.toLocaleString('es-CO'),delta:'',deltaColor:'#999',bg:r.me?'#FCCE01':'#fff',posColor:r.pos===1?'#F6303E':'#000'}));
+    const journey=d.JOURNEY.map(j=>({...j,dot:j.current?'#F6303E':j.done?'#000':'#D9D9D9',mark:j.done&&!j.current?'✓':'',bg:j.current?'#000':j.done?'#fff':'#EDEDED',fg:j.current?'#fff':'#000',op:j.done?1:.7}));
+    const glyphs={bag:'◧',piggy:'◍',heart:'♥',ladder:'≣',book:'▤',star:'★',people:'☺',trophy:'▲'};
+    const benefits=d.BENEFITS.map((b,i)=>({...b,glyph:glyphs[b.icon],bg:i===0?'#FCCE01':i===3?'#000':'#fff',fg:i===3?'#fff':'#000'}));
+    const inspire=d.INSPIRE.filter(i=>!i.featured).map(i=>({...i,href:i.link||'#'}));
+    const team=d.LEAGUE_PEOPLE.filter(p=>p.store==='Totto Andino').concat([{name:'Andrés Molina',pts:2980,avatar:'AM'},{name:'Mariana Gil',pts:1740,avatar:'MG'}]).sort((a,b)=>b.pts-a.pts).slice(0,4);
+    const today=[{n:'1',title:'Marcar entrada en Geovictoria',meta:'+10 XP',c:'#000',fc:'#FCCE01',go:()=>openLesson(lessonsRaw[6])},{n:'2',title:'Lección: Ecosistema SER (video)',meta:'9 min · +120',c:'#FCCE01',fc:'#000',go:()=>openLesson(lessonsRaw[5])},{n:'3',title:'Checkpoint con tu líder: 4 frases',meta:'+150',c:'#F6303E',fc:'#fff',go:()=>this.go('chapter')},{n:'4',title:'Escuchar: Hecho para durar',meta:'24 min',c:'#fff',fc:'#000',go:()=>this.go('inspire')}];
+    const adminRows=[{avatar:'CR',name:'Camila Rojas',role:'Asesora',cur:'Cap. 01 · M04',pct:'62%',pts:2450,id:'a1'},{avatar:'DO',name:'Diego Ortiz',role:'Asesor',cur:'Cap. 01 · M03',pct:'48%',pts:2310,id:'a2'},{avatar:'MG',name:'Mariana Gil',role:'Aux. logística',cur:'Cap. 01 · M02',pct:'25%',pts:1740,id:'a3'},{avatar:'JV',name:'Jorge Vega',role:'Asesor',cur:'Cap. 01 · M06',pct:'88%',pts:2890,id:'a4'}].map(r=>{const v=!!s.validated[r.id];return {...r,vlabel:v?'Validado ✓':'Validar checkpoint',vb:v?'#000':'#D9D9D9',vbg:v?'#000':'#fff',vfg:v?'#fff':'#000',validate:()=>{if(!v){this.setState({validated:{...s.validated,[r.id]:true}});this.showToast(`+150 XP para ${r.name.split(' ')[0]} · checkpoint validado`);}}};});
+    const chips=['¿Qué hago si suena la antena?','¿Cuáles son las 8 herramientas SER?','¿Cómo funciona el Fondo de Empleados?'].map(t=>({t,ask:()=>this.ask(t)}));
+    const chat=s.chat.map(m=>({text:m.text,side:m.role==='user'?'flex-end':'flex-start',bg:m.role==='user'?'#000':'#fff',fg:m.role==='user'?'#fff':'#000'}));
+    return {
+      isLogin:s.screen==='login', isApp:s.screen!=='login', users, email:s.email, pwd:s.pwd, setEmail:e=>this.setState({email:e.target.value}), setPwd:e=>this.setState({pwd:e.target.value}), login, loginError:s.loginError,
+      me, navMobile, levelPct:me?Math.min(100,Math.round(me.xp/5000*100))+'%':'0%', nav, screenEyebrow, screenTitle, s:S, logout:()=>this.setState({screen:'login',me:null,chatOpen:false}),
+      openNext:()=>openLesson(next), goLearn:()=>this.go('learn'), goLeague:()=>this.go('league'), goInspire:()=>this.go('inspire'), openChapter:()=>this.go('chapter'),
+      today, team, chapters, lessons, L, Q, quizStep:quiz?(s.quizDone?'Resultado':`Pregunta ${s.quizI+1} de ${quiz.length}`):'', quizActive:!!quiz&&!s.quizDone, quizDone:s.quizDone, quizScore:s.quizScore, quizMsg:s.quizScore===3?'Perfecto. +40 XP de bonus al completar.':'Bien. Repasa la Traducción simple y vuelve a intentarlo cuando quieras.',
+      videoPct:Math.round(s.videoT/(L0.min*60)*100)+'%', videoTime:this.fmt(s.videoT), playVideo:()=>this.setState({videoOn:!s.videoOn}),
+      completeLesson, completeLabel:alreadyDone?'Lección completada ✓':`Completar · +${L0.xp} XP`, completeBg:alreadyDone?'#E5E5E5':'#000', completeFg:alreadyDone?'#666':'#fff',
+      leagueRows:rows, leagueStores:()=>this.setState({leagueMode:'stores'}), leaguePeople:()=>this.setState({leagueMode:'people'}), lsBg:s.leagueMode==='stores'?'#000':'transparent', lsFg:s.leagueMode==='stores'?'#fff':'#000', lpBg:s.leagueMode==='people'?'#000':'transparent', lpFg:s.leagueMode==='people'?'#fff':'#000',
+      journey, inspire, benefits, adminRows,
+      podIcon:s.podOn?'❚❚':'▶', podPct:Math.round(s.podT/1440*100)+'%', podTime:this.fmt(s.podT), togglePod:()=>this.setState({podOn:!s.podOn}),
+      chatOpen:s.chatOpen, toggleChat:()=>this.setState({chatOpen:!s.chatOpen}), chat, chips, draft:s.draft, setDraft:e=>this.setState({draft:e.target.value}), sendChat:e=>{e.preventDefault();this.ask(s.draft);}, thinking:s.thinking, chatRef:this.chatRef, toast:s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
