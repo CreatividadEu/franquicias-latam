@@ -14,6 +14,7 @@
 import "dotenv/config";
 import { PrismaClient, type Prisma, type UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { reindexFranchise } from "../src/lib/totto-way/assistant/retrieval";
 import { buildChapterSnapshot, slugify, type TwBlock } from "../src/lib/totto-way/content";
 import { badgeFor, BADGE_RULES } from "../src/lib/totto-way/xp";
 
@@ -158,6 +159,30 @@ const BENEFITS = [
   { cat: "Bienestar", title: "Great Place to Work", desc: "Top 10 de mejores empresas para trabajar en Colombia (GPTW 2023).", icon: "star", countries: ["CO"] },
   { cat: "Inclusión", title: "Programa INCLUYETTE", desc: "Modelo de empleo inclusivo premiado y replicado.", icon: "people", countries: ["CO"] },
   { cat: "Reconocimiento", title: "Liga de la Expedición", desc: "Puntos, insignias y premios trimestrales por tienda e individuales.", icon: "trophy", countries: [] },
+];
+
+/**
+ * Base de conocimiento suelta del prototipo (`KB` en tottoway-data.js): hechos
+ * canónicos que el Asistente debe saber aunque no estén en una lección. Se
+ * indexan como SOP y sobreviven a los reindexados de capítulos.
+ */
+const KB = [
+  { t: "Misión", a: "Impulsamos a las personas a moverse, crecer y vivir cada aventura al máximo." },
+  { t: "Visión", a: "Ser la marca que conecta con las historias de quienes no se detienen." },
+  { t: "Propósito", a: "Impulsamos tus sueños, contigo siempre vamos." },
+  { t: "Lema", a: "¿Listos? ¡Vamos!" },
+  { t: "Principios", a: "Innovación, humildad, respeto, integridad y gana-gana." },
+  {
+    t: "Ecosistema SER",
+    a: "8 herramientas: Geovictoria, TOTTO 360°, Torre de Control, NPS, Atlas 360°, POS, Inventario, Academia. TOTTO 360° trabaja en pareja con Torre de Control; NPS con Atlas 360°.",
+  },
+  { t: "Geovictoria", a: "Marca entrada, salida y pausas en cada turno. Alimenta nómina, cobertura y la Liga." },
+  {
+    t: "Protocolo de antena",
+    a: "Acércate con calma, saluda, explica que el sistema se activó, pide revisar ticket y producto, no introduzcas las manos en sus pertenencias, agradece.",
+  },
+  { t: "Roles", a: "Asesor comercial, líder de tienda, auxiliar logístico, jefe comercial, franquiciado, formador/admin." },
+  { t: "Fondo de empleados", a: "Ahorro 5–20 % del salario por nómina; ingreso tras 2 meses de prueba; crédito automático." },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -330,7 +355,9 @@ async function main() {
     where: { id: ch01 },
     include: { missions: true, lessons: { include: { quiz: true } }, checkpoints: true },
   });
-  const version = tree.publishedAt ? tree.version + 1 : tree.version;
+  // Re-sembrar el mismo contenido no es una publicación nueva: la versión se
+  // conserva para que la demo no acumule v2, v3, v4… en cada `npm run seed`.
+  const version = tree.version;
   const snapshot = buildChapterSnapshot(
     {
       ...tree,
@@ -506,7 +533,24 @@ async function main() {
     });
   }
 
-  console.log(`Totto Way listo → /totto-way  (franquicia ${franchise.name}, ${STORES.length} tiendas, ${USERS.length} usuarios demo)`);
+  // Hechos canónicos del prototipo como fragmentos SOP: no cuelgan de ninguna
+  // lección, así que se siembran aparte y sobreviven a los reindexados.
+  await prisma.twKnowledgeChunk.deleteMany({ where: { franchiseId, source: "SOP" } });
+  await prisma.twKnowledgeChunk.createMany({
+    data: KB.map((entry) => ({
+      franchiseId,
+      source: "SOP" as const,
+      sourceId: slugify(entry.t),
+      title: `TOTTO · ${entry.t}`,
+      text: `${entry.t}: ${entry.a}`,
+      locator: { href: "/totto-way/aprender/01-introduccion" },
+    })),
+  });
+
+  // Base de conocimiento del Asistente: se rehace desde lo publicado.
+  const chunks = (await reindexFranchise(franchiseId)) + KB.length;
+
+  console.log(`Totto Way listo → /totto-way  (franquicia ${franchise.name}, ${STORES.length} tiendas, ${USERS.length} usuarios demo, ${chunks} fragmentos para el Asistente)`);
   console.log(`Usuarios demo (clave "${PASSWORD}"):`);
   for (const u of USERS) console.log(`  ${u.email.padEnd(36)} ${u.code.padEnd(8)} ${u.role}`);
 }

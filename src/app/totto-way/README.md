@@ -12,7 +12,7 @@ Plan completo en `docs/totto-way/PLAN.md`; tokens en `docs/totto-way/BRAND.md`.
 | 1b | Modelo `tw_*` + migraciones + seed, auth `tw_token`, shell, login, onboarding, Inicio, grid de capítulos | ✅ |
 | 1c | Capítulo, lección (lectura + video + quiz), XP + toast, Perfil | ✅ |
 | 2 | Liga, Mi viaje, Panel líder, notificaciones | ✅ |
-| 3 | Inspira, Beneficios, Asistente Claude, Estudio | — |
+| 3 | Inspira, Beneficios, Asistente Claude, Estudio | ✅ |
 | 4 | Geovictoria/NPS, certificados PDF, i18n extra, Playwright | — |
 
 ## Rutas
@@ -26,16 +26,21 @@ Plan completo en `docs/totto-way/PLAN.md`; tokens en `docs/totto-way/BRAND.md`.
 /totto-way/aprender/[ch]/[l]     lección: player, bloques del manual, quiz y completar
 /totto-way/liga                  Liga: por tienda / individual, premio y temporadas
 /totto-way/mi-viaje              línea de tiempo, insignia y ruta de carrera
-/totto-way/{inspira,beneficios}  placeholders hasta la fase 3
+/totto-way/inspira               hero del podcast, grid y detalle (+20 XP al día)
+/totto-way/beneficios            tarjetas por categoría, filtradas por rol y país
 /totto-way/perfil                insignias, certificaciones y preferencias
 /totto-way/lider            solo líderes/jefes/franquiciado/formador/admin
-/totto-way/estudio          solo formador/admin
+/totto-way/estudio               árbol de capítulos, publicar y analítica (formador/admin)
+/totto-way/estudio/[ch]          misiones y lecciones
+/totto-way/estudio/[ch]/[l]      editor de bloques y quiz ("nueva" crea una)
+/totto-way/estudio/analitica     finalización, quiz y preguntas al Asistente
 /api/totto-way/auth         POST login → cookie tw_token
 /api/totto-way/auth/sso     GET: admin_token → tw_token (entrada desde el panel admin)
 /api/totto-way/logout       POST
 /api/totto-way/leader/export        GET  CSV del equipo (solo líderes)
 /api/totto-way/cron/league          job nocturno de la Liga
 /api/totto-way/cron/reminders       recordatorio diario y alertas de inactividad
+/api/totto-way/assistant            POST, respuesta en streaming (SSE) del Asistente
 ```
 
 ## Auth y scoping
@@ -89,6 +94,40 @@ Usuarios demo (clave `TOTTO_WAY_SEED_PASSWORD`, por defecto `totto2026`):
 
 Solo se carga Centra No1 Medium; la Regular entregada es un TRIAL sin glifos
 españoles (ver BRAND.md). El cuerpo usa Satoshi del layout raíz.
+
+## Asistente
+
+- **Recuperación por full-text de Postgres en español**, no embeddings (decisión
+  D3 del PLAN): columna generada `tsv` con el título pesando más que el cuerpo
+  e índice GIN (migración `20260907190000`). `websearch_to_tsquery` acepta lo
+  que un asesor escribe de verdad; si no hay nada, cae a una búsqueda por
+  prefijo del término más largo. Cuando haya proveedor de embeddings, el módulo
+  pasa a híbrido y el resto del asistente no cambia.
+- **Las citas las genera el modelo, no el prompt**: los fragmentos viajan como
+  bloques `document` con `citations` activadas, así que llegan estructuradas y
+  se pintan como enlaces a la lección exacta.
+- **Cuatro herramientas**: `search_kb` y `log_checkpoint_request` se ejecutan en
+  el servidor; `open_lesson` y `show_benefit` son acciones de interfaz que el
+  servidor valida antes de emitir. El modelo nunca decide solo a dónde navega
+  alguien. Bucle acotado a 3 vueltas.
+- Modelo por defecto `claude-sonnet-5` (`TOTTO_WAY_AI_MODEL`), pensamiento
+  adaptativo con esfuerzo bajo, límite de 30 preguntas por hora y usuario.
+- Las preguntas se agregan **anónimas** en `tw_assistant_question_stats` para la
+  analítica del Estudio: nunca se guarda quién preguntó.
+- Sin `ANTHROPIC_API_KEY` válida responde 503 con un mensaje de marca, que es lo
+  que pasa en local (la clave del `.env` de Vercel es un marcador).
+- Comprobación manual de la recuperación: `npx tsx scripts/tw-kb-check.ts`.
+
+## Estudio de contenido
+
+- Edita el **árbol vivo**; el alumno sigue viendo el último snapshot publicado.
+  Publicar valida, congela el snapshot, sube la versión y reindexa al Asistente.
+- El editor solo ofrece los **ocho bloques del manual**: no hay HTML libre, que
+  es lo que mantiene iguales el impreso y la plataforma.
+- Una lección de video se puede publicar con solo el póster: el paso a paso se
+  graba después. Misma regla que permite completarla sin archivo.
+- Pendiente para la fase 4: subida de video a storage, subtítulos y la vista de
+  impresión del manual. Hoy el póster y el video se indican por URL.
 
 ## Notificaciones
 

@@ -81,6 +81,15 @@ test("snapshot congelado: se construye, se parsea y ordena por order", () => {
   assert.equal(parseChapterSnapshot({ nope: true }), null);
 });
 
+test("una lección de video con solo póster sí se puede publicar", () => {
+  // El paso a paso se graba después; el manual pide dejar el screenshot como
+  // póster mientras tanto, así que eso no debe bloquear la publicación.
+  const withPoster = tree({
+    lessons: [{ ...tree().lessons[0], type: "VIDEO", posterUrl: "/totto-way/manual/p21.png" }],
+  });
+  assert.deepEqual(validateForPublish(withPoster), []);
+});
+
 test("validateForPublish detecta lecciones incompletas", () => {
   assert.deepEqual(validateForPublish(tree()), []);
   const bad = tree({
@@ -92,7 +101,7 @@ test("validateForPublish detecta lecciones incompletas", () => {
   assert.ok(issues.some((m) => /bloque/.test(m)));
   assert.ok(issues.some((m) => /Traducción simple/.test(m)));
   assert.ok(issues.some((m) => /XP/.test(m)));
-  assert.ok(issues.some((m) => /video/.test(m)));
+  assert.ok(issues.some((m) => /póster/.test(m)));
   assert.ok(issues.some((m) => /quiz/.test(m)));
   assert.ok(issues.some((m) => /misión/.test(m)));
   assert.ok(validateForPublish(tree({ lessons: [] })).length > 0);

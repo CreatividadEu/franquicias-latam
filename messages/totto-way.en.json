@@ -256,5 +256,52 @@
     "recognitionPlaceholder": "e.g. Best NPS of the month",
     "recognitionAdd": "Add",
     "recognitionHint": "It shows up in the person's My journey."
+  },
+  "assistant": {
+    "title": "Totto Way Assistant",
+    "subtitle": "It reads the manual for you",
+    "placeholder": "Type your question…",
+    "send": "Send",
+    "close": "Close",
+    "thinking": "Checking the manual…",
+    "intro": "Ask me anything from the manual. I answer short and tell you which chapter it comes from.",
+    "sources": "Sources",
+    "errorGeneric": "I couldn't answer right now. Try again or ask your store leader.",
+    "suggestion1": "How do I clock in on Geovictoria?",
+    "suggestion2": "What do I do if the alarm goes off?",
+    "suggestion3": "What are the 8 tools of the SER ecosystem?"
+  },
+  "inspire": {
+    "eyebrow": "Inspire",
+    "title": "Stories that move you",
+    "featured": "Featured episode",
+    "listen": "Listen",
+    "read": "Read",
+    "watch": "Watch",
+    "openExternal": "Open on Forbes",
+    "mark": "Mark as seen",
+    "marked": "Already seen today",
+    "reward": "Consuming a piece earns +{{n}} XP, once a day.",
+    "mediaMissing": "The audio is being edited. Meanwhile, the transcript is below.",
+    "empty": "No content published yet.",
+    "back": "All Inspire",
+    "minutes": "{{n}} min"
+  },
+  "inspireTypes": {
+    "PODCAST": "Podcast",
+    "ARTICLE": "Article",
+    "VIDEO": "Video",
+    "MESSAGE": "Message",
+    "STORY": "Story"
+  },
+  "benefits": {
+    "eyebrow": "Benefits",
+    "title": "What TOTTO brings to the table",
+    "lead": "Benefits available for your role and country. If something is missing, ask People & Culture.",
+    "detail": "See detail",
+    "hide": "Hide",
+    "link": "Go to the process",
+    "empty": "No benefits loaded yet.",
+    "countryOnly": "{{country}} only"
   }
 }

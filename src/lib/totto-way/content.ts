@@ -174,8 +174,12 @@ export function validateForPublish(tree: ChapterTreeInput): PublishIssue[] {
     }
     if (!lesson.keyTakeaway.trim()) issues.push({ path: p, message: "Falta la Traducción simple" });
     if (lesson.xp <= 0) issues.push({ path: p, message: "El XP debe ser mayor que 0" });
-    if (lesson.type === "VIDEO" && !lesson.videoSrc && !parseBlocks(lesson.blocks).some((b) => b.type === "video")) {
-      issues.push({ path: p, message: "La lección de video necesita un asset de video" });
+    // Una lección de video puede publicarse con solo el screenshot del manual
+    // como póster: el paso a paso se graba después (así lo pide el manual, y es
+    // la misma regla que deja completarla sin archivo). Lo que no puede es
+    // quedarse sin nada que mostrar.
+    if (lesson.type === "VIDEO" && !lesson.videoSrc && !lesson.posterUrl && !parseBlocks(lesson.blocks).some((b) => b.type === "video")) {
+      issues.push({ path: p, message: "La lección de video necesita al menos un póster mientras se graba" });
     }
     if (lesson.quiz && parseQuizQuestions(lesson.quiz.questions).length === 0) {
       issues.push({ path: `${p}.quiz`, message: "El quiz no tiene preguntas válidas" });

@@ -118,3 +118,24 @@ export function notifyLeagueChange(input: { to: string; name: string | null; sto
     "league",
   );
 }
+
+/** El colaborador pide, desde el Asistente, que le validen un checkpoint. */
+export function notifyCheckpointRequest(input: {
+  to: string;
+  leaderName: string | null;
+  memberName: string | null;
+  chapter: string;
+  note: string;
+}) {
+  return send(
+    input.to,
+    `${input.memberName ?? "Un colaborador"} pide validar un checkpoint`,
+    template({
+      eyebrow: "Checkpoint pendiente",
+      title: input.chapter,
+      body: `${input.leaderName ?? "Hola"}: <b>${input.memberName ?? "un colaborador"}</b> terminó el capítulo y pide que le valides el checkpoint.<br><br>“${input.note}”`,
+      cta: { label: "Abrir el panel", path: "/totto-way/lider" },
+    }),
+    "checkpoint-request",
+  );
+}

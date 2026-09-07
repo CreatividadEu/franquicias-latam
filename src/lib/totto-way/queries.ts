@@ -16,7 +16,7 @@ import {
   type ProgressMap,
   type ProgressRow,
 } from "./progress";
-import { badgeFor, badgeProgress, currentStreak, nextBadge } from "./xp";
+import { badgeFor, badgeProgress, currentStreak, dayKey, nextBadge } from "./xp";
 import { positionDelta, seasonCountdown, type Countdown } from "./league";
 import { buildTimeline, careerProgress, type CareerProgress, type TimelineItem } from "./journey";
 import { daysSince, teamKpis, type TeamKpis, type TeamMemberRow } from "./leader";
@@ -697,4 +697,108 @@ export async function getLeaderView(session: TwSession, storeFilter?: string | n
     leaguePosition,
     canFilter: stores.length > 1,
   };
+}
+
+
+// ── Inspira ────────────────────────────────────────────────────────────────
+
+export type InspireItemView = {
+  id: string;
+  type: "PODCAST" | "ARTICLE" | "VIDEO" | "MESSAGE" | "STORY";
+  title: string;
+  who: string;
+  desc: string;
+  lengthMin: number;
+  quote: string | null;
+  mediaUrl: string | null;
+  externalUrl: string | null;
+  featured: boolean;
+};
+
+export type InspireView = {
+  featured: InspireItemView | null;
+  items: InspireItemView[];
+  /** Ya cobró el XP de Inspira hoy. */
+  claimedToday: boolean;
+  gamification: boolean;
+};
+
+function toInspire(row: {
+  id: string;
+  type: string;
+  title: string;
+  who: string;
+  desc: string;
+  lengthMin: number;
+  quote: string | null;
+  mediaUrl: string | null;
+  externalUrl: string | null;
+  featured: boolean;
+}): InspireItemView {
+  return { ...row, type: row.type as InspireItemView["type"] };
+}
+
+/** ¿Ya cobró hoy el XP de Inspira? El tope diario lo impone el índice único. */
+export async function hasClaimedInspireToday(session: TwSession, now = new Date()): Promise<boolean> {
+  const timeZone = session.employee?.store?.timezone ?? "America/Bogota";
+  const existing = await prisma.twXpEvent.findFirst({
+    where: { userId: session.user.id, source: "INSPIRE", dayKey: dayKey(now, timeZone) },
+    select: { id: true },
+  });
+  return !!existing;
+}
+
+export async function getInspireView(session: TwSession, now = new Date()): Promise<InspireView> {
+  const [rows, gamification, claimedToday] = await Promise.all([
+    prisma.twInspireItem.findMany({
+      where: { franchiseId: session.franchiseId, publishedAt: { not: null, lte: now } },
+      orderBy: [{ featured: "desc" }, { order: "asc" }],
+    }),
+    isGamificationOn(session),
+    hasClaimedInspireToday(session, now),
+  ]);
+  const items = rows.map(toInspire);
+  return { featured: items.find((item) => item.featured) ?? null, items, claimedToday, gamification };
+}
+
+export async function getInspireItem(session: TwSession, id: string, now = new Date()): Promise<{ item: InspireItemView; claimedToday: boolean; gamification: boolean } | null> {
+  const row = await prisma.twInspireItem.findFirst({
+    where: { id, franchiseId: session.franchiseId, publishedAt: { not: null, lte: now } },
+  });
+  if (!row) return null;
+  const [gamification, claimedToday] = await Promise.all([isGamificationOn(session), hasClaimedInspireToday(session, now)]);
+  return { item: toInspire(row), claimedToday, gamification };
+}
+
+// ── Beneficios ─────────────────────────────────────────────────────────────
+
+export type BenefitView = {
+  id: string;
+  category: string;
+  title: string;
+  desc: string;
+  icon: string;
+  link: string | null;
+  countries: string[];
+};
+
+/** Beneficios vigentes para el rol y el país de la tienda de la persona. */
+export async function getBenefits(session: TwSession): Promise<BenefitView[]> {
+  const rows = await prisma.twBenefit.findMany({
+    where: { franchiseId: session.franchiseId },
+    orderBy: { order: "asc" },
+  });
+  const country = session.employee?.store?.country ?? null;
+  return rows
+    .filter((row) => row.eligibilityRoles.length === 0 || row.eligibilityRoles.includes(session.user.role))
+    .filter((row) => row.countries.length === 0 || !country || row.countries.includes(country))
+    .map((row) => ({
+      id: row.id,
+      category: row.category,
+      title: row.title,
+      desc: row.desc,
+      icon: row.icon,
+      link: row.link,
+      countries: row.countries,
+    }));
 }

@@ -8,6 +8,7 @@ import { initialsOf } from "./atoms";
 import { TwBottomNav } from "./TwBottomNav";
 import { TwHeader } from "./TwHeader";
 import { TwSidebar } from "./TwSidebar";
+import { AssistantProvider } from "./AssistantPanel";
 import { ToastProvider } from "./TwToast";
 
 /** Shell de la app (sidebar / header / bottom nav). Server component. */
@@ -30,7 +31,21 @@ export async function TwShell({ session, children }: { session: TwSession; child
 
   return (
     <ToastProvider>
-      <div className="tw-shell">
+      <AssistantProvider
+        copy={{
+          title: t("assistant.title"),
+          subtitle: t("assistant.subtitle"),
+          placeholder: t("assistant.placeholder"),
+          send: t("assistant.send"),
+          close: t("assistant.close"),
+          thinking: t("assistant.thinking"),
+          intro: t("assistant.intro"),
+          sources: t("assistant.sources"),
+          errorGeneric: t("assistant.errorGeneric"),
+          suggestions: [t("assistant.suggestion1"), t("assistant.suggestion2"), t("assistant.suggestion3")],
+        }}
+      >
+        <div className="tw-shell">
       <TwSidebar
         items={items}
         tagline={t("brand.tagline")}
@@ -59,8 +74,9 @@ export async function TwShell({ session, children }: { session: TwSession; child
         />
         <main className="tw-main">{children}</main>
       </div>
-        <TwBottomNav items={items} moreLabel={t("nav.more")} logoutLabel={t("common.logout")} />
-      </div>
+          <TwBottomNav items={items} moreLabel={t("nav.more")} logoutLabel={t("common.logout")} />
+        </div>
+      </AssistantProvider>
     </ToastProvider>
   );
 }

@@ -256,5 +256,52 @@
     "recognitionPlaceholder": "Ej.: Mejor NPS del mes",
     "recognitionAdd": "Añadir",
     "recognitionHint": "Aparece en Mi viaje del colaborador."
+  },
+  "assistant": {
+    "title": "Asistente Totto Way",
+    "subtitle": "Consulta el manual por ti",
+    "placeholder": "Escribe tu pregunta…",
+    "send": "Enviar",
+    "close": "Cerrar",
+    "thinking": "Consultando el manual…",
+    "intro": "Pregúntame lo que necesites del manual. Respondo corto y te digo de qué capítulo sale.",
+    "sources": "Fuentes",
+    "errorGeneric": "No pude responder ahora mismo. Inténtalo de nuevo o pregúntale a tu líder de tienda.",
+    "suggestion1": "¿Cómo marco mi jornada en Geovictoria?",
+    "suggestion2": "¿Qué hago si suena la antena?",
+    "suggestion3": "¿Cuáles son las 8 herramientas del ecosistema SER?"
+  },
+  "inspire": {
+    "eyebrow": "Inspira",
+    "title": "Historias que mueven",
+    "featured": "Episodio destacado",
+    "listen": "Escuchar",
+    "read": "Leer",
+    "watch": "Ver",
+    "openExternal": "Abrir en Forbes",
+    "mark": "Marcar como visto",
+    "marked": "Ya lo viste hoy",
+    "reward": "Consumir un contenido suma +{{n}} XP, una vez al día.",
+    "mediaMissing": "El audio se está montando. Mientras tanto, la transcripción está abajo.",
+    "empty": "Todavía no hay contenido publicado.",
+    "back": "Todo Inspira",
+    "minutes": "{{n}} min"
+  },
+  "inspireTypes": {
+    "PODCAST": "Podcast",
+    "ARTICLE": "Artículo",
+    "VIDEO": "Video",
+    "MESSAGE": "Mensaje",
+    "STORY": "Historia"
+  },
+  "benefits": {
+    "eyebrow": "Beneficios",
+    "title": "Lo que TOTTO pone de su parte",
+    "lead": "Beneficios vigentes para tu rol y tu país. Si algo no te aparece, pregúntale a Talento Humano.",
+    "detail": "Ver detalle",
+    "hide": "Ocultar",
+    "link": "Ir al trámite",
+    "empty": "No hay beneficios cargados todavía.",
+    "countryOnly": "Solo {{country}}"
   }
 }

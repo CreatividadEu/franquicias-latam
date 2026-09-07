@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { requireTwSession } from "@/lib/totto-way/auth";
 import { createTranslator, type TwMessageKey } from "@/lib/totto-way/i18n";
 import { NAV_HREF } from "@/lib/totto-way/nav";
@@ -9,6 +9,7 @@ import { canCompleteLesson, lessonVideo, VIDEO_COMPLETION_RATIO } from "@/lib/to
 import { getLessonView } from "@/lib/totto-way/queries";
 import { BlockRenderer } from "../../../../_components/BlockRenderer";
 import { Eyebrow, XpChip } from "../../../../_components/atoms";
+import { AssistantLink } from "../../../../_components/AssistantPanel";
 import { CompleteLessonButton } from "./_components/CompleteLessonButton";
 import { QuizPanel } from "./_components/QuizPanel";
 import { VideoPlayer } from "./_components/VideoPlayer";
@@ -118,13 +119,7 @@ export default async function LessonPage({ params }: { params: Params }) {
             </p>
           ) : null}
 
-          <div className="tw-nudge">
-            <span style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--tw-black)" }}>
-              <Sparkles size={16} strokeWidth={1.8} />
-              <b>{t("lesson.assistantTitle")}</b>
-            </span>
-            <span>{t("lesson.assistantBody")}</span>
-          </div>
+          <AssistantLink lessonId={lesson.id} label={t("lesson.assistantTitle")} hint={t("lesson.assistantBody")} />
         </aside>
       </div>
 
