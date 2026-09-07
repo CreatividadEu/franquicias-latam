@@ -17,6 +17,10 @@ import {
   type ProgressRow,
 } from "./progress";
 import { badgeFor, badgeProgress, currentStreak, nextBadge } from "./xp";
+import { positionDelta, seasonCountdown, type Countdown } from "./league";
+import { buildTimeline, careerProgress, type CareerProgress, type TimelineItem } from "./journey";
+import { daysSince, teamKpis, type TeamKpis, type TeamMemberRow } from "./leader";
+import { employeeWhere, storeWhere } from "./scope";
 
 export type ChapterCard = {
   id: string;
@@ -412,5 +416,285 @@ export async function getProfileView(session: TwSession, now = new Date()): Prom
       leagueAlerts: prefs.leagueAlerts !== false,
     },
     gamification,
+  };
+}
+
+
+// ── Liga ───────────────────────────────────────────────────────────────────
+
+export type LeagueRow = {
+  entityId: string;
+  position: number;
+  delta: number | null;
+  points: number;
+  name: string;
+  /** Ciudad (tiendas) o tienda/rol (personas). */
+  place: string | null;
+  /** Personas de la tienda; null en la vista individual (la pluraliza la vista). */
+  members: number | null;
+  me: boolean;
+};
+
+export type LeagueView = {
+  enabled: boolean;
+  season: { id: string; name: string; prizeText: string; endsAt: Date; countdown: Countdown } | null;
+  seasons: { id: string; name: string; status: string }[];
+  stores: LeagueRow[];
+  people: LeagueRow[];
+  /** Posición global de la tienda propia cuando el franquiciado solo ve las suyas. */
+  globalPosition: number | null;
+  scoped: boolean;
+};
+
+export async function getLeagueView(session: TwSession, seasonId?: string, now = new Date()): Promise<LeagueView> {
+  const enabled = await isGamificationOn(session);
+  const seasons = await prisma.twLeagueSeason.findMany({
+    where: { franchiseId: session.franchiseId },
+    orderBy: { startsAt: "desc" },
+    select: { id: true, name: true, status: true, prizeText: true, endsAt: true },
+  });
+  const season = seasonId
+    ? seasons.find((s) => s.id === seasonId)
+    : (seasons.find((s) => s.status === "ACTIVE") ?? seasons[0]);
+
+  if (!enabled || !season) {
+    return { enabled, season: null, seasons, stores: [], people: [], globalPosition: null, scoped: false };
+  }
+
+  const [scores, stores, employees] = await Promise.all([
+    prisma.twLeagueScore.findMany({ where: { seasonId: season.id }, orderBy: { position: "asc" } }),
+    prisma.twStore.findMany({
+      where: { franchiseId: session.franchiseId },
+      select: { id: true, name: true, city: true, _count: { select: { employees: true } } },
+    }),
+    prisma.twEmployee.findMany({
+      where: { franchiseId: session.franchiseId },
+      select: { userId: true, roleTitle: true, storeId: true, user: { select: { name: true } }, store: { select: { name: true } } },
+    }),
+  ]);
+
+  // La Liga es una competencia entre todas las tiendas: asesores, líderes y
+  // jefes ven el ranking completo. Solo el franquiciado, que compite con
+  // marcas ajenas en la misma tabla, ve recortadas sus tiendas y conserva su
+  // posición global (PLAN §4.4).
+  const restricted = session.user.role === "FRANCHISE_OWNER" && session.scope.storeIds !== "all";
+  const visibleStores = restricted ? new Set(session.scope.storeIds as string[]) : null;
+  const storeById = new Map(stores.map((store) => [store.id, store]));
+  const employeeByUser = new Map(employees.map((employee) => [employee.userId, employee]));
+
+  const storeRows: LeagueRow[] = scores
+    .filter((score) => score.entityType === "STORE")
+    .map((score) => {
+      const store = storeById.get(score.entityId);
+      return {
+        entityId: score.entityId,
+        position: score.position,
+        delta: positionDelta(score.position, score.prevPosition),
+        points: score.points,
+        name: store?.name ?? "—",
+        place: store?.city ?? null,
+        members: store?._count.employees ?? null,
+        me: score.entityId === session.scope.homeStoreId,
+      };
+    });
+
+  const peopleRows: LeagueRow[] = scores
+    .filter((score) => score.entityType === "USER")
+    .map((score) => {
+      const employee = employeeByUser.get(score.entityId);
+      return {
+        entityId: score.entityId,
+        position: score.position,
+        delta: positionDelta(score.position, score.prevPosition),
+        points: score.points,
+        name: employee?.user.name ?? "—",
+        place: employee?.store?.name ?? employee?.roleTitle ?? null,
+        members: null,
+        me: score.entityId === session.user.id,
+      };
+    });
+
+  // El franquiciado solo ve sus tiendas, pero conserva su posición global.
+  const globalPosition = storeRows.find((row) => row.me)?.position ?? null;
+  const scopedStores = visibleStores ? storeRows.filter((row) => visibleStores.has(row.entityId)) : storeRows;
+  const scopedPeople = visibleStores
+    ? peopleRows.filter((row) => {
+        const storeId = employeeByUser.get(row.entityId)?.storeId;
+        return storeId ? visibleStores.has(storeId) : row.me;
+      })
+    : peopleRows;
+
+  return {
+    enabled,
+    season: {
+      id: season.id,
+      name: season.name,
+      prizeText: season.prizeText,
+      endsAt: season.endsAt,
+      countdown: seasonCountdown(season.endsAt, now),
+    },
+    seasons,
+    stores: scopedStores,
+    people: scopedPeople,
+    globalPosition: visibleStores ? globalPosition : null,
+    scoped: !!visibleStores,
+  };
+}
+
+// ── Mi viaje ───────────────────────────────────────────────────────────────
+
+export type JourneyView = {
+  timeline: TimelineItem[];
+  career: CareerProgress[];
+  badge: { code: string; name: string; icon: string };
+  nextBadge: { code: string; name: string; remaining: number } | null;
+  badgeProgress: number;
+  xpTotal: number;
+  gamification: boolean;
+};
+
+export async function getJourneyView(session: TwSession, now = new Date()): Promise<JourneyView> {
+  const [milestones, { cards, snapshots, progress }, badges, gamification] = await Promise.all([
+    prisma.twJourneyMilestone.findMany({ where: { userId: session.user.id }, orderBy: { date: "asc" } }),
+    getChapterCards(session),
+    prisma.twBadge.findMany({ where: { franchiseId: session.franchiseId }, orderBy: { minXp: "asc" } }),
+    isGamificationOn(session),
+  ]);
+
+  const completedChapters = cards
+    .filter((card) => {
+      const snapshot = snapshots.find((s) => s.id === card.id);
+      return snapshot ? chapterProgress(snapshot, progress).complete : false;
+    })
+    .map((card) => card.number);
+
+  const xpTotal = session.employee?.xpTotal ?? 0;
+  const current = badgeFor(xpTotal);
+  const next = nextBadge(xpTotal);
+
+  return {
+    timeline: buildTimeline(milestones, now),
+    career: careerProgress(completedChapters, session.user.role),
+    badge: { code: current.code, name: badges.find((b) => b.code === current.code)?.name ?? current.code, icon: current.icon },
+    nextBadge: next
+      ? { code: next.code, name: badges.find((b) => b.code === next.code)?.name ?? next.code, remaining: next.remaining }
+      : null,
+    badgeProgress: badgeProgress(xpTotal),
+    xpTotal,
+    gamification,
+  };
+}
+
+// ── Panel líder ────────────────────────────────────────────────────────────
+
+export type LeaderView = {
+  kpis: TeamKpis;
+  rows: TeamMemberRow[];
+  stores: { id: string; name: string }[];
+  storeFilter: string | null;
+  leaguePosition: number | null;
+  canFilter: boolean;
+};
+
+export async function getLeaderView(session: TwSession, storeFilter?: string | null, now = new Date()): Promise<LeaderView> {
+  const where = employeeWhere(session.scope);
+  const scopedWhere = storeFilter ? { ...where, storeId: { in: [storeFilter] } } : where;
+
+  const [employees, stores, { snapshots }, season] = await Promise.all([
+    prisma.twEmployee.findMany({
+      where: scopedWhere,
+      select: {
+        userId: true,
+        roleTitle: true,
+        lastActivityAt: true,
+        user: { select: { name: true, role: true } },
+        store: { select: { id: true, name: true } },
+      },
+      orderBy: { employeeCode: "asc" },
+    }),
+    prisma.twStore.findMany({ where: storeWhere(session.scope), select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    getChapterCards(session),
+    prisma.twLeagueSeason.findFirst({
+      where: { franchiseId: session.franchiseId, status: "ACTIVE" },
+      orderBy: { startsAt: "desc" },
+      select: { id: true },
+    }),
+  ]);
+
+  const userIds = employees.map((employee) => employee.userId);
+  const [progressRows, validations, scores] = await Promise.all([
+    prisma.twLessonProgress.findMany({
+      where: { userId: { in: userIds }, status: "COMPLETED" },
+      select: { userId: true, lessonId: true },
+    }),
+    prisma.twCheckpointValidation.findMany({ where: { userId: { in: userIds } }, select: { userId: true, checkpointId: true } }),
+    season
+      ? prisma.twLeagueScore.findMany({ where: { seasonId: season.id, entityType: "USER", entityId: { in: userIds } } })
+      : Promise.resolve([]),
+  ]);
+
+  const doneByUser = new Map<string, Set<string>>();
+  for (const row of progressRows) {
+    if (!doneByUser.has(row.userId)) doneByUser.set(row.userId, new Set());
+    doneByUser.get(row.userId)!.add(row.lessonId);
+  }
+  const validatedByUser = new Map<string, Set<string>>();
+  for (const row of validations) {
+    if (!validatedByUser.has(row.userId)) validatedByUser.set(row.userId, new Set());
+    validatedByUser.get(row.userId)!.add(row.checkpointId);
+  }
+  const pointsByUser = new Map(scores.map((score) => [score.entityId, score.points]));
+  const lessonsTotal = snapshots.reduce((acc, snapshot) => acc + snapshot.lessons.length, 0);
+
+  const rows: TeamMemberRow[] = employees.map((employee) => {
+    const done = doneByUser.get(employee.userId) ?? new Set<string>();
+    const validated = validatedByUser.get(employee.userId) ?? new Set<string>();
+
+    let currentLesson: string | null = null;
+    let pendingCheckpoint: TeamMemberRow["pendingCheckpoint"] = null;
+    for (const snapshot of snapshots) {
+      const next = snapshot.lessons.find((lesson) => !done.has(lesson.id));
+      if (next && !currentLesson) currentLesson = next.title;
+      const chapterDone = snapshot.lessons.length > 0 && snapshot.lessons.every((lesson) => done.has(lesson.id));
+      const checkpoint = snapshot.checkpoints[0];
+      if (chapterDone && checkpoint && !validated.has(checkpoint.id) && !pendingCheckpoint) {
+        pendingCheckpoint = { checkpointId: checkpoint.id, chapter: snapshot.title, xp: checkpoint.xp };
+      }
+    }
+
+    const parts = (employee.user.name ?? "").trim().split(/\s+/).filter(Boolean);
+    return {
+      userId: employee.userId,
+      name: employee.user.name ?? "—",
+      initials: parts.length ? (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase() : "TW",
+      roleTitle: employee.roleTitle,
+      storeName: employee.store?.name ?? null,
+      currentLesson,
+      lessonsDone: done.size,
+      lessonsTotal,
+      pct: lessonsTotal > 0 ? Math.round((done.size / lessonsTotal) * 100) : 0,
+      points: pointsByUser.get(employee.userId) ?? 0,
+      lastActivityAt: employee.lastActivityAt,
+      inactiveDays: daysSince(employee.lastActivityAt, now),
+      pendingCheckpoint,
+    };
+  });
+
+  let leaguePosition: number | null = null;
+  if (season && session.scope.homeStoreId) {
+    const storeScore = await prisma.twLeagueScore.findUnique({
+      where: { seasonId_entityType_entityId: { seasonId: season.id, entityType: "STORE", entityId: session.scope.homeStoreId } },
+      select: { position: true },
+    });
+    leaguePosition = storeScore?.position ?? null;
+  }
+
+  return {
+    kpis: teamKpis(rows, now),
+    rows,
+    stores,
+    storeFilter: storeFilter ?? null,
+    leaguePosition,
+    canFilter: stores.length > 1,
   };
 }

@@ -387,10 +387,20 @@ async function main() {
   }
   for (const u of USERS) {
     if (!u.leaguePos) continue;
+    const entityId = userIds.get(u.key)!;
+    const points = u.leaguePts ?? u.xp;
+    // La foto de la semana pasada invierte a los dos primeros: así la tabla
+    // enseña un ▲ y un ▼ reales en la demo.
+    const prevPosition = u.leaguePos === 1 ? 2 : u.leaguePos === 2 ? 1 : u.leaguePos;
     await prisma.twLeagueScore.upsert({
-      where: { seasonId_entityType_entityId: { seasonId: season.id, entityType: "USER", entityId: userIds.get(u.key)! } },
-      update: { points: u.leaguePts ?? u.xp, position: u.leaguePos },
-      create: { seasonId: season.id, entityType: "USER", entityId: userIds.get(u.key)!, points: u.leaguePts ?? u.xp, position: u.leaguePos },
+      where: { seasonId_entityType_entityId: { seasonId: season.id, entityType: "USER", entityId } },
+      update: { points, position: u.leaguePos, prevPosition },
+      create: { seasonId: season.id, entityType: "USER", entityId, points, position: u.leaguePos, prevPosition },
+    });
+    await prisma.twLeagueSnapshot.upsert({
+      where: { seasonId_weekKey_entityType_entityId: { seasonId: season.id, weekKey, entityType: "USER", entityId } },
+      update: { points, position: prevPosition },
+      create: { seasonId: season.id, weekKey, entityType: "USER", entityId, points, position: prevPosition },
     });
   }
 
@@ -400,14 +410,19 @@ async function main() {
   await prisma.twLessonProgress.deleteMany({ where: { userId: { in: demoUserIds } } });
   await prisma.twUserBadge.deleteMany({ where: { userId: { in: demoUserIds } } });
   await prisma.twJourneyMilestone.deleteMany({ where: { userId: { in: demoUserIds } } });
+  // También las validaciones: si no, el checkpoint que el Panel líder deja
+  // pendiente en la demo desaparece en cuanto alguien lo valida una vez.
+  await prisma.twCheckpointValidation.deleteMany({ where: { userId: { in: demoUserIds } } });
 
   for (const u of USERS) {
     const userId = userIds.get(u.key)!;
     const storeId = u.store ? storeIds.get(u.store)! : null;
     let accounted = 0;
-    if (u.key === "u1") {
-      for (const [index, l] of LESSONS_01.entries()) {
-        if (!l.done) continue;
+    // u1 va por la mitad del capítulo; u6 lo terminó y deja el checkpoint
+    // pendiente de validación para el Panel líder de su tienda.
+    const lessonPlan = u.key === "u1" ? LESSONS_01.filter((l) => l.done) : u.key === "u6" ? LESSONS_01 : [];
+    if (lessonPlan.length > 0) {
+      for (const [index, l] of lessonPlan.entries()) {
         const completedAt = daysAgo(30 - index * 3);
         await prisma.twLessonProgress.create({
           data: { userId, lessonId: lessonIds.get(l.key)!, status: "COMPLETED", startedAt: completedAt, completedAt, xpEarned: l.xp },
@@ -437,9 +452,32 @@ async function main() {
         });
       }
     }
+    if (u.key === "u6") {
+      await prisma.twJourneyMilestone.create({
+        data: {
+          userId,
+          type: "JOINED",
+          title: "Te uniste a la expedición",
+          desc: `Ingreso como ${u.roleTitle.toLowerCase()} · ${STORES.find((s) => s.code === u.store)?.name ?? ""}`,
+          date: new Date(u.since),
+          icon: "flag",
+        },
+      });
+      await prisma.twJourneyMilestone.create({
+        data: {
+          userId,
+          type: "CHAPTER_DONE",
+          title: "Capítulo 01 completado",
+          desc: `Introducción · ${LESSONS_01.length}/${LESSONS_01.length} lecciones`,
+          date: daysAgo(2),
+          icon: "book",
+        },
+      });
+    }
   }
 
-  // Checkpoint validado para u1 no: queda pendiente para la demo del Panel líder.
+  // El checkpoint queda SIN validar a propósito: es lo que el líder de Totto
+  // Andino encuentra pendiente para Diego en el Panel líder.
   void checkpoint;
 
   // Inspira y beneficios (contenido editorial: se reemplaza completo)
