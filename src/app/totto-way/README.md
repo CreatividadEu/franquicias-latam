@@ -10,7 +10,7 @@ Plan completo en `docs/totto-way/PLAN.md`; tokens en `docs/totto-way/BRAND.md`.
 |---|---|---|
 | 1a | Plan, prototipo en `docs/totto-way/design/`, BRAND.md | ✅ |
 | 1b | Modelo `tw_*` + migraciones + seed, auth `tw_token`, shell, login, onboarding, Inicio, grid de capítulos | ✅ |
-| 1c | Capítulo, lección (reading + video + quiz), XP + toast, Perfil | ⏳ |
+| 1c | Capítulo, lección (lectura + video + quiz), XP + toast, Perfil | ✅ |
 | 2 | Liga, Mi viaje, Panel líder, notificaciones | — |
 | 3 | Inspira, Beneficios, Asistente Claude, Estudio | — |
 | 4 | Geovictoria/NPS, certificados PDF, i18n extra, Playwright | — |
@@ -22,7 +22,8 @@ Plan completo en `docs/totto-way/PLAN.md`; tokens en `docs/totto-way/BRAND.md`.
 /totto-way/onboarding       3 pantallas en el primer login
 /totto-way                  Inicio (hero + tarjetas de vidrio + Hoy en tienda + equipo)
 /totto-way/aprender         grid de 7 capítulos (desbloqueo secuencial)
-/totto-way/aprender/[ch]    capítulo (1c)
+/totto-way/aprender/[ch]         capítulo: misiones M0x, lecciones, manual y checkpoint
+/totto-way/aprender/[ch]/[l]     lección: player, bloques del manual, quiz y completar
 /totto-way/{liga,mi-viaje,inspira,beneficios,perfil}   placeholders hasta su hito
 /totto-way/lider            solo líderes/jefes/franquiciado/formador/admin
 /totto-way/estudio          solo formador/admin
@@ -41,6 +42,13 @@ Plan completo en `docs/totto-way/PLAN.md`; tokens en `docs/totto-way/BRAND.md`.
   `TW_FORMADOR`, más `FRANCHISE_OWNER` (franquiciado) y `ADMIN` (formador global).
 - Todas las tablas `tw_*` cuelgan de `franchises.id`; `users.franchiseId` es la raíz
   del scoping.
+
+## Progreso y XP
+
+- **Snapshot, no árbol vivo.** El alumno lee siempre `TwChapter.publishedSnapshot`; el Estudio (fase 3) edita el árbol y publica una versión nueva.
+- **El servidor decide.** `completeLesson` revalida la sesión, relee el snapshot y comprueba el ≥ 90 % de video antes de pagar. Una lección de video **sin archivo grabado** no se bloquea: solo muestra el screenshot del manual como póster, o el capítulo sería imposible de terminar.
+- **El quiz se corrige en servidor** (`gradeQuiz`); el cliente nunca envía el resultado. El bonus de +40 XP se paga una sola vez, al primer intento perfecto.
+- **Idempotencia por base de datos.** `awardXp` es el único camino que paga puntos y va en una transacción: evento + acumulado + racha + insignias con su hito + Liga. Dos índices únicos parciales (migración `20260907140000`) impiden el doble pago por doble clic o reintento; ante la violación devuelve `awarded: false`.
 
 ## Datos
 

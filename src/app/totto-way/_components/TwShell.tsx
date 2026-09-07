@@ -8,6 +8,7 @@ import { initialsOf } from "./atoms";
 import { TwBottomNav } from "./TwBottomNav";
 import { TwHeader } from "./TwHeader";
 import { TwSidebar } from "./TwSidebar";
+import { ToastProvider } from "./TwToast";
 
 /** Shell de la app (sidebar / header / bottom nav). Server component. */
 export async function TwShell({ session, children }: { session: TwSession; children: ReactNode }) {
@@ -28,7 +29,8 @@ export async function TwShell({ session, children }: { session: TwSession; child
   const badgeKey = `badges.${badge.code}` as TwMessageKey;
 
   return (
-    <div className="tw-shell">
+    <ToastProvider>
+      <div className="tw-shell">
       <TwSidebar
         items={items}
         tagline={t("brand.tagline")}
@@ -57,7 +59,8 @@ export async function TwShell({ session, children }: { session: TwSession; child
         />
         <main className="tw-main">{children}</main>
       </div>
-      <TwBottomNav items={items} moreLabel={t("nav.more")} logoutLabel={t("common.logout")} />
-    </div>
+        <TwBottomNav items={items} moreLabel={t("nav.more")} logoutLabel={t("common.logout")} />
+      </div>
+    </ToastProvider>
   );
 }

@@ -131,5 +131,66 @@
   "placeholder": {
     "title": "This section arrives in the next milestone",
     "body": "We are building Totto Way chapter by chapter, like the manual. Come back soon."
+  },
+  "types": {
+    "READING": "Reading",
+    "VIDEO": "Video",
+    "CHECKLIST": "Checklist",
+    "CHECKPOINT": "Checkpoint"
+  },
+  "chapter": {
+    "back": "All chapters",
+    "progress": "{{done}} of {{total}} lessons",
+    "continue": "Pick up where you left off",
+    "start": "Start the chapter",
+    "completed": "Chapter completed",
+    "manual": "Printed manual",
+    "manualBody": "The same content, laid out to read in store.",
+    "manualOpen": "Open PDF",
+    "manualMissing": "The PDF for this chapter is not uploaded yet.",
+    "checkpoint": "Chapter checkpoint",
+    "checkpointValidated": "Validated by your leader",
+    "checkpointPending": "Ask your store leader to validate it with you."
+  },
+  "lesson": {
+    "back": "Back to the chapter",
+    "position": "Lesson {{index}} of {{total}}",
+    "watched": "You watched {{pct}} % · you need {{gate}} % to complete",
+    "videoMissing": "The step-by-step is being recorded. Meanwhile, go through it with your store leader.",
+    "play": "Play",
+    "pause": "Pause",
+    "fullscreen": "Fullscreen",
+    "complete": "Complete",
+    "done": "Lesson completed",
+    "working": "Saving…",
+    "quizTitle": "Test yourself",
+    "quizSubmit": "Check answers",
+    "quizSubmitting": "Checking…",
+    "quizRetry": "Try again",
+    "quizScore": "{{score}} of {{total}} correct",
+    "quizPerfect": "Perfect quiz",
+    "quizBonus": "+{{n}} XP bonus",
+    "quizAnswerAll": "Answer all three questions before checking.",
+    "assistantTitle": "Questions?",
+    "assistantBody": "Ask the Assistant: it reads the manual for you and cites the chapter.",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "profile": {
+    "since": "Since {{date}}",
+    "badges": "Badges",
+    "badgeLocked": "{{n}} XP to go",
+    "certificates": "Certificates",
+    "certificateReady": "Available",
+    "certificatePending": "When you complete the chapter",
+    "certificatesHint": "The numbered PDF download arrives in the next delivery.",
+    "prefs": "Preferences",
+    "prefsLocale": "Language",
+    "prefsReminder": "Daily reminder",
+    "prefsReminderHint": "A nudge at the start of your shift with the pending lesson.",
+    "prefsLeague": "League alerts",
+    "prefsLeagueHint": "When your store changes position.",
+    "saved": "Preferences saved",
+    "badgeEarned": "Earned · {{date}}"
   }
 }

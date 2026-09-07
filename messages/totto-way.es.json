@@ -131,5 +131,66 @@
   "placeholder": {
     "title": "Esta sección llega en el siguiente hito",
     "body": "Estamos construyendo Totto Way por capítulos, igual que el manual. Vuelve pronto."
+  },
+  "types": {
+    "READING": "Lectura",
+    "VIDEO": "Video",
+    "CHECKLIST": "Checklist",
+    "CHECKPOINT": "Checkpoint"
+  },
+  "chapter": {
+    "back": "Todos los capítulos",
+    "progress": "{{done}} de {{total}} lecciones",
+    "continue": "Continuar donde ibas",
+    "start": "Empezar el capítulo",
+    "completed": "Capítulo completado",
+    "manual": "Manual impreso",
+    "manualBody": "El mismo contenido, maquetado para leer en tienda.",
+    "manualOpen": "Abrir PDF",
+    "manualMissing": "El PDF de este capítulo aún no está cargado.",
+    "checkpoint": "Checkpoint del capítulo",
+    "checkpointValidated": "Validado por tu líder",
+    "checkpointPending": "Pídele a tu líder de tienda que lo valide contigo."
+  },
+  "lesson": {
+    "back": "Volver al capítulo",
+    "position": "Lección {{index}} de {{total}}",
+    "watched": "Has visto el {{pct}} % · necesitas {{gate}} % para completar",
+    "videoMissing": "El paso a paso se está grabando. Mientras tanto, repásalo con tu líder de tienda.",
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "fullscreen": "Pantalla completa",
+    "complete": "Completar",
+    "done": "Lección completada",
+    "working": "Guardando…",
+    "quizTitle": "Ponte a prueba",
+    "quizSubmit": "Revisar respuestas",
+    "quizSubmitting": "Revisando…",
+    "quizRetry": "Intentar de nuevo",
+    "quizScore": "{{score}} de {{total}} correctas",
+    "quizPerfect": "Quiz perfecto",
+    "quizBonus": "+{{n}} XP de bonus",
+    "quizAnswerAll": "Responde las tres preguntas antes de revisar.",
+    "assistantTitle": "¿Dudas?",
+    "assistantBody": "Pregúntale al Asistente: consulta el manual por ti y te cita el capítulo.",
+    "previous": "Anterior",
+    "next": "Siguiente"
+  },
+  "profile": {
+    "since": "Desde {{date}}",
+    "badges": "Insignias",
+    "badgeLocked": "Faltan {{n}} XP",
+    "certificates": "Certificaciones",
+    "certificateReady": "Disponible",
+    "certificatePending": "Al completar el capítulo",
+    "certificatesHint": "La descarga en PDF con folio llega con la siguiente entrega.",
+    "prefs": "Preferencias",
+    "prefsLocale": "Idioma",
+    "prefsReminder": "Recordatorio diario",
+    "prefsReminderHint": "Un aviso al inicio de tu turno con la lección pendiente.",
+    "prefsLeague": "Avisos de la Liga",
+    "prefsLeagueHint": "Cuando tu tienda cambia de posición.",
+    "saved": "Preferencias guardadas",
+    "badgeEarned": "Ganada · {{date}}"
   }
 }
