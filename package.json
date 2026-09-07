@@ -18,7 +18,8 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "seed:franchise": "npx tsx prisma/seed-franchise.ts",
-    "seed:saju": "npx tsx prisma/seed-saju.ts"
+    "seed:saju": "npx tsx prisma/seed-saju.ts",
+    "seed:totto-way": "npx tsx prisma/seed-totto-way.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
