@@ -131,8 +131,8 @@ españoles (ver BRAND.md). El cuerpo usa Satoshi del layout raíz.
   es lo que mantiene iguales el impreso y la plataforma.
 - Una lección de video se puede publicar con solo el póster: el paso a paso se
   graba después. Misma regla que permite completarla sin archivo.
-- Pendiente para la fase 4: subida de video a storage, subtítulos y la vista de
-  impresión del manual. Hoy el póster y el video se indican por URL.
+- El video y el PDF del manual se suben al storage desde el propio Estudio
+  (fase 4); también se pueden indicar por URL si ya están alojados.
 
 ## Integraciones
 
