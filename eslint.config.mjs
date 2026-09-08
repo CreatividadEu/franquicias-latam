@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Prototipo de TOTTO vendorizado como referencia: es un bundle generado,
     // no código de la aplicación, y su cabecera dice que no se edita.
     "docs/**",
+    "public/microsites/totto-way/**",
   ]),
 ]);
 

@@ -1,0 +1,1 @@
+window.TOTTO_ASSETS = {"caja":"./assets/caja.png","distritos":"./assets/distritos.png","fachada":"./assets/fachada.png","interior":"./assets/interior.png","morrales":"./assets/morrales.png","viajes":"./assets/viajes.png","vitrina":"./assets/vitrina.png"};

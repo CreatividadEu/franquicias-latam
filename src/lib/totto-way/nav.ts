@@ -6,6 +6,7 @@ import type { TwTranslator } from "./i18n";
 export type NavKey =
   | "home"
   | "learn"
+  | "store"
   | "league"
   | "journey"
   | "inspire"
@@ -19,6 +20,7 @@ export type NavItem = { key: NavKey; href: string; label: string; badge?: number
 export const NAV_HREF: Record<NavKey, string> = {
   home: "/totto-way",
   learn: "/totto-way/aprender",
+  store: "/totto-way/mi-tienda",
   league: "/totto-way/liga",
   journey: "/totto-way/mi-viaje",
   inspire: "/totto-way/inspira",
@@ -33,6 +35,7 @@ export const MOBILE_PRIMARY: readonly NavKey[] = ["home", "learn", "league", "jo
 
 export function getNavItems(role: UserRole, options: { showGamification: boolean; pendingLessons?: number }, t: TwTranslator): NavItem[] {
   const items: NavItem[] = [
+    { key: "store", href: NAV_HREF.store, label: t("nav.store") },
     { key: "home", href: NAV_HREF.home, label: t("nav.home") },
     { key: "learn", href: NAV_HREF.learn, label: t("nav.learn"), badge: options.pendingLessons || undefined },
   ];
@@ -53,6 +56,7 @@ export type HeaderTitle = { href: string; eyebrow: string; title: string };
 
 export function getHeaderTitles(t: TwTranslator): HeaderTitle[] {
   return [
+    { href: NAV_HREF.store, eyebrow: t("brand.name"), title: t("nav.store") },
     { href: NAV_HREF.home, eyebrow: t("brand.name"), title: t("nav.home") },
     { href: NAV_HREF.learn, eyebrow: t("brand.name"), title: t("nav.learn") },
     { href: NAV_HREF.league, eyebrow: t("brand.name"), title: t("nav.league") },

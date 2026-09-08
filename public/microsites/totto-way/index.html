@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#161c22">
+  <meta name="description" content="TOTTO Way: explora una recreación 3D de una tienda TOTTO, camina por sus pasillos y descubre la marca desde dentro.">
+  <title>TOTTO Way — Recorrido virtual · Franquicias LATAM</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main id="experience" aria-label="Recorrido virtual de la tienda TOTTO">
+    <div id="viewport" tabindex="0" role="application" aria-label="Tienda 3D. Arrastra para mirar y usa W A S D o las flechas para caminar."></div>
+    <div class="shade shade-top"></div><div class="shade shade-bottom"></div>
+    <header class="topbar">
+      <div class="brand-lockup"><div class="totto-logo" aria-label="TOTTO">TOTTO<span><i></i><i></i></span></div><div class="brand-divider"></div><div class="platform"><b>TOTTO WAY</b><span>por Franquicias LATAM</span></div></div>
+      <div class="view-switch" role="group" aria-label="Modo de visualización"><button id="walk-mode" class="selected" aria-pressed="true"><svg viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="m7 12 3-4 4 1 3 4M10 8l-1 7-4 5m4-5 5 2 1 4"/></svg><span>Caminar</span></button><button id="plan-mode" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="m3 8 9-5 9 5-9 5-9-5Zm0 4 9 5 9-5M3 16l9 5 9-5"/></svg><span>Vista aérea</span></button></div>
+      <div class="top-actions"><button id="quality" class="icon-button" aria-label="Calidad de imagen: alta" title="Cambiar calidad"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 9L4 7.5m8 4.5 8-4.5M12 12v9"/></svg></button><button id="help" class="icon-button" aria-label="Cómo recorrer la tienda" title="Controles"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 8.5a2.5 2.5 0 1 1 4.2 1.8c-1 .7-1.7 1.2-1.7 2.7m0 3v.2"/></svg></button><button id="fullscreen" class="icon-button" aria-label="Pantalla completa" title="Pantalla completa"><svg viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg></button></div>
+    </header>
+    <div class="top-caption"><span class="tiny-rule"></span> EXPERIENCIA 3D <span class="caption-sep">/</span> TOTTO WAY</div>
+    <div id="crosshair" aria-hidden="true"></div>
+    <button id="floor-target" aria-label="Caminar hasta este punto" tabindex="-1"><svg viewBox="0 0 24 24"><path d="m7 13 5-5 5 5m-10 4 5-5 5 5"/></svg></button>
+    <div id="intro-tip" class="instruction-toast"><svg viewBox="0 0 24 24"><path d="m8 12 1-7a2 2 0 0 1 3 0v6l5-1 3 3-1 7H9l-5-7a2 2 0 0 1 3-2l1 1Z"/></svg><span><b>Estás dentro.</b> Arrastra para mirar. Haz clic en el suelo para caminar.</span><button id="dismiss-tip" aria-label="Cerrar indicación">×</button></div>
+    <aside class="location-info"><p class="eyebrow"><span id="zone-number">01</span><span class="zone-dash"></span><span id="zone-kind">EXPLORA A TU RITMO</span></p><h1 id="zone-name">Entrada</h1><p id="zone-subtitle">Una primera mirada</p><button id="reference" class="reference-button"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/></svg>Ver fotografía de referencia<svg class="arrow" viewBox="0 0 24 24"><path d="M7 17 10 7h10m0 0L7 20"/></svg></button></aside>
+    <aside id="minimap" class="minimap"><div class="map-title"><span>TU UBICACIÓN</span><button id="map-collapse" aria-label="Ocultar plano">−</button></div><canvas id="map" width="360" height="430" aria-label="Plano interactivo. Selecciona una zona para caminar hasta ella." tabindex="0"></canvas><div class="map-caption"><span class="you-dot"></span>Estás aquí<span class="map-compass">↑ FONDO</span></div></aside>
+    <button id="map-open" class="map-open icon-button" aria-label="Mostrar plano de la tienda"><svg viewBox="0 0 24 24"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2V5Zm6-2v16m6-14v16"/></svg></button>
+    <div id="joystick" aria-label="Control táctil para caminar"><div class="joy-ring"><div class="joy-knob"></div></div><span>MOVERSE</span></div>
+    <div id="touch-hint">Desliza para mirar</div>
+    <footer class="control-dock">
+      <div class="tour-control"><button id="tour" class="tour-button"><svg id="play-icon" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z"/></svg><span id="tour-label">Recorrido guiado</span></button><span class="dock-divider"></span><button id="previous" class="step-button" aria-label="Zona anterior"><svg viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></svg></button><span id="tour-progress">01 <span>/ 07</span></span><button id="next" class="step-button" aria-label="Zona siguiente"><svg viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></svg></button></div>
+      <nav id="zone-nav" aria-label="Zonas de la tienda"></nav>
+      <div class="dock-foot"><span class="desktop-hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> moverse <span>·</span> arrastrar para mirar</span><span class="recreation">Recreación espacial basada en fotografías</span><button id="reset">Volver a la entrada <span>↗</span></button></div>
+    </footer>
+    <div id="announcement" class="toast" role="status" aria-live="polite"></div>
+    <div id="loading" class="loading"><div class="loader-logo">TOTTO<span><i></i><i></i></span></div><p>Preparando TOTTO Way</p><div class="loader-track"><span></span></div><small>Descubre la marca desde dentro.</small></div>
+    <div id="unavailable" class="unavailable" hidden><h2>El recorrido 3D no se ha podido iniciar</h2><p id="unavailable-message">Activa la aceleración gráfica de tu navegador o abre el archivo en una versión reciente de Chrome, Edge o Safari.</p><button id="fallback-gallery">Ver las fotografías</button><button id="retry">Intentar de nuevo</button></div>
+    <dialog id="help-dialog"><button class="dialog-close" data-close="help-dialog" aria-label="Cerrar ayuda">×</button><p class="eyebrow">TÚ MARCAS EL CAMINO</p><h2>Siéntete dentro.</h2><p class="dialog-intro">Explora cada rincón o deja que el recorrido te lleve por los espacios de la tienda.</p><div class="help-grid"><div><span class="help-symbol">↔</span><b>Mira a tu alrededor</b><p>Arrastra con el ratón o desliza un dedo sobre la tienda.</p></div><div><span class="help-symbol">W A S D</span><b>Camina libremente</b><p>Usa las teclas W A S D, las flechas, el control táctil o haz clic en el suelo.</p></div><div><span class="help-symbol">▷</span><b>Déjate guiar</b><p>Inicia el recorrido guiado o selecciona una zona en la barra inferior.</p></div><div><span class="help-symbol">⌘</span><b>Cambia de perspectiva</b><p>Abre la vista aérea para entender la distribución y elige dónde continuar.</p></div></div><p class="model-note">Modelo interpretativo de las siete fotografías facilitadas. La distribución y las proporciones son aproximadas; no representa un levantamiento arquitectónico.</p><button class="primary-button" data-close="help-dialog">Seguir explorando</button></dialog>
+    <dialog id="reference-dialog"><div class="reference-head"><div><p class="eyebrow">IMÁGENES ORIGINALES</p><h2 id="reference-title">Entrada</h2></div><button class="dialog-close" data-close="reference-dialog" aria-label="Cerrar fotografías">×</button></div><div class="reference-frame"><img id="reference-image" alt="Fotografía de referencia de la tienda TOTTO"><button id="photo-prev" class="photo-arrow left" aria-label="Fotografía anterior">‹</button><button id="photo-next" class="photo-arrow right" aria-label="Fotografía siguiente">›</button></div><div class="photo-footer"><span id="photo-count">1 / 7</span><p>Fotografía original utilizada como referencia del modelo 3D.</p></div></dialog>
+  </main>
+  <noscript>Activa JavaScript para explorar la tienda 3D.</noscript>
+  <script src="./manifest.js"></script>
+  <script src="./assets/three.min.js"></script>
+  <script src="./navigation.js"></script>
+  <script src="./scene.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
