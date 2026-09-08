@@ -1,0 +1,135 @@
+{
+  "brand": {
+    "name": "Totto Way",
+    "tagline": "Plataforma de formación",
+    "motto": "¿Listos? ¡Vamos!",
+    "mottoLine1": "¿LISTOS?",
+    "mottoLine2": "¡VAMOS!"
+  },
+  "common": {
+    "continue": "Continuar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "start": "Empezar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loading": "Cargando…",
+    "logout": "Cerrar sesión",
+    "minutesShort": "{{n}} min",
+    "xp": "XP",
+    "xpChip": "+{{n}} XP",
+    "days": "{{n}} días",
+    "lessonsLeft": "{{n}} lecciones restantes",
+    "of": "{{done}} de {{total}}",
+    "notConfigured": "Aún no está configurado."
+  },
+  "nav": {
+    "home": "Inicio",
+    "learn": "Aprender",
+    "league": "Liga",
+    "journey": "Mi viaje",
+    "inspire": "Inspira",
+    "benefits": "Beneficios",
+    "profile": "Perfil",
+    "leader": "Panel líder",
+    "studio": "Estudio",
+    "assistant": "Asistente",
+    "more": "Más"
+  },
+  "roles": {
+    "TW_ASESOR": "Asesor comercial",
+    "TW_LIDER_TIENDA": "Líder de tienda",
+    "TW_AUX_LOGISTICO": "Auxiliar logístico",
+    "TW_JEFE_COMERCIAL": "Jefe comercial",
+    "TW_FORMADOR": "Formador",
+    "FRANCHISE_OWNER": "Franquiciado",
+    "ADMIN": "Administrador"
+  },
+  "login": {
+    "eyebrow": "Way · Plataforma de formación",
+    "title": "Ingreso",
+    "subtitle": "Entra con tu correo o tu código de colaborador.",
+    "identifier": "Correo o código de colaborador",
+    "identifierPlaceholder": "camila@totto.com o TA-0412",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Tu contraseña",
+    "submit": "Ingresar",
+    "submitting": "Ingresando…",
+    "forgot": "Olvidé mi clave",
+    "forgotHint": "Pídele a tu líder de tienda o al equipo de formación que restablezca tu clave.",
+    "errorGeneric": "No pudimos ingresar. Revisa tus datos.",
+    "errorNetwork": "Sin conexión. Inténtalo de nuevo.",
+    "errorNoAccess": "Tu cuenta no tiene acceso a Totto Way.",
+    "errorSso": "Tu sesión de admin no es válida. Entra de nuevo.",
+    "adminSso": "¿Eres del equipo Franquicias LATAM? Entra con tu sesión de admin."
+  },
+  "onboarding": {
+    "eyebrow": "Bienvenida · {{step}} de 3",
+    "step1Title": "Esto es Totto Way",
+    "step1Body": "Tu mapa para hacer las cosas a la manera TOTTO desde el primer día en tienda. Siete capítulos, misiones cortas y un asistente que consulta el manual por ti.",
+    "step2Title": "Así ganas XP",
+    "step2Body": "Cada lección suma puntos. Los quizzes perfectos, los checkpoints validados por tu líder y marcar tu jornada en Geovictoria también. Los puntos mueven la Liga de tu tienda.",
+    "step2Lesson": "Lección completada",
+    "step2Quiz": "Quiz 3 de 3",
+    "step2Checkpoint": "Checkpoint validado",
+    "step2Attendance": "Marcación puntual",
+    "step3Title": "Tu primera misión",
+    "step3Body": "Capítulo 01 · Introducción. Ocho lecciones cortas para conocer la empresa, la cultura y el ecosistema SER.",
+    "finish": "Ir a mi primera lección",
+    "skip": "Saltar"
+  },
+  "home": {
+    "eyebrow": "Inicio",
+    "title": "Continúa donde ibas",
+    "greeting": "Hola, {{name}}",
+    "currentChapter": "Capítulo {{number}} · {{title}}",
+    "nextXp": "Próximo: +{{n}} XP",
+    "continueLesson": "Continuar lección",
+    "seeChapters": "Ver los 7 capítulos",
+    "startChapter": "Empezar el Capítulo 01",
+    "allDone": "Completaste todo lo publicado. Pronto habrá más.",
+    "progress": "Progreso total",
+    "leaguePosition": "Posición Liga",
+    "leagueStore": "tu tienda",
+    "leagueOff": "Sin Liga",
+    "streak": "Racha",
+    "nextBadge": "Siguiente insignia",
+    "nextBadgeMissing": "Faltan {{n}} XP",
+    "nextBadgeMax": "Nivel máximo",
+    "today": "Hoy en tienda",
+    "todayLesson": "Lección pendiente: {{title}}",
+    "todayChapters": "Explora los capítulos",
+    "todayProfile": "Completa tu perfil",
+    "team": "Tu equipo",
+    "teamEmpty": "Aún no hay puntos en tu tienda esta temporada.",
+    "seeLeague": "Ver la Liga",
+    "chapterComingSoon": "Pendiente",
+    "chapters": "Capítulos"
+  },
+  "learn": {
+    "eyebrow": "Aprender",
+    "title": "Los 7 capítulos",
+    "available": "Disponible",
+    "locked": "Bloqueado",
+    "draft": "Próximamente",
+    "lessons": "{{done}}/{{total}} lecciones"
+  },
+  "header": {
+    "streakPill": "{{n}} días",
+    "xpPill": "{{n}} XP"
+  },
+  "user": {
+    "level": "Nivel",
+    "toNext": "{{n}} XP para {{badge}}"
+  },
+  "badges": {
+    "EXPLORADOR": "Explorador",
+    "GUIA": "Guía",
+    "LIDER_RUTA": "Líder de ruta",
+    "CUMBRE": "Cumbre"
+  },
+  "placeholder": {
+    "title": "Esta sección llega en el siguiente hito",
+    "body": "Estamos construyendo Totto Way por capítulos, igual que el manual. Vuelve pronto."
+  }
+}

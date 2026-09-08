@@ -13,6 +13,12 @@ datasource db {
 enum UserRole {
   ADMIN
   FRANCHISE_OWNER
+  // Totto Way (LMS). FRANCHISE_OWNER = franquiciado.
+  TW_ASESOR
+  TW_LIDER_TIENDA
+  TW_AUX_LOGISTICO
+  TW_JEFE_COMERCIAL
+  TW_FORMADOR
 }
 
 enum InvestmentRange {
@@ -98,11 +104,25 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // ── Totto Way (LMS) — scoping por marca ─────────────
+  franchiseId        String?
+  franchise          Franchise?               @relation(fields: [franchiseId], references: [id], onDelete: SetNull)
+  twEmployee         TwEmployee?
+  twStoreAccess      TwStoreAccess[]
+  twProgress         TwLessonProgress[]
+  twValidations      TwCheckpointValidation[] @relation("TwValidationUser")
+  twValidated        TwCheckpointValidation[] @relation("TwValidationValidator")
+  twXpEvents         TwXpEvent[]
+  twBadges           TwUserBadge[]
+  twMilestones       TwJourneyMilestone[]
+  twAssistantThreads TwAssistantThread[]
+
+  @@index([franchiseId])
   @@map("users")
 }
 
 model Franchise {
-  id                String              @id @default(cuid())
+  id                String                 @id @default(cuid())
   name              String
   description       String
   logo              String?
@@ -110,61 +130,75 @@ model Franchise {
   investmentMin     Float
   investmentMax     Float
   sectorId          String
-  sector            Sector              @relation(fields: [sectorId], references: [id])
-  slug              String?             @unique
+  sector            Sector                 @relation(fields: [sectorId], references: [id])
+  slug              String?                @unique
   contactEmail      String?
-  featured          Boolean             @default(false)
-  active            Boolean             @default(true)
+  featured          Boolean                @default(false)
+  active            Boolean                @default(true)
   coverageCountries FranchiseCoverage[]
   matches           LeadFranchiseMatch[]
   profile           FranchiseProfile?
   featureFlags      FranchiseFeatureFlags?
   botConfig         FranchiseBotConfig?
   botFaqs           FranchiseBotFaq[]
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  // ── Totto Way (LMS) ───────────────────────────────
+  users              User[]
+  twSettings         TwSettings?
+  twStores           TwStore[]
+  twEmployees        TwEmployee[]
+  twChapters         TwChapter[]
+  twMediaAssets      TwMediaAsset[]
+  twXpEvents         TwXpEvent[]
+  twBadges           TwBadge[]
+  twLeagueSeasons    TwLeagueSeason[]
+  twInspireItems     TwInspireItem[]
+  twBenefits         TwBenefit[]
+  twAssistantThreads TwAssistantThread[]
 
   // ── Landing Page System (additive) ────────────────
-  planTier          PlanTier            @default(BASIC)
-  published         Boolean             @default(false)
-  headline          String?
-  subheadline       String?
-  shortDescription  String?
-  longDescription   String?
-  logoUrl           String?
-  heroImageUrl      String?
-  youtubeUrl        String?
-  brochureUrl       String?
-  bookingUrl        String?
-  credibilityLine   String?
-  foundingYear      Int?
-  cta1Label         String?
-  cta1Url           String?
-  cta2Label         String?
-  cta2Url           String?
-  ebitdaReference   String?
-  paybackMonths     Int?
-  royaltyInfo       String?
-  operatorProfile   String?
-  canonEntrada      Float?
+  planTier         PlanTier @default(BASIC)
+  published        Boolean  @default(false)
+  headline         String?
+  subheadline      String?
+  shortDescription String?
+  longDescription  String?
+  logoUrl          String?
+  heroImageUrl     String?
+  youtubeUrl       String?
+  brochureUrl      String?
+  bookingUrl       String?
+  credibilityLine  String?
+  foundingYear     Int?
+  cta1Label        String?
+  cta1Url          String?
+  cta2Label        String?
+  cta2Url          String?
+  ebitdaReference  String?
+  paybackMonths    Int?
+  royaltyInfo      String?
+  operatorProfile  String?
+  canonEntrada     Float?
 
-  businessModels    FranchiseBusinessModel[]
-  media             FranchiseMedia[]
-  faqs              FranchiseFaq[]
-  moduleConfig      FranchiseModuleConfig?
-  automationConfig  FranchiseAutomationConfig?
-  listingType       ListingType          @default(ACTIVE_FRANCHISE)
-  verificationStatus VerificationStatus  @default(VERIFIED_BY_FL)
-  editorialBadge    String?
-  publicInterestCount Int                @default(0)
-  publicInterestEnabled Boolean          @default(false)
-  publicInterestLabel String?
-  interestCtaMode   InterestCtaMode      @default(APPLY)
-  availabilityLabel String?
-  statusDisclaimer  String?
-  showApplicationForm Boolean            @default(true)
-  showFinancialData Boolean              @default(true)
-  showVerifiedBadge Boolean              @default(false)
+  businessModels        FranchiseBusinessModel[]
+  media                 FranchiseMedia[]
+  faqs                  FranchiseFaq[]
+  moduleConfig          FranchiseModuleConfig?
+  automationConfig      FranchiseAutomationConfig?
+  listingType           ListingType                @default(ACTIVE_FRANCHISE)
+  verificationStatus    VerificationStatus         @default(VERIFIED_BY_FL)
+  editorialBadge        String?
+  publicInterestCount   Int                        @default(0)
+  publicInterestEnabled Boolean                    @default(false)
+  publicInterestLabel   String?
+  interestCtaMode       InterestCtaMode            @default(APPLY)
+  availabilityLabel     String?
+  statusDisclaimer      String?
+  showApplicationForm   Boolean                    @default(true)
+  showFinancialData     Boolean                    @default(true)
+  showVerifiedBadge     Boolean                    @default(false)
 
   @@map("franchises")
 }
@@ -252,36 +286,36 @@ model FranchiseAutomationConfig {
 
 model FranchiseProfile {
   id              String    @id @default(uuid())
-  franchiseId      String    @unique
-  franchise        Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
-  headline         String    @default("")
-  subheadline      String    @default("")
-  heroImageUrl     String?
-  heroVideoUrl     String?
-  galleryUrls      String[]  @default([])
-  brochureUrl      String?
-  investmentMin    Float?
-  investmentMax    Float?
-  countryCoverage  String?
+  franchiseId     String    @unique
+  franchise       Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  headline        String    @default("")
+  subheadline     String    @default("")
+  heroImageUrl    String?
+  heroVideoUrl    String?
+  galleryUrls     String[]  @default([])
+  brochureUrl     String?
+  investmentMin   Float?
+  investmentMax   Float?
+  countryCoverage String?
 
   // Hero section
-  heroTitle        String?
-  heroSubtitle     String?
-  heroCtaLabel     String?
-  heroStats        Json?
+  heroTitle    String?
+  heroSubtitle String?
+  heroCtaLabel String?
+  heroStats    Json?
 
   // Reviews badge
-  showReviewsBadge  Boolean   @default(false)
-  reviewRating      Float?
-  reviewBadgeLabel  String?
-  reviewAvatarUrls  Json?
+  showReviewsBadge Boolean @default(false)
+  reviewRating     Float?
+  reviewBadgeLabel String?
+  reviewAvatarUrls Json?
 
   // Navbar
-  showFranchiseLogo Boolean   @default(false)
+  showFranchiseLogo Boolean @default(false)
   franchiseLogoUrl  String?
 
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("franchise_profiles")
 }
@@ -347,20 +381,20 @@ model FranchiseCoverage {
 }
 
 model Lead {
-  id              String          @id @default(cuid())
+  id              String               @id @default(cuid())
   name            String
   email           String
   phone           String
-  phoneVerified   Boolean         @default(false)
+  phoneVerified   Boolean              @default(false)
   countryId       String
-  country         Country         @relation(fields: [countryId], references: [id])
-  sectors         Sector[]        @relation("LeadSectors")
+  country         Country              @relation(fields: [countryId], references: [id])
+  sectors         Sector[]             @relation("LeadSectors")
   investmentRange InvestmentRange
   experienceLevel ExperienceLevel
-  viewed          Boolean         @default(false)
+  viewed          Boolean              @default(false)
   matches         LeadFranchiseMatch[]
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
   @@index([email])
   @@index([phone])
@@ -384,7 +418,7 @@ model LeadFranchiseMatch {
 // ── Form Leads (landing page qualification form) ────────────────────────────
 
 model FormLead {
-  id              String   @id @default(cuid())
+  id              String      @id @default(cuid())
   name            String
   email           String
   phone           String
@@ -394,14 +428,14 @@ model FormLead {
   franchiseSlug   String
   listingSlug     String?
   listingType     ListingType @default(ACTIVE_FRANCHISE)
-  sourceType      String   @default("franchise_application")
+  sourceType      String      @default("franchise_application")
   editorialBadge  String?
   cityInterest    String?
   country         String?
   message         String?
-  landingSource   String   @default("landing-form")
-  type            String   @default("form")
-  createdAt       DateTime @default(now())
+  landingSource   String      @default("landing-form")
+  type            String      @default("form")
+  createdAt       DateTime    @default(now())
 
   @@index([franchiseSlug])
   @@index([listingSlug])
@@ -412,15 +446,15 @@ model FormLead {
 }
 
 model SmsVerification {
-  id                   String   @id @default(cuid())
+  id                   String    @id @default(cuid())
   phone                String
   code                 String
-  channel              String?  @default("sms")
-  attempts             Int      @default(0)
-  verified             Boolean  @default(false)
+  channel              String?   @default("sms")
+  attempts             Int       @default(0)
+  verified             Boolean   @default(false)
   expiresAt            DateTime
-  createdAt            DateTime @default(now())
-  providerSid          String?  @unique
+  createdAt            DateTime  @default(now())
+  providerSid          String?   @unique
   providerStatus       String?
   providerErrorCode    String?
   providerErrorMessage String?
@@ -565,4 +599,509 @@ model SajuMilestone {
   @@unique([title, date])
   @@index([date])
   @@map("saju_milestones")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Totto Way — LMS de formación en tienda (docs/totto-way/PLAN.md §3)
+// Todas las tablas van con prefijo tw_ y cuelgan de franchises.franchiseId.
+// ═══════════════════════════════════════════════════════════════════════════
+
+enum TwChapterStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum TwLessonType {
+  READING
+  VIDEO
+  CHECKLIST
+  CHECKPOINT
+}
+
+enum TwProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TwXpSource {
+  LESSON
+  QUIZ
+  CHECKPOINT
+  ATTENDANCE
+  NPS
+  INSPIRE
+  MANUAL
+}
+
+enum TwBadgeCode {
+  EXPLORADOR
+  GUIA
+  LIDER_RUTA
+  CUMBRE
+}
+
+enum TwLeagueEntity {
+  STORE
+  USER
+}
+
+enum TwSeasonStatus {
+  UPCOMING
+  ACTIVE
+  CLOSED
+}
+
+enum TwMilestoneType {
+  JOINED
+  CHAPTER_DONE
+  BADGE
+  NPS
+  STREAK
+  PROMOTION
+  CUSTOM
+}
+
+enum TwInspireType {
+  PODCAST
+  ARTICLE
+  VIDEO
+  MESSAGE
+  STORY
+}
+
+enum TwMediaKind {
+  VIDEO
+  POSTER
+  SUBTITLE
+  PDF
+  IMAGE
+}
+
+enum TwMediaStatus {
+  UPLOADED
+  READY
+}
+
+enum TwAssistantRole {
+  USER
+  ASSISTANT
+}
+
+// ── Organización y acceso ──────────────────────────
+
+model TwSettings {
+  franchiseId            String    @id
+  franchise              Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  showGamification       Boolean   @default(true)
+  sequentialUnlock       Boolean   @default(true)
+  dailyReminderHour      Int       @default(9)
+  /// ISO-2. Vacío = Liga/XP en todos los países.
+  leagueEnabledCountries String[]  @default([])
+  updatedAt              DateTime  @updatedAt
+
+  @@map("tw_settings")
+}
+
+model TwStore {
+  id          String    @id @default(cuid())
+  franchiseId String
+  franchise   Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  code        String
+  name        String
+  city        String
+  country     String    @default("CO")
+  timezone    String    @default("America/Bogota")
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  employees TwEmployee[]
+  access    TwStoreAccess[]
+  xpEvents  TwXpEvent[]
+
+  @@unique([franchiseId, code])
+  @@index([franchiseId])
+  @@map("tw_stores")
+}
+
+model TwEmployee {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  franchiseId    String
+  franchise      Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  storeId        String?
+  store          TwStore?  @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  employeeCode   String
+  roleTitle      String
+  since          DateTime  @default(now())
+  onboardedAt    DateTime?
+  /// Caches materializadas desde tw_xp_events (awardXp las mantiene).
+  xpTotal        Int       @default(0)
+  streakDays     Int       @default(0)
+  lastActivityAt DateTime?
+  locale         String    @default("es")
+  prefs          Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([franchiseId, employeeCode])
+  @@index([storeId])
+  @@map("tw_employees")
+}
+
+/// Multi-tienda para TW_JEFE_COMERCIAL y FRANCHISE_OWNER.
+model TwStoreAccess {
+  userId  String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeId String
+  store   TwStore @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, storeId])
+  @@map("tw_store_access")
+}
+
+// ── Contenido ─────────────────────────────────────
+
+model TwChapter {
+  id                String          @id @default(cuid())
+  franchiseId       String
+  franchise         Franchise       @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  number            Int
+  slug              String
+  title             String
+  subtitle          String          @default("")
+  color             String          @default("#FCCE01")
+  order             Int             @default(0)
+  status            TwChapterStatus @default(DRAFT)
+  version           Int             @default(1)
+  publishedAt       DateTime?
+  /// Árbol congelado (capítulo + misiones + lecciones + quiz) que ven los alumnos.
+  publishedSnapshot Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  missions    TwMission[]
+  lessons     TwLesson[]
+  checkpoints TwCheckpoint[]
+
+  @@unique([franchiseId, number])
+  @@unique([franchiseId, slug])
+  @@map("tw_chapters")
+}
+
+model TwMission {
+  id        String    @id @default(cuid())
+  chapterId String
+  chapter   TwChapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  code      String
+  title     String
+  order     Int       @default(0)
+
+  lessons TwLesson[]
+
+  @@unique([chapterId, code])
+  @@map("tw_missions")
+}
+
+model TwLesson {
+  id           String        @id @default(cuid())
+  chapterId    String
+  chapter      TwChapter     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  missionId    String
+  mission      TwMission     @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  slug         String
+  title        String
+  type         TwLessonType  @default(READING)
+  minutes      Int           @default(5)
+  xp           Int           @default(50)
+  order        Int           @default(0)
+  /// Bloques del vocabulario Totto (src/lib/totto-way/content.ts).
+  blocks       Json          @default("[]")
+  keyTakeaway  String        @default("")
+  ruleBanner   String?
+  videoAssetId String?
+  videoAsset   TwMediaAsset? @relation(fields: [videoAssetId], references: [id], onDelete: SetNull)
+  posterUrl    String?
+  screenshots  String[]      @default([])
+  docRefs      String[]      @default([])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  quiz     TwQuiz?
+  progress TwLessonProgress[]
+
+  @@unique([chapterId, slug])
+  @@index([missionId])
+  @@map("tw_lessons")
+}
+
+model TwQuiz {
+  id        String   @id @default(cuid())
+  lessonId  String   @unique
+  lesson    TwLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  /// [{ q, options[], correctIndex, explanation? }]
+  questions Json     @default("[]")
+  passScore Int      @default(3)
+  bonusXp   Int      @default(40)
+
+  @@map("tw_quizzes")
+}
+
+model TwCheckpoint {
+  id            String    @id @default(cuid())
+  chapterId     String
+  chapter       TwChapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  title         String
+  instructions  String    @default("")
+  xp            Int       @default(150)
+  validatorRole UserRole  @default(TW_LIDER_TIENDA)
+  order         Int       @default(0)
+
+  validations TwCheckpointValidation[]
+
+  @@index([chapterId])
+  @@map("tw_checkpoints")
+}
+
+model TwMediaAsset {
+  id           String        @id @default(cuid())
+  franchiseId  String
+  franchise    Franchise     @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  kind         TwMediaKind
+  storagePath  String
+  originalName String
+  mime         String
+  sizeBytes    Int           @default(0)
+  durationSec  Int?
+  status       TwMediaStatus @default(UPLOADED)
+  meta         Json?
+  createdAt    DateTime      @default(now())
+
+  lessons TwLesson[]
+
+  @@index([franchiseId, kind])
+  @@map("tw_media_assets")
+}
+
+// ── Progreso y gamificación ───────────────────────
+
+model TwLessonProgress {
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId      String
+  lesson        TwLesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  status        TwProgressStatus @default(NOT_STARTED)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  videoSeconds  Int              @default(0)
+  videoDuration Int?
+  quizScore     Int?
+  xpEarned      Int              @default(0)
+  updatedAt     DateTime         @updatedAt
+
+  @@id([userId, lessonId])
+  @@index([lessonId])
+  @@map("tw_lesson_progress")
+}
+
+model TwCheckpointValidation {
+  checkpointId String
+  checkpoint   TwCheckpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User         @relation("TwValidationUser", fields: [userId], references: [id], onDelete: Cascade)
+  validatedBy  String
+  validator    User         @relation("TwValidationValidator", fields: [validatedBy], references: [id], onDelete: Cascade)
+  validatedAt  DateTime     @default(now())
+  xpAwarded    Int          @default(150)
+
+  @@id([checkpointId, userId])
+  @@map("tw_checkpoint_validations")
+}
+
+model TwXpEvent {
+  id          String     @id @default(cuid())
+  franchiseId String
+  franchise   Franchise  @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeId     String?
+  store       TwStore?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  source      TwXpSource
+  points      Int
+  /// YYYY-MM-DD en la zona horaria de la tienda; sostiene los caps diarios.
+  dayKey      String
+  refId       String?
+  meta        Json?
+  createdAt   DateTime   @default(now())
+
+  @@index([userId, source, dayKey])
+  @@index([franchiseId, createdAt])
+  @@index([storeId, createdAt])
+  @@map("tw_xp_events")
+}
+
+model TwBadge {
+  id          String      @id @default(cuid())
+  franchiseId String
+  franchise   Franchise   @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  code        TwBadgeCode
+  name        String
+  minXp       Int
+  icon        String      @default("compass")
+
+  users TwUserBadge[]
+
+  @@unique([franchiseId, code])
+  @@map("tw_badges")
+}
+
+model TwUserBadge {
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId  String
+  badge    TwBadge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  earnedAt DateTime @default(now())
+
+  @@id([userId, badgeId])
+  @@map("tw_user_badges")
+}
+
+model TwLeagueSeason {
+  id          String         @id @default(cuid())
+  franchiseId String
+  franchise   Franchise      @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  name        String
+  startsAt    DateTime
+  endsAt      DateTime
+  prizeText   String         @default("")
+  status      TwSeasonStatus @default(UPCOMING)
+  createdAt   DateTime       @default(now())
+
+  scores    TwLeagueScore[]
+  snapshots TwLeagueSnapshot[]
+
+  @@index([franchiseId, status])
+  @@map("tw_league_seasons")
+}
+
+/// Materializada desde tw_xp_events; el cron nocturno la recalcula.
+model TwLeagueScore {
+  seasonId     String
+  season       TwLeagueSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  entityType   TwLeagueEntity
+  entityId     String
+  points       Int            @default(0)
+  position     Int            @default(0)
+  prevPosition Int?
+  updatedAt    DateTime       @updatedAt
+
+  @@id([seasonId, entityType, entityId])
+  @@map("tw_league_scores")
+}
+
+/// Foto semanal de posiciones para el delta ▲▼.
+model TwLeagueSnapshot {
+  seasonId   String
+  season     TwLeagueSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  weekKey    String
+  entityType TwLeagueEntity
+  entityId   String
+  points     Int
+  position   Int
+
+  @@id([seasonId, weekKey, entityType, entityId])
+  @@map("tw_league_snapshots")
+}
+
+model TwJourneyMilestone {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      TwMilestoneType
+  title     String
+  desc      String          @default("")
+  date      DateTime        @default(now())
+  icon      String          @default("flag")
+  createdBy String?
+  createdAt DateTime        @default(now())
+
+  @@index([userId, date])
+  @@map("tw_journey_milestones")
+}
+
+// ── Inspira y beneficios ──────────────────────────
+
+model TwInspireItem {
+  id          String        @id @default(cuid())
+  franchiseId String
+  franchise   Franchise     @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  type        TwInspireType
+  title       String
+  who         String        @default("")
+  desc        String        @default("")
+  lengthMin   Int           @default(0)
+  mediaUrl    String?
+  externalUrl String?
+  quote       String?
+  featured    Boolean       @default(false)
+  publishedAt DateTime?
+  scheduledAt DateTime?
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([franchiseId, publishedAt])
+  @@map("tw_inspire_items")
+}
+
+model TwBenefit {
+  id               String     @id @default(cuid())
+  franchiseId      String
+  franchise        Franchise  @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  category         String
+  title            String
+  desc             String     @default("")
+  icon             String     @default("star")
+  /// Vacío = todos los roles.
+  eligibilityRoles UserRole[] @default([])
+  /// ISO-2. Vacío = todos los países.
+  countries        String[]   @default([])
+  link             String?
+  order            Int        @default(0)
+
+  @@index([franchiseId])
+  @@map("tw_benefits")
+}
+
+// ── Asistente (hilos; el retrieval llega en la fase 3) ──
+
+model TwAssistantThread {
+  id          String    @id @default(cuid())
+  franchiseId String
+  franchise   Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String?
+  createdAt   DateTime  @default(now())
+
+  messages TwAssistantMessage[]
+
+  @@index([userId, createdAt])
+  @@map("tw_assistant_threads")
+}
+
+model TwAssistantMessage {
+  id        String            @id @default(cuid())
+  threadId  String
+  thread    TwAssistantThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role      TwAssistantRole
+  content   String
+  citations Json?
+  toolCalls Json?
+  createdAt DateTime          @default(now())
+
+  @@index([threadId, createdAt])
+  @@map("tw_assistant_messages")
 }

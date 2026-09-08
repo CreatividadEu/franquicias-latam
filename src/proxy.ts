@@ -23,6 +23,24 @@ export function proxy(request: NextRequest) {
     }
   }
 
+  // Guard /totto-way (LMS) by cookie presence, same reasoning as /admin. An
+  // admin session also passes: the (app) layout exchanges it for tw_token via
+  // /api/totto-way/auth/sso. Token validity is checked in the layout.
+  const isTwLoginPage =
+    pathname === "/totto-way/login" || pathname.startsWith("/totto-way/login/");
+  // Static assets under /public/totto-way (logos, photos, posters) are public.
+  const isStaticAsset = /\.[a-z0-9]{2,5}$/i.test(pathname);
+
+  if (pathname.startsWith("/totto-way") && !isTwLoginPage && !isStaticAsset) {
+    const twToken = request.cookies.get("tw_token")?.value;
+    const adminToken = request.cookies.get("admin_token")?.value;
+    if (!twToken && !adminToken) {
+      const login = new URL("/totto-way/login", request.url);
+      login.searchParams.set("next", pathname);
+      return NextResponse.redirect(login);
+    }
+  }
+
   return NextResponse.next({
     request: {
       headers: requestHeaders,

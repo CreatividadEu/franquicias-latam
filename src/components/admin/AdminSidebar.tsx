@@ -11,6 +11,7 @@ const navItems = [
   { href: "/admin/franquicias", label: "Franquicias", icon: "🏢" },
   { href: "/admin/evaluaciones", label: "Evaluaciones", icon: "🎯" },
   { href: "/admin/leads", label: "Form Leads", icon: "📋" },
+  { href: "/totto-way/estudio", label: "Totto Way", icon: "🎒" },
   { href: "/quiz", label: "Ver Quiz", icon: "💬" },
 ];
 

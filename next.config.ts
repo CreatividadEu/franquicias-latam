@@ -55,6 +55,9 @@ const nextConfig: NextConfig = {
   // Vercel project (see deploy notes).
   async redirects() {
     return [
+      // El demo hardcodeado /totto-demo fue reemplazado por el módulo real.
+      { source: "/totto-demo", destination: "/totto-way", permanent: true },
+      { source: "/totto-demo/:path*", destination: "/totto-way", permanent: true },
       {
         source: "/:path*",
         has: [{ type: "host", value: "franquiciascolombia.com" }],

@@ -1,0 +1,135 @@
+{
+  "brand": {
+    "name": "Totto Way",
+    "tagline": "Training platform",
+    "motto": "Ready? Let's go!",
+    "mottoLine1": "READY?",
+    "mottoLine2": "LET'S GO!"
+  },
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "next": "Next",
+    "start": "Start",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "logout": "Log out",
+    "minutesShort": "{{n}} min",
+    "xp": "XP",
+    "xpChip": "+{{n}} XP",
+    "days": "{{n}} days",
+    "lessonsLeft": "{{n}} lessons left",
+    "of": "{{done}} of {{total}}",
+    "notConfigured": "Not configured yet."
+  },
+  "nav": {
+    "home": "Home",
+    "learn": "Learn",
+    "league": "League",
+    "journey": "My journey",
+    "inspire": "Inspire",
+    "benefits": "Benefits",
+    "profile": "Profile",
+    "leader": "Leader panel",
+    "studio": "Studio",
+    "assistant": "Assistant",
+    "more": "More"
+  },
+  "roles": {
+    "TW_ASESOR": "Sales advisor",
+    "TW_LIDER_TIENDA": "Store leader",
+    "TW_AUX_LOGISTICO": "Logistics assistant",
+    "TW_JEFE_COMERCIAL": "Commercial manager",
+    "TW_FORMADOR": "Trainer",
+    "FRANCHISE_OWNER": "Franchisee",
+    "ADMIN": "Administrator"
+  },
+  "login": {
+    "eyebrow": "Way · Training platform",
+    "title": "Sign in",
+    "subtitle": "Use your email or your employee code.",
+    "identifier": "Email or employee code",
+    "identifierPlaceholder": "camila@totto.com or TA-0412",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "forgot": "I forgot my password",
+    "forgotHint": "Ask your store leader or the training team to reset your password.",
+    "errorGeneric": "We couldn't sign you in. Check your details.",
+    "errorNetwork": "No connection. Try again.",
+    "errorNoAccess": "Your account has no access to Totto Way.",
+    "errorSso": "Your admin session is not valid. Sign in again.",
+    "adminSso": "Franquicias LATAM team? Enter with your admin session."
+  },
+  "onboarding": {
+    "eyebrow": "Welcome · {{step}} of 3",
+    "step1Title": "This is Totto Way",
+    "step1Body": "Your map to do things the TOTTO way from day one in store. Seven chapters, short missions and an assistant that reads the manual for you.",
+    "step2Title": "How you earn XP",
+    "step2Body": "Every lesson adds points. Perfect quizzes, checkpoints validated by your leader and clocking in on Geovictoria count too. Points move your store's League.",
+    "step2Lesson": "Lesson completed",
+    "step2Quiz": "Quiz 3 of 3",
+    "step2Checkpoint": "Checkpoint validated",
+    "step2Attendance": "On-time clock-in",
+    "step3Title": "Your first mission",
+    "step3Body": "Chapter 01 · Introduction. Eight short lessons to get to know the company, the culture and the SER ecosystem.",
+    "finish": "Go to my first lesson",
+    "skip": "Skip"
+  },
+  "home": {
+    "eyebrow": "Home",
+    "title": "Pick up where you left off",
+    "greeting": "Hi, {{name}}",
+    "currentChapter": "Chapter {{number}} · {{title}}",
+    "nextXp": "Next: +{{n}} XP",
+    "continueLesson": "Continue lesson",
+    "seeChapters": "See all 7 chapters",
+    "startChapter": "Start Chapter 01",
+    "allDone": "You completed everything published. More is coming.",
+    "progress": "Total progress",
+    "leaguePosition": "League position",
+    "leagueStore": "your store",
+    "leagueOff": "No League",
+    "streak": "Streak",
+    "nextBadge": "Next badge",
+    "nextBadgeMissing": "{{n}} XP to go",
+    "nextBadgeMax": "Top level",
+    "today": "Today in store",
+    "todayLesson": "Pending lesson: {{title}}",
+    "todayChapters": "Explore the chapters",
+    "todayProfile": "Complete your profile",
+    "team": "Your team",
+    "teamEmpty": "No points in your store this season yet.",
+    "seeLeague": "See the League",
+    "chapterComingSoon": "Pending",
+    "chapters": "Chapters"
+  },
+  "learn": {
+    "eyebrow": "Learn",
+    "title": "The 7 chapters",
+    "available": "Available",
+    "locked": "Locked",
+    "draft": "Coming soon",
+    "lessons": "{{done}}/{{total}} lessons"
+  },
+  "header": {
+    "streakPill": "{{n}} days",
+    "xpPill": "{{n}} XP"
+  },
+  "user": {
+    "level": "Level",
+    "toNext": "{{n}} XP to {{badge}}"
+  },
+  "badges": {
+    "EXPLORADOR": "Explorer",
+    "GUIA": "Guide",
+    "LIDER_RUTA": "Trail leader",
+    "CUMBRE": "Summit"
+  },
+  "placeholder": {
+    "title": "This section arrives in the next milestone",
+    "body": "We are building Totto Way chapter by chapter, like the manual. Come back soon."
+  }
+}
