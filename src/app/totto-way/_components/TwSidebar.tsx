@@ -3,12 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { BookOpen, Heart, Headphones, Home, LogOut, PenSquare, Route, Trophy, User, Users, type LucideIcon } from "lucide-react";
+import { Store, BookOpen, Heart, Headphones, Home, LogOut, PenSquare, Route, Trophy, User, Users, type LucideIcon } from "lucide-react";
 import { isNavActive, type NavItem, type NavKey } from "@/lib/totto-way/nav";
 import { Avatar } from "./atoms";
 
 export const NAV_ICONS: Record<NavKey, LucideIcon> = {
   home: Home,
+  store: Store,
   learn: BookOpen,
   league: Trophy,
   journey: Route,
