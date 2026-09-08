@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CATEGORIAS,
   PIEZAS,
@@ -21,8 +21,39 @@ import {
 
 const IDS = Object.keys(PIEZAS) as PiezaId[];
 
-const textoPorDefecto = () =>
-  Object.fromEntries(IDS.map((k) => [k, PIEZAS[k].c.toFixed(2)])) as Record<PiezaId, string>;
+// El manual se comparte por enlace y no tiene sesión: lo que el operador edita
+// se guarda en su propio navegador, para que no se pierda al recargar ni al
+// volver mañana. La versión va en la llave — si algún día cambian las piezas,
+// se sube y lo viejo se ignora en vez de romperse.
+const STORAGE_KEY = "barril:costeo:v1";
+
+type Guardado = { costos: Partial<Record<PiezaId, number>>; conIVA?: boolean };
+
+/** Dinero con dos decimales, salvo que el operador haya escrito más. */
+const fmt = (n: number) => ((String(n).split(".")[1]?.length ?? 0) > 2 ? String(n) : n.toFixed(2));
+
+const textoDe = (costos: Costos) =>
+  Object.fromEntries(IDS.map((k) => [k, fmt(costos[k])])) as Record<PiezaId, string>;
+
+const textoPorDefecto = () => textoDe(costosPorDefecto());
+
+/** Lee lo guardado quedándose solo con piezas y montos que hoy siguen siendo
+ *  válidos: un localStorage manipulado o de otra versión no debe tumbar la página. */
+function leerGuardado(): Guardado | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const datos = JSON.parse(raw) as Guardado;
+    const costos: Partial<Record<PiezaId, number>> = {};
+    for (const id of IDS) {
+      const n = datos?.costos?.[id];
+      if (typeof n === "number" && Number.isFinite(n) && n >= 0) costos[id] = n;
+    }
+    return { costos, conIVA: datos?.conIVA === true };
+  } catch {
+    return null;
+  }
+}
 
 /** Grupos de la caja de piezas, en el orden en que están declarados. */
 const GRUPOS = IDS.reduce<{ g: string; ids: PiezaId[] }[]>((acc, id) => {
@@ -40,6 +71,29 @@ export default function CosteoInteractivo() {
   const [texto, setTexto] = useState<Record<PiezaId, string>>(textoPorDefecto);
   const [costos, setCostos] = useState<Costos>(costosPorDefecto);
   const [conIVA, setConIVA] = useState(false);
+  // Hasta leer el navegador no se escribe nada: si no, el primer render con los
+  // valores por defecto pisaría lo que el operador ya tenía guardado.
+  const [hidratado, setHidratado] = useState(false);
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    const guardado = leerGuardado();
+    if (guardado) {
+      const costosGuardados = { ...costosPorDefecto(), ...guardado.costos };
+      setCostos(costosGuardados);
+      setTexto(textoDe(costosGuardados));
+      setConIVA(guardado.conIVA === true);
+    }
+    setHidratado(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+
+  useEffect(() => {
+    if (!hidratado) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ costos, conIVA }));
+    } catch {}
+  }, [costos, conIVA, hidratado]);
 
   const editar = (id: PiezaId, valor: string) => {
     setTexto((t) => ({ ...t, [id]: valor }));
@@ -50,6 +104,7 @@ export default function CosteoInteractivo() {
   const restaurar = () => {
     setTexto(textoPorDefecto());
     setCostos(costosPorDefecto());
+    setConIVA(false);
   };
 
   const categorias = useMemo(
@@ -82,6 +137,7 @@ export default function CosteoInteractivo() {
         <div className="legend">
           <span className="pill real">FACTURA — dato real</span>
           <span className="pill est">ESTIMADO — ajústalo</span>
+          <span className="pill save">SE GUARDA EN ESTE NAVEGADOR</span>
           <button type="button" className="reset" onClick={restaurar}>
             Restaurar valores
           </button>

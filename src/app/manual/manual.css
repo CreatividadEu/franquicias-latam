@@ -266,6 +266,12 @@ body:has(.barril-root) > a[href^="https://wa.me/"] {
   background: var(--yellow);
 }
 
+.barril-root .pill.save {
+  background: var(--white);
+  color: var(--muted);
+  border-style: dashed;
+}
+
 .barril-root .reset {
   margin-left: auto;
   padding: 6px 12px;
