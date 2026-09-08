@@ -8,7 +8,7 @@ import { resend } from "@/lib/resend";
 const FROM = "Totto Way <notificaciones@franquiciaslatam.co>";
 // `.trim()` no es cosmético: la variable guardada en Vercel arrastra un salto
 // de línea y sin recortarlo todos los enlaces de los recordatorios salen rotos.
-const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "https://franquiciaslatam.co").trim().replace(/\/+$/, "");
+const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "https://franquiciaslatam.com").trim().replace(/\/+$/, "");
 
 type Cta = { label: string; path: string };
 
