@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, Compass, Headphones, User } from "lucide-react";
 import { requireTwSession } from "@/lib/totto-way/auth";
-import { createTranslator, type TwMessageKey } from "@/lib/totto-way/i18n";
+import { createTranslator, intlLocale, plural, type TwMessageKey } from "@/lib/totto-way/i18n";
 import { NAV_HREF } from "@/lib/totto-way/nav";
 import { getHomeData } from "@/lib/totto-way/queries";
 import { Avatar, Eyebrow, GlassCard, XpChip } from "../_components/atoms";
@@ -12,14 +12,17 @@ export default async function TottoWayHomePage() {
   const session = await requireTwSession();
   const t = createTranslator(session.locale);
   const data = await getHomeData(session);
+  const intl = intlLocale(session.locale);
+  // El flag showGamification apaga XP, racha e insignias, no solo la Liga.
+  const gamified = data.league.enabled;
   const firstName = (session.user.name ?? "").split(" ")[0] || session.user.email;
   const current = data.current;
   const lessonHref = current ? `${NAV_HREF.learn}/${current.chapter.slug}` : NAV_HREF.learn;
 
   const today: { href: string; label: string; Icon: typeof BookOpen; xp?: number }[] = [];
-  if (current) today.push({ href: lessonHref, label: t("home.todayLesson", { title: current.lesson.title }), Icon: BookOpen, xp: current.lesson.xp });
+  if (current) today.push({ href: lessonHref, label: t("home.todayLesson", { title: current.lesson.title }), Icon: BookOpen, xp: gamified ? current.lesson.xp : undefined });
   today.push({ href: NAV_HREF.learn, label: t("home.todayChapters"), Icon: Compass });
-  today.push({ href: NAV_HREF.inspire, label: t("nav.inspire"), Icon: Headphones, xp: 20 });
+  today.push({ href: NAV_HREF.inspire, label: t("nav.inspire"), Icon: Headphones, xp: gamified ? 20 : undefined });
   today.push({ href: NAV_HREF.profile, label: t("home.todayProfile"), Icon: User });
 
   return (
@@ -33,8 +36,8 @@ export default async function TottoWayHomePage() {
               <p className="tw-muted">{t("home.currentChapter", { number: String(current.chapter.number).padStart(2, "0"), title: current.chapter.title })}</p>
               <p style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                 <span className="tw-display">{current.lesson.title}</span>
-                <XpChip xp={current.lesson.xp} tone="yellow" />
-                <span className="tw-small tw-muted">{t("common.lessonsLeft", { n: current.remaining })}</span>
+                {gamified ? <XpChip xp={current.lesson.xp} tone="yellow" /> : null}
+                <span className="tw-small tw-muted">{plural(t, "common.lessonsLeft", current.remaining)}</span>
               </p>
             </>
           ) : (
@@ -52,17 +55,21 @@ export default async function TottoWayHomePage() {
         </div>
         <div className="tw-hero__grid">
           <GlassCard eyebrow={t("home.progress")} value={`${data.overallPct}%`} />
-          <GlassCard
-            eyebrow={t("home.leaguePosition")}
-            value={data.league.enabled && data.league.position ? `#${data.league.position}` : "—"}
-            caption={data.league.enabled ? t("home.leagueStore") : t("home.leagueOff")}
-          />
-          <GlassCard eyebrow={t("home.streak")} value={data.streakDays} caption={t("common.days", { n: data.streakDays })} />
-          <GlassCard
-            eyebrow={t("home.nextBadge")}
-            value={data.nextBadge ? t(`badges.${data.nextBadge.code}` as TwMessageKey) : t(`badges.${data.badge.code}` as TwMessageKey)}
-            caption={data.nextBadge ? t("home.nextBadgeMissing", { n: data.nextBadge.remaining.toLocaleString("es-CO") }) : t("home.nextBadgeMax")}
-          />
+          {gamified ? (
+            <>
+              <GlassCard
+                eyebrow={t("home.leaguePosition")}
+                value={data.league.position ? `#${data.league.position}` : "—"}
+                caption={t("home.leagueStore")}
+              />
+              <GlassCard eyebrow={t("home.streak")} value={data.streakDays} caption={plural(t, "common.days", data.streakDays)} />
+              <GlassCard
+                eyebrow={t("home.nextBadge")}
+                value={data.nextBadge ? t(`badges.${data.nextBadge.code}` as TwMessageKey) : t(`badges.${data.badge.code}` as TwMessageKey)}
+                caption={data.nextBadge ? t("home.nextBadgeMissing", { n: data.nextBadge.remaining.toLocaleString(intl) }) : t("home.nextBadgeMax")}
+              />
+            </>
+          ) : null}
         </div>
       </section>
 
@@ -112,7 +119,7 @@ export default async function TottoWayHomePage() {
                     <div key={member.userId} className="tw-list-row" style={member.me ? { borderColor: "#000" } : undefined}>
                       <Avatar initials={member.initials} tone={index === 0 ? "dark" : "yellow"} />
                       <span className="tw-list-row__title">{member.name}</span>
-                      <span className="tw-display">{member.points.toLocaleString("es-CO")}</span>
+                      <span className="tw-display">{member.points.toLocaleString(intl)}</span>
                     </div>
                   ))}
                 </div>

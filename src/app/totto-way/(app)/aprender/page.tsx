@@ -2,7 +2,7 @@ import { requireTwSession } from "@/lib/totto-way/auth";
 import { createTranslator } from "@/lib/totto-way/i18n";
 import { NAV_HREF } from "@/lib/totto-way/nav";
 import { getChapterCards } from "@/lib/totto-way/queries";
-import { Eyebrow } from "../../_components/atoms";
+import { Eyebrow, Placeholder } from "../../_components/atoms";
 import { ChapterCard } from "../../_components/ChapterCard";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +11,9 @@ export default async function LearnPage() {
   const session = await requireTwSession();
   const t = createTranslator(session.locale);
   const { cards } = await getChapterCards(session);
+
+  // Una franquicia recién creada no tiene capítulos: sin esto se veía en blanco.
+  if (cards.length === 0) return <Placeholder title={t("learn.title")} body={t("common.notConfigured")} />;
 
   return (
     <>

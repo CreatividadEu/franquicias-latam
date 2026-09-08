@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Flame, Sparkles } from "lucide-react";
 import { pickHeaderTitle, type HeaderTitle } from "@/lib/totto-way/nav";
+import { useAssistant } from "./AssistantPanel";
 
 export function TwHeader({
   titles,
@@ -18,6 +19,7 @@ export function TwHeader({
   showGamification: boolean;
 }) {
   const pathname = usePathname();
+  const { open } = useAssistant();
   const title = pickHeaderTitle(pathname, titles) ?? titles[0];
   return (
     <header className="tw-header">
@@ -33,8 +35,13 @@ export function TwHeader({
           </span>
         ) : null}
         {showGamification && xpLabel ? <span className="tw-pill tw-pill--black">{xpLabel}</span> : null}
-        {/* El panel del asistente llega en la fase 3; el botón ya reserva su sitio. */}
-        <button type="button" className="tw-pill tw-pill--outline tw-header__assistant" disabled title={assistantLabel} style={{ cursor: "default" }}>
+        <button
+          type="button"
+          className="tw-pill tw-pill--outline tw-header__assistant"
+          onClick={() => open()}
+          title={assistantLabel}
+          aria-label={assistantLabel}
+        >
           <Sparkles strokeWidth={1.8} />
           <span data-hide-mobile>{assistantLabel}</span>
           <span className="tw-header__dot" aria-hidden />

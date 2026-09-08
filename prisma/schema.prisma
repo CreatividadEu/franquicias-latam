@@ -157,6 +157,8 @@ model Franchise {
   twInspireItems     TwInspireItem[]
   twBenefits         TwBenefit[]
   twAssistantThreads TwAssistantThread[]
+  twKnowledgeChunks  TwKnowledgeChunk[]
+  twQuestionStats    TwAssistantQuestionStat[]
 
   // ── Landing Page System (additive) ────────────────
   planTier         PlanTier @default(BASIC)
@@ -924,8 +926,10 @@ model TwXpEvent {
   id          String     @id @default(cuid())
   franchiseId String
   franchise   Franchise  @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Nulo en los eventos que son de la tienda y no de una persona: el NPS del
+  /// mes suma +300 al equipo, no a un colaborador concreto.
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   storeId     String?
   store       TwStore?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
   source      TwXpSource
@@ -1076,6 +1080,50 @@ model TwBenefit {
 }
 
 // ── Asistente (hilos; el retrieval llega en la fase 3) ──
+
+enum TwKbSource {
+  CHAPTER
+  LESSON
+  BENEFIT
+  INSPIRE
+  SOP
+}
+
+/// Base de conocimiento del Asistente. La búsqueda va por full-text en español
+/// (columna generada `tsv` + índice GIN, creados en SQL porque Prisma no los
+/// expresa). `embedding` queda para cuando haya proveedor de embeddings.
+model TwKnowledgeChunk {
+  id          String     @id @default(cuid())
+  franchiseId String
+  franchise   Franchise  @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  source      TwKbSource
+  sourceId    String?
+  /// Dónde citar: { chapter, chapterSlug, mission, lesson, lessonSlug, page }
+  locator     Json
+  title       String
+  text        String
+  version     Int        @default(1)
+  createdAt   DateTime   @default(now())
+
+  @@index([franchiseId, source])
+  @@index([source, sourceId])
+  @@map("tw_knowledge_chunks")
+}
+
+/// Preguntas agregadas y anónimas para la analítica del Estudio.
+model TwAssistantQuestionStat {
+  id                 String    @id @default(cuid())
+  franchiseId        String
+  franchise          Franchise @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
+  normalizedQuestion String
+  sample             String
+  count              Int       @default(1)
+  lastAskedAt        DateTime  @default(now())
+
+  @@unique([franchiseId, normalizedQuestion])
+  @@index([franchiseId, count])
+  @@map("tw_assistant_question_stats")
+}
 
 model TwAssistantThread {
   id          String    @id @default(cuid())

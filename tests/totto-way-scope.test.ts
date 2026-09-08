@@ -62,3 +62,22 @@ test("permisos por rol", () => {
   assert.ok(canEditContent("ADMIN"));
   assert.ok(!canEditContent("TW_JEFE_COMERCIAL"));
 });
+
+test("el filtro de tienda intersecta con el scope, nunca lo amplía", () => {
+  // Regresión: la exportación CSV pasaba el ?tienda= crudo y en la consulta el
+  // storeId iba después del spread, sobreescribiendo la restricción del rol.
+  const scope = resolveScope({ role: "TW_LIDER_TIENDA", franchiseId: F, employeeStoreId: "s1" });
+  const where = employeeWhere(scope);
+  const allowed = where.storeId?.in;
+
+  const intersect = (filter: string | null) =>
+    filter && (!allowed || allowed.includes(filter)) ? { ...where, storeId: { in: [filter] } } : where;
+
+  assert.deepEqual(intersect("s1"), { franchiseId: F, storeId: { in: ["s1"] } });
+  assert.deepEqual(intersect("s9"), where, "una tienda ajena no cambia el filtro");
+  assert.deepEqual(intersect(null), where);
+
+  // Un formador sí puede filtrar por cualquiera de su franquicia.
+  const global = resolveScope({ role: "TW_FORMADOR", franchiseId: F });
+  assert.equal(employeeWhere(global).storeId, undefined);
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut, MoreHorizontal } from "lucide-react";
@@ -13,6 +13,16 @@ export function TwBottomNav({ items, moreLabel, logoutLabel }: { items: NavItem[
   const primary = items.filter((i) => MOBILE_PRIMARY.includes(i.key));
   const rest = items.filter((i) => !MOBILE_PRIMARY.includes(i.key));
   const restActive = rest.some((i) => isNavActive(pathname, i.href));
+
+  // La hoja se cierra con Escape, igual que el panel del Asistente.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <>

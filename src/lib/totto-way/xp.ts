@@ -44,9 +44,16 @@ export function nextBadge(xpTotal: number): (BadgeRule & { remaining: number }) 
   return next ? { ...next, remaining: next.minXp - xpTotal } : null;
 }
 
-/** Insignias que se desbloquean al pasar de `before` a `after` XP. */
+/**
+ * Insignias que se desbloquean al pasar de `before` a `after` XP.
+ *
+ * El primer pago incluye también las de umbral 0: Explorador se gana por
+ * empezar, y con la condición estricta `minXp > before` no se otorgaba nunca.
+ */
 export function badgesUnlocked(before: number, after: number): BadgeRule[] {
-  return BADGE_RULES.filter((rule) => rule.minXp > before && rule.minXp <= after);
+  return BADGE_RULES.filter(
+    (rule) => rule.minXp <= after && (rule.minXp > before || (before === 0 && rule.minXp === 0)),
+  );
 }
 
 /** Progreso 0–1 hacia la siguiente insignia (1 en el nivel máximo). */
