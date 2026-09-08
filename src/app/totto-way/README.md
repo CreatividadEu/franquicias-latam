@@ -185,6 +185,23 @@ quien ya sumó puntos hoy; cada ejecución tiene un tope de 200 correos.
   el Chrome instalado, sin descargar navegadores. `globalSetup` re-siembra los
   datos demo antes de la suite, porque los specs consumen XP, validan
   checkpoints y republican capítulos; sin eso la segunda pasada fallaría por
-  estado sucio y no por una regresión. `TW_E2E_SKIP_SEED=1` la omite.
+  estado sucio y no por una regresión.
   El spec del Asistente comprueba la respuesta con citas solo si hay
   `ANTHROPIC_API_KEY` real; si no, verifica que avise sin romperse.
+
+  **Córrela contra un build de producción, no contra `next dev`**: son 12
+  minutos en vez de 33.
+
+  ```
+  npm run build && npx next start -p 3100
+  TW_E2E_BASE_URL=http://localhost:3100 npx playwright test --project=escritorio
+  ```
+
+  `TW_E2E_SKIP_SEED=1` omite la siembra, pero **deja de usarlo salvo que
+  acabes de sembrar y nadie haya tocado la base desde entonces**. Separar la
+  siembra de la ejecución es lo que produce los fallos que parecen bugs y no lo
+  son: un bonus de quiz ya cobrado o un contenido de Inspira ya visto hacen que
+  el toast de XP no aparezca, y el error apunta al toast, no al estado sucio.
+  Si además la siembra murió a media (Supabase corta con `P1017`), la suite
+  corre sobre los datos del día anterior sin avisar. Ante un fallo de XP,
+  comprueba primero `twXpEvent` antes de tocar código.
