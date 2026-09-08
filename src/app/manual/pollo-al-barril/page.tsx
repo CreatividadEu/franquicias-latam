@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import CosteoInteractivo from "./_components/CosteoInteractivo";
+import CosteoInteractivo, { type EstadoInicial } from "./_components/CosteoInteractivo";
+import LoginManual from "./_components/LoginManual";
 import { PIEZAS, PROMOS, REGLAS, SETS } from "./_lib/costeo";
+import { sesionManual } from "@/lib/manual/auth";
+import { leerEstado } from "@/lib/manual/estado";
+
+const SLUG = "pollo-al-barril";
+
+// La puerta se abre con la cookie, que se lee en cada petición.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Manual de Costeo — Pollo al Barril | Franquicias LATAM",
@@ -92,8 +100,28 @@ const PASOS = [
   },
 ];
 
-export default function ManualPolloAlBarrilPage() {
+export default async function ManualPolloAlBarrilPage() {
   const piezas = Object.keys(PIEZAS).length;
+
+  const sesion = await sesionManual(SLUG);
+  if (!sesion) return <LoginManual slug={SLUG} />;
+
+  // Si la base no responde, el manual se abre igual con los valores de fábrica
+  // y el componente avisa que está guardando solo en el navegador. Perder el
+  // acceso al documento por una base dormida sería peor que abrirlo en blanco.
+  let inicial: EstadoInicial = null;
+  try {
+    const guardado = await leerEstado(SLUG);
+    if (guardado) {
+      inicial = {
+        costos: guardado.estado.costos,
+        conIVA: guardado.estado.conIVA,
+        actualizado: guardado.actualizado,
+      };
+    }
+  } catch (error) {
+    console.error("[manual/pollo-al-barril] no se pudo leer lo guardado:", error);
+  }
 
   return (
     <>
@@ -151,7 +179,7 @@ export default function ManualPolloAlBarrilPage() {
           ))}
         </section>
 
-        <CosteoInteractivo />
+        <CosteoInteractivo slug={SLUG} usuario={sesion.usuario} inicial={inicial} />
 
         <section id="reglas">
           <h2>Reglas de oro</h2>

@@ -661,3 +661,140 @@ body:has(.barril-root) > a[href^="https://wa.me/"] {
     display: none;
   }
 }
+
+/* ── Puerta del manual ────────────────────────────────────────────────────── */
+.barril-root .loginwrap {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.barril-root .loginbox {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 24px 24px;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+.barril-root .loginbox h1 {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 7vw, 36px);
+  line-height: 1;
+  color: var(--red);
+  letter-spacing: 0.01em;
+}
+
+.barril-root .loginlede {
+  margin: 10px 0 20px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.barril-root .loginbox label {
+  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.barril-root .loginbox input {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 16px; /* 16px evita que iOS haga zoom al enfocar */
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+}
+
+.barril-root .loginbox input:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+.barril-root .loginbox button {
+  margin-top: 4px;
+  padding: 12px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  background: var(--yellow);
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+}
+
+.barril-root .loginbox button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.barril-root .loginbox button:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.barril-root .loginerror {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--white);
+  background: var(--red);
+  border-radius: 8px;
+}
+
+/* ── Barra de sesión ──────────────────────────────────────────────────────── */
+.barril-root .sesion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.barril-root .sesion .quien {
+  margin-right: auto;
+}
+
+.barril-root .salir {
+  padding: 5px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--ink);
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.barril-root .estado-guardado {
+  padding: 3px 10px;
+  border: 3px dashed var(--ink);
+  border-radius: 8px;
+  background: var(--white);
+}
+
+.barril-root .estado-guardado.error {
+  border-style: solid;
+  color: var(--white);
+  background: var(--red);
+}

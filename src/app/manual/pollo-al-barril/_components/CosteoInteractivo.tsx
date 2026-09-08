@@ -21,13 +21,22 @@ import {
 
 const IDS = Object.keys(PIEZAS) as PiezaId[];
 
-// El manual se comparte por enlace y no tiene sesión: lo que el operador edita
-// se guarda en su propio navegador, para que no se pierda al recargar ni al
-// volver mañana. La versión va en la llave — si algún día cambian las piezas,
-// se sube y lo viejo se ignora en vez de romperse.
+// Los costos viven en la cuenta, no en el navegador: el operador entra desde
+// donde sea y encuentra lo último que guardó. El navegador queda de respaldo
+// para no perder nada si la red falla a mitad de una edición.
 const STORAGE_KEY = "barril:costeo:v1";
 
+const ESPERA_GUARDADO_MS = 900;
+
 type Guardado = { costos: Partial<Record<PiezaId, number>>; conIVA?: boolean };
+
+export type EstadoInicial = {
+  costos: Record<string, number>;
+  conIVA: boolean;
+  actualizado: string;
+} | null;
+
+type Estado = "guardado" | "guardando" | "local" | "sesion";
 
 /** Dinero con dos decimales, salvo que el operador haya escrito más. */
 const fmt = (n: number) => ((String(n).split(".")[1]?.length ?? 0) > 2 ? String(n) : n.toFixed(2));
@@ -39,21 +48,31 @@ const textoPorDefecto = () => textoDe(costosPorDefecto());
 
 /** Lee lo guardado quedándose solo con piezas y montos que hoy siguen siendo
  *  válidos: un localStorage manipulado o de otra versión no debe tumbar la página. */
+function filtrarCostos(crudos: Record<string, unknown> | undefined) {
+  const costos: Partial<Record<PiezaId, number>> = {};
+  for (const id of IDS) {
+    const n = crudos?.[id];
+    if (typeof n === "number" && Number.isFinite(n) && n >= 0) costos[id] = n;
+  }
+  return costos;
+}
+
 function leerGuardado(): Guardado | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const datos = JSON.parse(raw) as Guardado;
-    const costos: Partial<Record<PiezaId, number>> = {};
-    for (const id of IDS) {
-      const n = datos?.costos?.[id];
-      if (typeof n === "number" && Number.isFinite(n) && n >= 0) costos[id] = n;
-    }
-    return { costos, conIVA: datos?.conIVA === true };
+    const datos = JSON.parse(raw) as { costos?: Record<string, unknown>; conIVA?: unknown };
+    return { costos: filtrarCostos(datos?.costos), conIVA: datos?.conIVA === true };
   } catch {
     return null;
   }
 }
+
+/** ¿Hay algo escrito aquí que no sean los valores de fábrica? */
+const hayCambios = (costos: Partial<Record<PiezaId, number>>) => {
+  const base = costosPorDefecto();
+  return IDS.some((id) => costos[id] !== undefined && costos[id] !== base[id]);
+};
 
 /** Grupos de la caja de piezas, en el orden en que están declarados. */
 const GRUPOS = IDS.reduce<{ g: string; ids: PiezaId[] }[]>((acc, id) => {
@@ -64,47 +83,121 @@ const GRUPOS = IDS.reduce<{ g: string; ids: PiezaId[] }[]>((acc, id) => {
   return acc;
 }, []);
 
-export default function CosteoInteractivo() {
+export default function CosteoInteractivo({
+  slug,
+  usuario,
+  inicial,
+}: {
+  slug: string;
+  usuario: string;
+  inicial: EstadoInicial;
+}) {
+  // Lo guardado llega ya resuelto desde el servidor, así que la primera pintura
+  // muestra los costos del cliente — no hay parpadeo de valores por defecto.
+  const base = useMemo(() => {
+    const costos = { ...costosPorDefecto(), ...filtrarCostos(inicial?.costos) };
+    return { costos, conIVA: inicial?.conIVA === true };
+  }, [inicial]);
+
   // Dos estados en paralelo: lo que el operador tiene escrito en cada campo y
   // el último costo válido. Así, borrar el campo para reescribirlo no manda
   // todos los sets a cero mientras se teclea.
-  const [texto, setTexto] = useState<Record<PiezaId, string>>(textoPorDefecto);
-  const [costos, setCostos] = useState<Costos>(costosPorDefecto);
-  const [conIVA, setConIVA] = useState(false);
-  // Hasta leer el navegador no se escribe nada: si no, el primer render con los
-  // valores por defecto pisaría lo que el operador ya tenía guardado.
-  const [hidratado, setHidratado] = useState(false);
+  const [texto, setTexto] = useState<Record<PiezaId, string>>(() => textoDe(base.costos));
+  const [costos, setCostos] = useState<Costos>(base.costos);
+  const [conIVA, setConIVA] = useState(base.conIVA);
+  const [estado, setEstado] = useState<Estado>("guardado");
+  // Solo se guarda lo que el operador tocó: abrir el manual no debe escribir
+  // en la cuenta ni mover la fecha de "última edición".
+  const [sucio, setSucio] = useState(false);
+  // Hasta terminar de arrancar no se guarda nada: si no, el primer render
+  // dispararía un guardado que no corresponde a ninguna edición.
+  const [listo, setListo] = useState(false);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
-    const guardado = leerGuardado();
-    if (guardado) {
-      const costosGuardados = { ...costosPorDefecto(), ...guardado.costos };
-      setCostos(costosGuardados);
-      setTexto(textoDe(costosGuardados));
-      setConIVA(guardado.conIVA === true);
+    // Rescate de la versión anterior del manual, que guardaba solo en este
+    // navegador: si el servidor aún no tiene nada y aquí quedaron costos
+    // editados, se adoptan y en el primer guardado suben a la cuenta.
+    if (!inicial) {
+      const local = leerGuardado();
+      if (local && hayCambios(local.costos)) {
+        const rescatados = { ...costosPorDefecto(), ...local.costos };
+        setCostos(rescatados);
+        setTexto(textoDe(rescatados));
+        setConIVA(local.conIVA === true);
+        setSucio(true);
+        setEstado("guardando");
+      }
     }
-    setHidratado(true);
+    setListo(true);
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, []);
+  }, [inicial]);
 
+  // Guardado con espera: se manda al servidor cuando el operador deja de
+  // teclear, no en cada tecla. El navegador se escribe siempre y al instante,
+  // para que un fallo de red no se lleve la edición por delante.
   useEffect(() => {
-    if (!hidratado) return;
+    if (!listo || !sucio) return;
+
+    const carga = { costos, conIVA };
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ costos, conIVA }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(carga));
     } catch {}
-  }, [costos, conIVA, hidratado]);
+
+    const cancelar = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/manual/${slug}/estado`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(carga),
+          signal: cancelar.signal,
+        });
+        if (res.status === 401) setEstado("sesion");
+        else setEstado(res.ok ? "guardado" : "local");
+      } catch {
+        if (!cancelar.signal.aborted) setEstado("local");
+      }
+    }, ESPERA_GUARDADO_MS);
+
+    return () => {
+      clearTimeout(t);
+      cancelar.abort();
+    };
+  }, [costos, conIVA, listo, sucio, slug]);
+
+  async function salir() {
+    try {
+      await fetch(`/api/manual/${slug}/auth`, { method: "DELETE" });
+    } catch {}
+    window.location.reload();
+  }
+
+  /** Toda edición del operador pasa por aquí: marca que hay algo que guardar. */
+  const marcarEditado = () => {
+    setSucio(true);
+    setEstado("guardando");
+  };
 
   const editar = (id: PiezaId, valor: string) => {
     setTexto((t) => ({ ...t, [id]: valor }));
     const n = Number.parseFloat(valor);
-    if (Number.isFinite(n) && n >= 0) setCostos((c) => ({ ...c, [id]: n }));
+    if (Number.isFinite(n) && n >= 0) {
+      setCostos((c) => ({ ...c, [id]: n }));
+      marcarEditado();
+    }
+  };
+
+  const cambiarIVA = (valor: boolean) => {
+    setConIVA(valor);
+    marcarEditado();
   };
 
   const restaurar = () => {
     setTexto(textoPorDefecto());
     setCostos(costosPorDefecto());
     setConIVA(false);
+    marcarEditado();
   };
 
   const categorias = useMemo(
@@ -124,8 +217,25 @@ export default function CosteoInteractivo() {
     [costos, conIVA],
   );
 
+  const AVISO: Record<Estado, string> = {
+    guardado: "GUARDADO EN TU CUENTA",
+    guardando: "GUARDANDO…",
+    local: "SIN CONEXIÓN — GUARDADO EN ESTE NAVEGADOR",
+    sesion: "TU SESIÓN VENCIÓ — VUELVE A ENTRAR",
+  };
+
   return (
     <>
+      <div className="sesion">
+        <span className="quien">Sesión de {usuario}</span>
+        <span className={`estado-guardado ${estado === "guardado" || estado === "guardando" ? "" : "error"}`}>
+          {AVISO[estado]}
+        </span>
+        <button type="button" className="salir" onClick={salir}>
+          Salir
+        </button>
+      </div>
+
       <section id="piezas">
         <h2>La caja de piezas</h2>
         <p className="lede">
@@ -137,7 +247,6 @@ export default function CosteoInteractivo() {
         <div className="legend">
           <span className="pill real">FACTURA — dato real</span>
           <span className="pill est">ESTIMADO — ajústalo</span>
-          <span className="pill save">SE GUARDA EN ESTE NAVEGADOR</span>
           <button type="button" className="reset" onClick={restaurar}>
             Restaurar valores
           </button>
@@ -190,7 +299,7 @@ export default function CosteoInteractivo() {
             <input
               type="checkbox"
               checked={conIVA}
-              onChange={(e) => setConIVA(e.target.checked)}
+              onChange={(e) => cambiarIVA(e.target.checked)}
             />
             Facturo con IVA 15% → costear sobre PVP ÷ 1,15
           </label>

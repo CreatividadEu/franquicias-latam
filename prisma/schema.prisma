@@ -1153,3 +1153,19 @@ model TwAssistantMessage {
   @@index([threadId, createdAt])
   @@map("tw_assistant_messages")
 }
+
+// ── Manuales de costeo ───────────────────────────────────────────────────────
+// Un manual (p. ej. /manual/pollo-al-barril) es un documento de trabajo del
+// cliente: entra con su usuario y encuentra los costos como los dejó. Una fila
+// por manual — la cuenta es el negocio, no una persona, así que el equipo
+// comparte los mismos números.
+
+model ManualCosting {
+  slug      String   @id
+  data      Json
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("manual_costings")
+}
