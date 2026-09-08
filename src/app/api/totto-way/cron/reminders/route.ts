@@ -19,7 +19,7 @@ const MAX_EMAILS = 200;
  * escribe a quien ya sumó puntos hoy.
  */
 async function run(request: Request) {
-  if (!(await isAuthorizedCron(request))) return unauthorized();
+  if (!isAuthorizedCron(request)) return unauthorized();
 
   const now = new Date();
   let reminders = 0;

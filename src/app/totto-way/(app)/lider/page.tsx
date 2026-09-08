@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AlertTriangle, Download } from "lucide-react";
 import { requireTwSession } from "@/lib/totto-way/auth";
-import { createTranslator } from "@/lib/totto-way/i18n";
+import { createTranslator, intlLocale, plural } from "@/lib/totto-way/i18n";
 import { getLeaderView } from "@/lib/totto-way/queries";
 import { storeInScope } from "@/lib/totto-way/scope";
 import { Avatar, Eyebrow, TwProgress } from "../../_components/atoms";
@@ -19,6 +19,7 @@ export default async function LeaderPage({ searchParams }: { searchParams: Searc
   const session = await requireTwSession({ roles: LEADER_ROLES });
   const params = await searchParams;
   const t = createTranslator(session.locale);
+  const intl = intlLocale(session.locale);
 
   // Un filtro de tienda fuera del scope se ignora, nunca amplía lo que se ve.
   const storeFilter = params.tienda && storeInScope(session.scope, params.tienda) ? params.tienda : null;
@@ -77,14 +78,14 @@ export default async function LeaderPage({ searchParams }: { searchParams: Searc
                 {row.inactiveDays !== null && row.inactiveDays >= 7 ? (
                   <span className="tw-team-row__meta tw-team-row__alert" style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <AlertTriangle size={12} strokeWidth={2} />
-                    {t("leader.inactive", { n: row.inactiveDays })}
+                    {plural(t, "leader.inactive", row.inactiveDays)}
                   </span>
                 ) : row.inactiveDays === null ? (
                   <span className="tw-team-row__meta tw-team-row__alert">{t("leader.never")}</span>
                 ) : null}
               </div>
               <TwProgress value={row.pct} label={`${row.name} ${row.pct}%`} />
-              <span className="tw-table__points tw-team-row__points">{row.points.toLocaleString("es-CO")}</span>
+              <span className="tw-table__points tw-team-row__points">{row.points.toLocaleString(intl)}</span>
               <TeamRowActions
                 userId={row.userId}
                 pendingCheckpoint={row.pendingCheckpoint}

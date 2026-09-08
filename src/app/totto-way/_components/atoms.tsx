@@ -8,7 +8,7 @@ export function Eyebrow({
   className = "",
 }: {
   children: ReactNode;
-  tone?: "red" | "yellow" | "muted" | "light";
+  tone?: "red" | "yellow" | "muted" | "light" | "onYellow";
   className?: string;
 }) {
   const toneClass = tone === "red" ? "" : ` tw-eyebrow--${tone}`;

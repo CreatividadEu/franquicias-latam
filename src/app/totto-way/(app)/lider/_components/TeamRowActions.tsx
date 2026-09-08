@@ -28,7 +28,10 @@ export function TeamRowActions({
   copy: RowActionsCopy;
 }) {
   const [pending, startTransition] = useTransition();
-  const [validated, setValidated] = useState(false);
+  // Se guarda QUÉ checkpoint se acaba de validar, no un booleano: con un
+  // booleano el líder no podía validar el segundo checkpoint de la misma
+  // persona, porque el estado seguía en true tras refrescar.
+  const [justValidated, setJustValidated] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +46,7 @@ export function TeamRowActions({
         setError(result.error);
         return;
       }
-      setValidated(true);
+      setJustValidated(pendingCheckpoint!.checkpointId);
       showToast(result.message);
       router.refresh();
     });
@@ -65,7 +68,7 @@ export function TeamRowActions({
   return (
     <div style={{ display: "grid", gap: 6, justifyItems: "end" }}>
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        {validated ? (
+        {justValidated && justValidated === pendingCheckpoint?.checkpointId ? (
           <span className="tw-chip">
             <Check size={12} strokeWidth={2.4} /> {copy.validated}
           </span>

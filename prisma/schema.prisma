@@ -926,8 +926,10 @@ model TwXpEvent {
   id          String     @id @default(cuid())
   franchiseId String
   franchise   Franchise  @relation(fields: [franchiseId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Nulo en los eventos que son de la tienda y no de una persona: el NPS del
+  /// mes suma +300 al equipo, no a un colaborador concreto.
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   storeId     String?
   store       TwStore?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
   source      TwXpSource

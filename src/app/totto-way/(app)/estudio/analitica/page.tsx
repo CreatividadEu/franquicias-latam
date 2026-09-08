@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireTwSession } from "@/lib/totto-way/auth";
+import { intlLocale } from "@/lib/totto-way/i18n";
 import { getStudioAnalytics } from "@/lib/totto-way/studio";
 import { Eyebrow, TwProgress } from "../../../_components/atoms";
 
@@ -13,7 +14,7 @@ const EDITOR_ROLES = ["TW_FORMADOR", "ADMIN"] as const;
 export default async function StudioAnalyticsPage() {
   const session = await requireTwSession({ roles: EDITOR_ROLES });
   const analytics = await getStudioAnalytics(session);
-  const format = new Intl.DateTimeFormat("es-CO", { day: "2-digit", month: "short" });
+  const format = new Intl.DateTimeFormat(intlLocale(session.locale), { day: "2-digit", month: "short" });
 
   return (
     <>

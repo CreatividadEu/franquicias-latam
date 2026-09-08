@@ -50,6 +50,10 @@ export function VideoPlayer({
   const [duration, setDuration] = useState(0);
   const [speed, setSpeed] = useState<number>(1);
   const [started, setStarted] = useState(initialSeconds > 0);
+  // El aviso de "has visto el N %" mide el MÁXIMO visto, no dónde está el
+  // cursor: si no, rebobinar decía que se había visto menos y contradecía al
+  // botón de completar, que sí usa el máximo guardado en servidor.
+  const [maxSeconds, setMaxSeconds] = useState(initialSeconds);
 
   const report = useCallback(
     (seconds: number, total: number) => {
@@ -69,7 +73,10 @@ export function VideoPlayer({
       setDuration(video.duration || 0);
       if (initialSeconds > 0 && initialSeconds < video.duration) video.currentTime = initialSeconds;
     };
-    const onTime = () => setCurrent(video.currentTime);
+    const onTime = () => {
+      setCurrent(video.currentTime);
+      setMaxSeconds((previous) => (video.currentTime > previous ? video.currentTime : previous));
+    };
     const onPlay = () => {
       setPlaying(true);
       setStarted(true);
@@ -126,6 +133,7 @@ export function VideoPlayer({
   };
 
   const pct = duration > 0 ? (current / duration) * 100 : 0;
+  const watchedPct = duration > 0 ? Math.min(100, (maxSeconds / duration) * 100) : 0;
 
   if (!src) {
     return (
@@ -195,7 +203,9 @@ export function VideoPlayer({
           <Maximize strokeWidth={1.8} />
         </button>
       </div>
-      <p className="tw-video__gate">{labels.watched.replace("{{pct}}", String(Math.round(pct))).replace("{{gate}}", String(gatePercent))}</p>
+      <p className="tw-video__gate">
+        {labels.watched.replace("{{pct}}", String(Math.round(watchedPct))).replace("{{gate}}", String(gatePercent))}
+      </p>
     </div>
   );
 }

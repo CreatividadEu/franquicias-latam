@@ -76,14 +76,22 @@ export async function awardXp(input: AwardInput): Promise<AwardResult> {
         return { awarded: true, points, xpTotal: 0, streakDays: 0, badges: [] };
       }
 
-      const before = employee.xpTotal;
-      const after = before + points;
-      const streakDays = nextStreak(employee, now, timeZone);
+      // La actividad nunca retrocede: el webhook de Geovictoria puede reenviar
+      // un lote atrasado y, si se escribiera esa fecha, la racha se rompería y
+      // el cron avisaría de una inactividad que no existe.
+      const lastActivityAt =
+        !employee.lastActivityAt || now > employee.lastActivityAt ? now : employee.lastActivityAt;
+      const streakDays = nextStreak(employee, lastActivityAt, timeZone);
 
-      await tx.twEmployee.update({
+      // Incremento atómico: dos pagos simultáneos (una lección y una marcación,
+      // por ejemplo) se sumaban leyendo el mismo valor y uno se perdía.
+      const updated = await tx.twEmployee.update({
         where: { id: employee.id },
-        data: { xpTotal: after, streakDays, lastActivityAt: now },
+        data: { xpTotal: { increment: points }, streakDays, lastActivityAt },
+        select: { xpTotal: true },
       });
+      const after = updated.xpTotal;
+      const before = after - points;
 
       // Insignias nuevas + su hito en Mi viaje.
       const unlocked = badgesUnlocked(before, after);
@@ -167,4 +175,48 @@ export async function recordMilestoneOnce(input: {
     select: { id: true },
   });
   return created.id;
+}
+
+export type StoreAwardResult = { awarded: boolean; points: number };
+
+/**
+ * XP que pertenece a la tienda entera y no a una persona: hoy solo el NPS del
+ * mes (+300 al equipo). Va sin `userId`, así que no toca acumulados
+ * individuales ni rachas, y el índice único parcial de la migración
+ * 20260908090000 impide pagarlo dos veces por (tienda, mes).
+ */
+export async function awardStoreXp(input: {
+  franchiseId: string;
+  storeId: string;
+  source: TwXpSource;
+  points: number;
+  /** Clave de idempotencia, p. ej. "nps:2026-09". */
+  refId: string;
+  meta?: Prisma.InputJsonValue;
+  timeZone?: string;
+  now?: Date;
+}): Promise<StoreAwardResult> {
+  const now = input.now ?? new Date();
+  const points = Math.round(input.points);
+  if (points <= 0) return { awarded: false, points: 0 };
+
+  try {
+    await prisma.twXpEvent.create({
+      data: {
+        franchiseId: input.franchiseId,
+        userId: null,
+        storeId: input.storeId,
+        source: input.source,
+        points,
+        dayKey: dayKey(now, input.timeZone ?? "America/Bogota"),
+        refId: input.refId,
+        meta: input.meta,
+        createdAt: now,
+      },
+    });
+    return { awarded: true, points };
+  } catch (error) {
+    if (isUniqueViolation(error)) return { awarded: false, points: 0 };
+    throw error;
+  }
 }

@@ -89,8 +89,22 @@ export async function upsertMission(input: z.infer<typeof MissionSchema>): Promi
   if (!chapter) return { ok: false, error: "Ese capítulo no existe." };
 
   if (parsed.data.missionId) {
+    // La misión tiene que ser de ESTE capítulo: con el id suelto se podía
+    // renombrar la misión de cualquier otro capítulo de la plataforma.
+    const owned = await prisma.twMission.findFirst({
+      where: { id: parsed.data.missionId, chapterId: chapter.id },
+      select: { id: true },
+    });
+    if (!owned) return { ok: false, error: "Esa misión no pertenece a este capítulo." };
+
+    const clash = await prisma.twMission.findFirst({
+      where: { chapterId: chapter.id, code: parsed.data.code, NOT: { id: owned.id } },
+      select: { id: true },
+    });
+    if (clash) return { ok: false, error: `Ya existe la misión ${parsed.data.code}.` };
+
     await prisma.twMission.update({
-      where: { id: parsed.data.missionId },
+      where: { id: owned.id },
       data: { code: parsed.data.code, title: parsed.data.title },
     });
   } else {
@@ -182,16 +196,48 @@ export async function upsertLesson(input: z.infer<typeof LessonSchema>): Promise
   return { ok: true, data: { lessonId: lesson.id, slug: lesson.slug } };
 }
 
+/**
+ * Borra una lección. Dos protecciones que no estaban:
+ *
+ * 1. `tw_lesson_progress` tiene ON DELETE CASCADE, así que borrar una lección
+ *    con avance destruye el progreso de todos los colaboradores mientras sus
+ *    eventos de XP sobreviven. Si alguien la empezó, no se borra.
+ * 2. El alumno lee del snapshot publicado; borrar sin republicar dejaba el
+ *    snapshot apuntando a una lección inexistente. Si el capítulo está
+ *    publicado, se vuelve a congelar tras el borrado.
+ */
 export async function deleteLesson(lessonId: string): Promise<StudioResult> {
   const session = await requireEditor();
   if (!session) return DENIED;
   const lesson = await prisma.twLesson.findFirst({
     where: { id: lessonId, chapter: { franchiseId: session.franchiseId } },
-    select: { id: true, chapter: { select: { slug: true } } },
+    select: { id: true, title: true, chapter: { select: { id: true, slug: true, status: true } } },
   });
   if (!lesson) return { ok: false, error: "Esa lección no existe." };
 
+  const started = await prisma.twLessonProgress.count({ where: { lessonId: lesson.id } });
+  if (started > 0) {
+    return {
+      ok: false,
+      error: `No se puede borrar: ${started} ${started === 1 ? "persona ya la empezó" : "personas ya la empezaron"} y se perdería su avance. Quítala de la misión o déjala sin publicar.`,
+    };
+  }
+
   await prisma.twLesson.delete({ where: { id: lesson.id } });
+
+  // Si el capítulo estaba publicado, el snapshot todavía la nombra: se vuelve
+  // a congelar para que la vista del alumno no apunte a un fantasma.
+  if (lesson.chapter.status === "PUBLISHED") {
+    const republish = await publishChapter(lesson.chapter.id);
+    if (!republish.ok) {
+      return {
+        ok: false,
+        error: "La lección se borró, pero el capítulo quedó sin poder republicarse. Revísalo y publícalo a mano.",
+        issues: republish.issues,
+      };
+    }
+  }
+
   revalidateChapter(lesson.chapter.slug);
   return { ok: true };
 }

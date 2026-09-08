@@ -1592,6 +1592,8 @@ a.tw-lesson-row:hover {
   width: 18px;
   height: 18px;
 }
+/* La barra se ve de 6 px pero el área de toque es de 44: en táctil, acertar
+   una franja de 6 px es imposible. */
 .tw-video__scrub {
   position: relative;
   flex: 1;
@@ -1599,6 +1601,18 @@ a.tw-lesson-row:hover {
   border-radius: 3px;
   background: var(--tw-dark-4);
   cursor: pointer;
+}
+.tw-video__scrub::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -19px;
+  bottom: -19px;
+}
+.tw-video__scrub:focus-visible {
+  outline: 2px solid var(--tw-yellow);
+  outline-offset: 6px;
 }
 .tw-video__scrub-fill {
   position: absolute;
@@ -2634,4 +2648,9 @@ a.tw-lesson-row:hover {
     grid-template-columns: 40px minmax(0, 1fr) auto;
     row-gap: 10px;
   }
+}
+
+/* Eyebrow sobre fondo amarillo: en rojo se queda en 2,6:1, muy por debajo de AA. */
+.tw-eyebrow--onYellow {
+  color: var(--tw-black);
 }

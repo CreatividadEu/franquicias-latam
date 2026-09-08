@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowLeft, Eye, Plus } from "lucide-react";
 import { requireTwSession } from "@/lib/totto-way/auth";
 import { getStudioChapter } from "@/lib/totto-way/studio";
 import { Chip, Eyebrow, XpChip } from "../../../_components/atoms";
+import { ManualUpload } from "../_components/ManualUpload";
 import { PublishButton } from "../_components/PublishButton";
 
 export const metadata: Metadata = { title: "Estudio · Capítulo" };
@@ -54,6 +55,14 @@ export default async function StudioChapterPage({ params }: { params: Promise<{ 
           </ul>
         </div>
       ) : null}
+
+      <section className="tw-card" style={{ display: "grid", gap: 10, maxWidth: 520, marginBottom: 20 }}>
+        <Eyebrow>Manual impreso</Eyebrow>
+        <p className="tw-small tw-muted">
+          El PDF maquetado que ven los alumnos en el aside del capítulo. Se guarda en el bucket privado y se sirve firmado.
+        </p>
+        <ManualUpload chapterSlug={chapter.slug} />
+      </section>
 
       {missions.map((mission) => (
         <section key={mission.id} className="tw-mission">

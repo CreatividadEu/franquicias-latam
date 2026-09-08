@@ -1,19 +1,26 @@
 /**
- * Guarda de los jobs programados. Vercel Cron llama con
- * `Authorization: Bearer $CRON_SECRET`; un ADMIN con sesión también puede
- * dispararlos a mano desde el panel para depurar.
+ * Guarda de los jobs programados. Solo el secreto compartido: Vercel Cron lo
+ * envía como `Authorization: Bearer $CRON_SECRET`.
+ *
+ * Antes también valía una sesión de admin, pero eso hacía los jobs
+ * disparables por CSRF desde cualquier sitio (son GET y el navegador manda la
+ * cookie sola). Para lanzarlos a mano se usa curl con el secreto.
  */
-import { getAdminUser } from "@/lib/auth";
+import { timingSafeEqual } from "node:crypto";
 
-export async function isAuthorizedCron(request: Request): Promise<boolean> {
+function safeEqual(a: string, b: string): boolean {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  if (left.length !== right.length) return false;
+  return timingSafeEqual(left, right);
+}
+
+export function isAuthorizedCron(request: Request): boolean {
   const secret = process.env.CRON_SECRET?.trim();
-  const header = request.headers.get("authorization") ?? "";
-  if (secret && header === `Bearer ${secret}`) return true;
+  if (!secret || secret.length < 12) return false;
 
-  // Sin secreto configurado no se abre el endpoint: solo un admin logueado.
-  try {
-    return !!(await getAdminUser());
-  } catch {
-    return false;
-  }
+  const bearer = request.headers.get("authorization")?.trim().replace(/^Bearer\s+/i, "");
+  const header = request.headers.get("x-totto-way-secret")?.trim();
+  const provided = bearer || header;
+  return !!provided && safeEqual(provided, secret);
 }

@@ -2,7 +2,7 @@ import { getTwSessionOrNull } from "@/lib/totto-way/auth";
 import { forbidden, unauthorized } from "@/lib/totto-way/api";
 import { teamCsv } from "@/lib/totto-way/leader";
 import { getLeaderView } from "@/lib/totto-way/queries";
-import { canSeeLeaderPanel } from "@/lib/totto-way/scope";
+import { canSeeLeaderPanel, storeInScope } from "@/lib/totto-way/scope";
 
 export const runtime = "nodejs";
 
@@ -12,7 +12,11 @@ export async function GET(request: Request) {
   if (!session) return unauthorized();
   if (!canSeeLeaderPanel(session.user.role)) return forbidden();
 
-  const storeId = new URL(request.url).searchParams.get("tienda");
+  // El filtro que llega por query se valida contra el scope, igual que en la
+  // página. Sin esto, un líder podía pedir ?tienda= de otra tienda y bajarse
+  // su equipo entero.
+  const requested = new URL(request.url).searchParams.get("tienda");
+  const storeId = requested && storeInScope(session.scope, requested) ? requested : null;
   const view = await getLeaderView(session, storeId);
   const stamp = new Date().toISOString().slice(0, 10);
 

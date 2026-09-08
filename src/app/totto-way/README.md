@@ -13,7 +13,7 @@ Plan completo en `docs/totto-way/PLAN.md`; tokens en `docs/totto-way/BRAND.md`.
 | 1c | Capítulo, lección (lectura + video + quiz), XP + toast, Perfil | ✅ |
 | 2 | Liga, Mi viaje, Panel líder, notificaciones | ✅ |
 | 3 | Inspira, Beneficios, Asistente Claude, Estudio | ✅ |
-| 4 | Geovictoria/NPS, certificados PDF, i18n extra, Playwright | — |
+| 4 | Geovictoria/NPS, certificados PDF, manual imprimible, i18n, Playwright | ✅ |
 
 ## Rutas
 
@@ -34,6 +34,7 @@ Plan completo en `docs/totto-way/PLAN.md`; tokens en `docs/totto-way/BRAND.md`.
 /totto-way/estudio/[ch]          misiones y lecciones
 /totto-way/estudio/[ch]/[l]      editor de bloques y quiz ("nueva" crea una)
 /totto-way/estudio/analitica     finalización, quiz y preguntas al Asistente
+/totto-way/manual/[ch]           versión imprimible (carta apaisada, fuera del shell)
 /api/totto-way/auth         POST login → cookie tw_token
 /api/totto-way/auth/sso     GET: admin_token → tw_token (entrada desde el panel admin)
 /api/totto-way/logout       POST
@@ -41,6 +42,10 @@ Plan completo en `docs/totto-way/PLAN.md`; tokens en `docs/totto-way/BRAND.md`.
 /api/totto-way/cron/league          job nocturno de la Liga
 /api/totto-way/cron/reminders       recordatorio diario y alertas de inactividad
 /api/totto-way/assistant            POST, respuesta en streaming (SSE) del Asistente
+/api/totto-way/webhooks/geovictoria POST, marcación de jornada → +10 XP/día
+/api/totto-way/webhooks/nps         POST, NPS mensual → +300 XP a la tienda
+/api/totto-way/certificate/[ch]     GET, certificado en PDF con folio
+/api/totto-way/media/{sign,register,[id]}  subida y lectura firmadas del bucket privado
 ```
 
 ## Auth y scoping
@@ -129,6 +134,41 @@ españoles (ver BRAND.md). El cuerpo usa Satoshi del layout raíz.
 - Pendiente para la fase 4: subida de video a storage, subtítulos y la vista de
   impresión del manual. Hoy el póster y el video se indican por URL.
 
+## Integraciones
+
+- **Geovictoria** → `POST /api/totto-way/webhooks/geovictoria`. Un lote de
+  marcaciones; solo la ENTRADA puntual paga (+10 XP), una vez al día. El tope
+  lo impone el índice único, así que reenviar el mismo lote no paga dos veces.
+- **NPS** → `POST /api/totto-way/webhooks/nps`. Un NPS de 9 o más suma +300 XP
+  **a la tienda**, no a una persona: por eso `tw_xp_events.userId` es opcional
+  (migración `20260908090000`) y hay un índice único por (tienda, NPS, mes).
+- Ambos se autentican con su propio secreto en `x-totto-way-secret` o
+  `Authorization: Bearer`. Sin secreto configurado responden 503, nunca abren.
+
+## Certificados
+
+`GET /api/totto-way/certificate/[capítulo]` genera el PDF en servidor con
+pdf-lib y la Centra No1 Medium embebida. El folio es **determinista**
+(`sha256(userId:chapterId)`), así que volver a descargarlo no emite otro
+documento y no hace falta una tabla de emisiones. El servidor comprueba que
+estén completadas todas las lecciones publicadas antes de emitirlo.
+Vista previa: `npx tsx scripts/tw-certificate-check.ts salida.pdf`.
+
+## Archivos
+
+Bucket **privado** `totto-way-assets`. El Estudio sube en tres pasos: el
+servidor firma, el navegador manda el binario directo a Supabase (Vercel no lo
+ve) y el servidor lo registra. La lectura pasa siempre por
+`/api/totto-way/media/[id]`, que comprueba sesión y franquicia y redirige a una
+URL firmada de 30 minutos. Nada se sirve por URL pública.
+
+## Idiomas
+
+Cuatro: `es` (base, es-CO), `es-MX` (solo los 14 términos que cambian), `en` y
+`pt-BR`, ambos completos. La resolución es por **cadena de respaldo**, así que
+añadir es-ES mañana es un JSON con lo que difiera. Las fechas y números usan el
+locale real de cada idioma vía `intlLocale()`.
+
 ## Notificaciones
 
 `src/lib/totto-way/notify.ts` sobre Resend, con una plantilla en los tokens de
@@ -139,6 +179,12 @@ quien ya sumó puntos hoy; cada ejecución tiene un tope de 200 correos.
 
 ## Tests
 
-`tests/totto-way-*.test.ts`: i18n, scope, xp, content, auth-route, progress,
-award y league (clasificación, semanas ISO, línea de tiempo, ruta de carrera,
-KPIs del líder y CSV).
+- **Unidad** (`npm test`): `tests/totto-way-*.test.ts` — i18n con cadena de
+  respaldo, scope, xp, content, auth-route, progress, award, league y assistant.
+- **Navegador** (`npm run test:e2e`): `tests/e2e/*.spec.ts` con Playwright sobre
+  el Chrome instalado, sin descargar navegadores. `globalSetup` re-siembra los
+  datos demo antes de la suite, porque los specs consumen XP, validan
+  checkpoints y republican capítulos; sin eso la segunda pasada fallaría por
+  estado sucio y no por una regresión. `TW_E2E_SKIP_SEED=1` la omite.
+  El spec del Asistente comprueba la respuesta con citas solo si hay
+  `ANTHROPIC_API_KEY` real; si no, verifica que avise sin romperse.

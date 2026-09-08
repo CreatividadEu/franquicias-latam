@@ -21,7 +21,9 @@
     "days": "{{n}} días",
     "lessonsLeft": "{{n}} lecciones restantes",
     "of": "{{done}} de {{total}}",
-    "notConfigured": "Aún no está configurado."
+    "notConfigured": "Aún no está configurado.",
+    "lessonsLeftOne": "1 lección restante",
+    "daysOne": "1 día"
   },
   "nav": {
     "home": "Inicio",
@@ -116,7 +118,8 @@
   },
   "header": {
     "streakPill": "{{n}} días",
-    "xpPill": "{{n}} XP"
+    "xpPill": "{{n}} XP",
+    "streakPillOne": "1 día"
   },
   "user": {
     "level": "Nivel",
@@ -150,7 +153,10 @@
     "manualMissing": "El PDF de este capítulo aún no está cargado.",
     "checkpoint": "Checkpoint del capítulo",
     "checkpointValidated": "Validado por tu líder",
-    "checkpointPending": "Pídele a tu líder de tienda que lo valide contigo."
+    "checkpointPending": "Pídele a tu líder de tienda que lo valide contigo.",
+    "manualPrint": "Ver versión imprimible",
+    "printTitle": "Manual impreso",
+    "printHint": "Usa Imprimir del navegador para guardarlo en PDF."
   },
   "lesson": {
     "back": "Volver al capítulo",
@@ -183,7 +189,7 @@
     "certificates": "Certificaciones",
     "certificateReady": "Disponible",
     "certificatePending": "Al completar el capítulo",
-    "certificatesHint": "La descarga en PDF con folio llega con la siguiente entrega.",
+    "certificatesHint": "Descarga tu certificado en PDF con folio verificable en cuanto completes el capítulo.",
     "prefs": "Preferencias",
     "prefsLocale": "Idioma",
     "prefsReminder": "Recordatorio diario",
@@ -217,7 +223,8 @@
     "off": "La Liga está desactivada para tu país.",
     "you": "Tú",
     "member": "1 persona",
-    "members": "{{n}} personas"
+    "members": "{{n}} personas",
+    "endsInOne": "Termina mañana"
   },
   "journey": {
     "eyebrow": "Mi viaje",
@@ -255,7 +262,8 @@
     "recognition": "Reconocimiento",
     "recognitionPlaceholder": "Ej.: Mejor NPS del mes",
     "recognitionAdd": "Añadir",
-    "recognitionHint": "Aparece en Mi viaje del colaborador."
+    "recognitionHint": "Aparece en Mi viaje del colaborador.",
+    "inactiveOne": "1 día sin actividad"
   },
   "assistant": {
     "title": "Asistente Totto Way",

@@ -13,7 +13,7 @@ export const maxDuration = 60;
  * que sostiene el delta ▲▼. `?snapshot=1` la fuerza fuera de lunes.
  */
 async function run(request: Request) {
-  if (!(await isAuthorizedCron(request))) return unauthorized();
+  if (!isAuthorizedCron(request)) return unauthorized();
 
   const url = new URL(request.url);
   const now = new Date();

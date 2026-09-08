@@ -21,7 +21,9 @@
     "days": "{{n}} days",
     "lessonsLeft": "{{n}} lessons left",
     "of": "{{done}} of {{total}}",
-    "notConfigured": "Not configured yet."
+    "notConfigured": "Not configured yet.",
+    "lessonsLeftOne": "1 lesson left",
+    "daysOne": "1 day"
   },
   "nav": {
     "home": "Home",
@@ -116,7 +118,8 @@
   },
   "header": {
     "streakPill": "{{n}} days",
-    "xpPill": "{{n}} XP"
+    "xpPill": "{{n}} XP",
+    "streakPillOne": "1 day"
   },
   "user": {
     "level": "Level",
@@ -150,7 +153,10 @@
     "manualMissing": "The PDF for this chapter is not uploaded yet.",
     "checkpoint": "Chapter checkpoint",
     "checkpointValidated": "Validated by your leader",
-    "checkpointPending": "Ask your store leader to validate it with you."
+    "checkpointPending": "Ask your store leader to validate it with you.",
+    "manualPrint": "Open printable version",
+    "printTitle": "Printed manual",
+    "printHint": "Use your browser's Print to save it as PDF."
   },
   "lesson": {
     "back": "Back to the chapter",
@@ -183,7 +189,7 @@
     "certificates": "Certificates",
     "certificateReady": "Available",
     "certificatePending": "When you complete the chapter",
-    "certificatesHint": "The numbered PDF download arrives in the next delivery.",
+    "certificatesHint": "Download your certificate as a PDF with a verifiable number as soon as you finish the chapter.",
     "prefs": "Preferences",
     "prefsLocale": "Language",
     "prefsReminder": "Daily reminder",
@@ -217,7 +223,8 @@
     "off": "The League is off for your country.",
     "you": "You",
     "member": "1 person",
-    "members": "{{n}} people"
+    "members": "{{n}} people",
+    "endsInOne": "Ends tomorrow"
   },
   "journey": {
     "eyebrow": "My journey",
@@ -255,7 +262,8 @@
     "recognition": "Recognition",
     "recognitionPlaceholder": "e.g. Best NPS of the month",
     "recognitionAdd": "Add",
-    "recognitionHint": "It shows up in the person's My journey."
+    "recognitionHint": "It shows up in the person's My journey.",
+    "inactiveOne": "1 day without activity"
   },
   "assistant": {
     "title": "Totto Way Assistant",

@@ -142,7 +142,9 @@ export async function recomputeSeason(seasonId: string): Promise<{ users: number
   const users = await write(
     "USER",
     employees.map((employee) => employee.userId),
-    new Map(byUser.map((row) => [row.userId, row._sum.points ?? 0])),
+    // Los eventos de tienda (NPS) llegan sin userId: solo cuentan para la
+    // clasificación por tienda, así que aquí se descartan.
+    new Map(byUser.filter((row) => row.userId !== null).map((row) => [row.userId as string, row._sum.points ?? 0])),
   );
   const stores_ = await write(
     "STORE",

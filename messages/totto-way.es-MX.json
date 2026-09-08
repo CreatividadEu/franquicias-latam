@@ -1,0 +1,33 @@
+{
+  "_comment": "Solo lo que cambia respecto a es-CO. Todo lo demás cae al español base por la cadena de respaldo.",
+  "common": {
+    "logout": "Cerrar sesión"
+  },
+  "login": {
+    "identifier": "Correo o número de colaborador",
+    "identifierPlaceholder": "camila@totto.com o TA-0412",
+    "forgotHint": "Pídele a tu líder de tienda o al equipo de capacitación que restablezca tu contraseña."
+  },
+  "onboarding": {
+    "step1Body": "Tu mapa para hacer las cosas a la manera TOTTO desde el primer día en tienda. Siete capítulos, misiones cortas y un asistente que consulta el manual por ti.",
+    "step2Body": "Cada lección suma puntos. Los exámenes perfectos, los checkpoints validados por tu líder y registrar tu jornada en Geovictoria también. Los puntos mueven la Liga de tu tienda."
+  },
+  "home": {
+    "todayProfile": "Completa tu perfil"
+  },
+  "lesson": {
+    "quizTitle": "Ponte a prueba",
+    "videoMissing": "El paso a paso se está grabando. Mientras tanto, repásalo con tu líder de tienda."
+  },
+  "profile": {
+    "prefsReminderHint": "Un aviso al inicio de tu turno con la lección pendiente."
+  },
+  "benefits": {
+    "lead": "Prestaciones vigentes para tu puesto y tu país. Si algo no te aparece, pregúntale a Recursos Humanos.",
+    "title": "Lo que TOTTO pone de su parte",
+    "eyebrow": "Prestaciones"
+  },
+  "nav": {
+    "benefits": "Prestaciones"
+  }
+}

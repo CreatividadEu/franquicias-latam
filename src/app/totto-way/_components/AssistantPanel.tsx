@@ -42,20 +42,31 @@ export function AssistantProvider({ copy, children }: { copy: AssistantCopy; chi
   const [streaming, setStreaming] = useState(false);
   const threadId = useRef<string | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  // Se recuerda quién abrió el panel para devolverle el foco al cerrarlo.
+  const openerRef = useRef<HTMLElement | null>(null);
 
   const open = useCallback((lesson?: string | null) => {
+    openerRef.current = typeof document !== "undefined" ? (document.activeElement as HTMLElement | null) : null;
     setLessonId(lesson ?? null);
     setIsOpen(true);
+  }, []);
+
+  const close = useCallback(() => {
+    setIsOpen(false);
+    openerRef.current?.focus?.();
   }, []);
 
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") close();
     };
     window.addEventListener("keydown", onKey);
+    // El foco entra al panel al abrirlo; si no, el teclado se queda fuera.
+    inputRef.current?.focus();
     return () => window.removeEventListener("keydown", onKey);
-  }, [isOpen]);
+  }, [isOpen, close]);
 
   useEffect(() => {
     const node = listRef.current;
@@ -143,7 +154,7 @@ export function AssistantProvider({ copy, children }: { copy: AssistantCopy; chi
       {children}
       {isOpen ? (
         <>
-          <div className="tw-assistant__backdrop" onClick={() => setIsOpen(false)} role="presentation" />
+          <div className="tw-assistant__backdrop" onClick={close} role="presentation" />
           <section className="tw-assistant" role="dialog" aria-label={copy.title}>
             <header className="tw-assistant__head">
               <span className="tw-assistant__avatar" aria-hidden>
@@ -153,7 +164,7 @@ export function AssistantProvider({ copy, children }: { copy: AssistantCopy; chi
                 <div className="tw-assistant__title">{copy.title}</div>
                 <div className="tw-assistant__sub">{copy.subtitle}</div>
               </div>
-              <button type="button" className="tw-assistant__close" onClick={() => setIsOpen(false)} aria-label={copy.close}>
+              <button type="button" className="tw-assistant__close" onClick={close} aria-label={copy.close}>
                 <X strokeWidth={1.8} />
               </button>
             </header>
@@ -215,6 +226,7 @@ export function AssistantProvider({ copy, children }: { copy: AssistantCopy; chi
               }}
             >
               <input
+                ref={inputRef}
                 className="tw-input"
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}

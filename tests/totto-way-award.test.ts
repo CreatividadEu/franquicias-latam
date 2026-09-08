@@ -27,6 +27,13 @@ function stubPrisma(options: {
     if (table === "twEmployee" && op === "findUnique") return Promise.resolve(options.employee ?? null);
     if (table === "twLeagueSeason") return Promise.resolve(options.season ?? null);
     if (table === "twBadge") return Promise.resolve(options.badge ?? null);
+    // El update de empleado usa incremento atómico y awardXp lee el resultado
+    // para derivar el antes y el después, así que el stub lo simula.
+    if (table === "twEmployee" && op === "update") {
+      const data = (args as { data?: { xpTotal?: { increment?: number } } }).data;
+      const increment = data?.xpTotal?.increment ?? 0;
+      return Promise.resolve({ xpTotal: (options.employee?.xpTotal ?? 0) + increment });
+    }
     return Promise.resolve({});
   };
 
@@ -77,12 +84,47 @@ test("paga la lección: crea el evento, sube el acumulado y suma a la Liga", asy
     assert.equal(event.data.points, 120);
 
     const update = stub.find("twEmployee", "update")?.args as { data: Record<string, unknown> };
-    assert.equal(update.data.xpTotal, 2570);
+    // Incremento atómico, no escritura del total: dos pagos simultáneos ya no
+    // se pisan.
+    assert.deepEqual(update.data.xpTotal, { increment: 120 });
     assert.equal(update.data.streakDays, 13);
 
     // Un score por usuario y otro por tienda.
     const scores = stub.all("twLeagueScore", "upsert").map((c) => (c.args as { where: { seasonId_entityType_entityId: { entityType: string } } }).where.seasonId_entityType_entityId.entityType);
     assert.deepEqual(scores, ["USER", "STORE"]);
+  } finally {
+    stub.restore();
+  }
+});
+
+test("la actividad no retrocede con un evento con fecha pasada", async () => {
+  const anterior = new Date("2026-09-08T10:00:00Z");
+  const stub = stubPrisma({
+    employee: { id: "e1", xpTotal: 100, streakDays: 13, lastActivityAt: anterior },
+    season: null,
+  });
+  try {
+    // El proveedor reenvía un lote de hace tres días.
+    const result = await awardXp({ ...BASE, source: "ATTENDANCE", points: 10, refId: null, now: new Date("2026-09-05T10:00:00Z") });
+    assert.equal(result.awarded, true);
+    const update = stub.find("twEmployee", "update")?.args as { data: { lastActivityAt: Date; streakDays: number } };
+    assert.equal(update.data.lastActivityAt.toISOString(), anterior.toISOString(), "conserva la fecha más reciente");
+    assert.equal(update.data.streakDays, 13, "y no rompe la racha");
+  } finally {
+    stub.restore();
+  }
+});
+
+test("la insignia base se entrega en el primer pago", async () => {
+  const stub = stubPrisma({
+    employee: { id: "e1", xpTotal: 0, streakDays: 0, lastActivityAt: null },
+    season: null,
+    badge: { id: "badge-explorador", name: "Explorador" },
+  });
+  try {
+    const result = await awardXp({ ...BASE, points: 50, now: new Date("2026-09-07T15:00:00Z") });
+    assert.deepEqual(result.badges.map((b) => b.code), ["EXPLORADOR"], "Explorador se gana por empezar");
+    assert.ok(stub.find("twUserBadge", "upsert"));
   } finally {
     stub.restore();
   }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Award, BookOpen, Compass, Flag, Flame, Map as MapIcon, Mountain, Star } from "lucide-react";
 import { requireTwSession } from "@/lib/totto-way/auth";
-import { createTranslator } from "@/lib/totto-way/i18n";
+import { createTranslator, intlLocale } from "@/lib/totto-way/i18n";
 import { getJourneyView } from "@/lib/totto-way/queries";
 import { Eyebrow, TwProgress } from "../../_components/atoms";
 
@@ -14,7 +14,7 @@ export default async function JourneyPage() {
   const session = await requireTwSession();
   const t = createTranslator(session.locale);
   const view = await getJourneyView(session);
-  const format = new Intl.DateTimeFormat(session.locale === "en" ? "en-US" : "es-CO", { month: "short", year: "numeric" });
+  const format = new Intl.DateTimeFormat(intlLocale(session.locale), { month: "short", year: "numeric" });
   const doneCount = view.timeline.filter((item) => item.done).length;
   const doneRatio = view.timeline.length > 0 ? (doneCount / view.timeline.length) * 100 : 0;
   const BadgeIcon = ICONS[view.badge.icon as keyof typeof ICONS] ?? Compass;

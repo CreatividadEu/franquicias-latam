@@ -29,7 +29,12 @@ async function requireLeader(): Promise<TwSession | null> {
 async function memberInScope(session: TwSession, userId: string) {
   return prisma.twEmployee.findFirst({
     where: { ...employeeWhere(session.scope), userId },
-    select: { userId: true, storeId: true, user: { select: { name: true, email: true } } },
+    select: {
+      userId: true,
+      storeId: true,
+      store: { select: { timezone: true } },
+      user: { select: { name: true, email: true } },
+    },
   });
 }
 
@@ -73,15 +78,9 @@ export async function validateCheckpoint(input: { userId: string; checkpointId: 
   });
   if (existing) return { ok: false, error: "Este checkpoint ya estaba validado." };
 
-  await prisma.twCheckpointValidation.create({
-    data: {
-      checkpointId: checkpoint.id,
-      userId: member.userId,
-      validatedBy: session.user.id,
-      xpAwarded: checkpoint.xp,
-    },
-  });
-
+  // El pago va primero: `awardXp` es idempotente por índice único, así que si
+  // algo falla después, un reintento no paga dos veces pero sí completa la
+  // validación. Al revés se podía quedar validado y sin XP.
   await awardXp({
     franchiseId: session.franchiseId,
     userId: member.userId,
@@ -90,6 +89,18 @@ export async function validateCheckpoint(input: { userId: string; checkpointId: 
     points: checkpoint.xp,
     refId: checkpoint.id,
     meta: { chapter: checkpoint.chapter.title, validatedBy: session.user.id },
+    timeZone: member.store?.timezone ?? undefined,
+  });
+
+  await prisma.twCheckpointValidation.upsert({
+    where: { checkpointId_userId: { checkpointId: checkpoint.id, userId: member.userId } },
+    update: {},
+    create: {
+      checkpointId: checkpoint.id,
+      userId: member.userId,
+      validatedBy: session.user.id,
+      xpAwarded: checkpoint.xp,
+    },
   });
 
   await notifyCheckpointValidated({

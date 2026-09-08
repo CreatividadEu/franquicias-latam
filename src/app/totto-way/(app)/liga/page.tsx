@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Minus, Trophy } from "lucide-react";
 import { requireTwSession } from "@/lib/totto-way/auth";
-import { createTranslator, type TwMessageKey, type TwTranslator } from "@/lib/totto-way/i18n";
+import { createTranslator, intlLocale, plural, type TwMessageKey, type TwTranslator } from "@/lib/totto-way/i18n";
 import { SCORING_TABLE } from "@/lib/totto-way/league";
 import { NAV_HREF } from "@/lib/totto-way/nav";
 import { getLeagueView, type LeagueRow } from "@/lib/totto-way/queries";
@@ -30,7 +30,7 @@ function Delta({ delta }: { delta: number | null }) {
   );
 }
 
-function Table({ rows, empty, youLabel, t }: { rows: LeagueRow[]; empty: string; youLabel: string; t: TwTranslator }) {
+function Table({ rows, empty, youLabel, t, intl }: { rows: LeagueRow[]; empty: string; youLabel: string; t: TwTranslator; intl: string }) {
   if (rows.length === 0) return <p className="tw-muted tw-small">{empty}</p>;
   return (
     <div className="tw-table">
@@ -49,7 +49,7 @@ function Table({ rows, empty, youLabel, t }: { rows: LeagueRow[]; empty: string;
             </span>
           </span>
           <Delta delta={row.delta} />
-          <span className="tw-table__points">{row.points.toLocaleString("es-CO")}</span>
+          <span className="tw-table__points">{row.points.toLocaleString(intl)}</span>
         </div>
       ))}
     </div>
@@ -103,16 +103,17 @@ export default async function LeaguePage({ searchParams }: { searchParams: Searc
       ) : null}
 
       <div className="tw-league-layout">
-        <Table rows={rows} empty={t("league.empty")} youLabel={t("league.you")} t={t} />
+        <Table rows={rows} empty={t("league.empty")} youLabel={t("league.you")} t={t} intl={intlLocale(session.locale)} />
 
         <div style={{ display: "grid", gap: 16 }}>
           <section className="tw-card tw-card--yellow" style={{ display: "grid", gap: 8 }}>
             <div className="tw-section__head">
-              <Eyebrow>{t("league.prize")}</Eyebrow>
+              {/* Sobre amarillo el eyebrow va en negro: en rojo se queda en 2,6:1. */}
+              <Eyebrow tone="onYellow">{t("league.prize")}</Eyebrow>
               <Trophy strokeWidth={1.8} size={18} />
             </div>
             <span className="tw-countdown">
-              {view.season.countdown.ended ? t("league.ended") : t("league.endsIn", { n: view.season.countdown.days })}
+              {view.season.countdown.ended ? t("league.ended") : plural(t, "league.endsIn", view.season.countdown.days)}
             </span>
             <p className="tw-small">{view.season.prizeText}</p>
           </section>

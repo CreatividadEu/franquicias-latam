@@ -180,7 +180,9 @@ export async function completeLesson(lessonId: string): Promise<CompletionResult
   const now = new Date();
   await prisma.twLessonProgress.upsert({
     where: { userId_lessonId: { userId: session.user.id, lessonId: lesson.id } },
-    update: { status: "COMPLETED", completedAt: now, xpEarned: award.points },
+    // Si el XP ya estaba pagado (reintento), `awarded` es false y `points` 0:
+    // no se toca `xpEarned` para no borrar lo que la persona ya había ganado.
+    update: { status: "COMPLETED", completedAt: now, xpEarned: award.awarded ? award.points : undefined },
     create: {
       userId: session.user.id,
       lessonId: lesson.id,
@@ -220,7 +222,7 @@ export async function completeLesson(lessonId: string): Promise<CompletionResult
 
   return {
     ok: true,
-    points: award.points,
+    points: award.awarded ? award.points : lesson.xp,
     title: lesson.title,
     badges: award.badges.map((badge) => badge.code),
     chapterComplete: stats.complete,

@@ -5,6 +5,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import type { TwSession } from "./auth";
+import { resolveTwLocale, type TwLocale } from "./i18n";
 import { parseChapterSnapshot, type ChapterSnapshot, type LessonSnapshot } from "./content";
 import {
   chapterProgress,
@@ -17,7 +18,7 @@ import {
   type ProgressRow,
 } from "./progress";
 import { badgeFor, badgeProgress, currentStreak, dayKey, nextBadge } from "./xp";
-import { positionDelta, seasonCountdown, type Countdown } from "./league";
+import { computeStandings, positionDelta, seasonCountdown, type Countdown } from "./league";
 import { buildTimeline, careerProgress, type CareerProgress, type TimelineItem } from "./journey";
 import { daysSince, teamKpis, type TeamKpis, type TeamMemberRow } from "./leader";
 import { employeeWhere, storeWhere } from "./scope";
@@ -284,7 +285,8 @@ export async function getChapterView(session: TwSession, slug: string): Promise<
 
   const manual = await prisma.twMediaAsset.findFirst({
     where: { franchiseId: session.franchiseId, kind: "PDF", meta: { path: ["chapterSlug"], equals: slug } },
-    select: { storagePath: true },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
   });
 
   return {
@@ -294,7 +296,8 @@ export async function getChapterView(session: TwSession, slug: string): Promise<
     nextLessonSlug: stats.nextLesson?.slug ?? null,
     missions: lessonsByMission(snapshot).map((mission) => ({ ...mission, lessons: mission.lessons.map(row) })),
     checkpoint,
-    manualUrl: manual?.storagePath ?? null,
+    // Ruta que firma la lectura; el bucket es privado y nunca se expone.
+    manualUrl: manual ? `/api/totto-way/media/${manual.id}` : null,
   };
 }
 
@@ -363,9 +366,9 @@ export type ProfileView = {
   badge: { code: string; name: string; icon: string };
   nextBadge: { code: string; name: string; remaining: number } | null;
   badgeProgress: number;
-  badges: { code: string; name: string; icon: string; earnedAt: Date | null; minXp: number }[];
-  certificates: { chapter: string; number: number; complete: boolean; pct: number }[];
-  prefs: { locale: string; dailyReminder: boolean; leagueAlerts: boolean };
+  badges: { code: string; name: string; icon: string; earned: boolean; earnedAt: Date | null; minXp: number }[];
+  certificates: { chapter: string; slug: string; number: number; complete: boolean; pct: number }[];
+  prefs: { locale: TwLocale; dailyReminder: boolean; leagueAlerts: boolean };
   gamification: boolean;
 };
 
@@ -396,11 +399,14 @@ export async function getProfileView(session: TwSession, now = new Date()): Prom
       ? { code: next.code, name: allBadges.find((b) => b.code === next.code)?.name ?? next.code, remaining: next.remaining }
       : null,
     badgeProgress: badgeProgress(xpTotal),
+    // Una insignia está ganada si se alcanzó su umbral, aunque falte la fila:
+    // si no, Explorador salía bloqueada con "Faltan -4.200 XP".
     badges: allBadges.map((badge) => ({
       code: badge.code,
       name: badge.name,
       icon: badge.icon,
       minXp: badge.minXp,
+      earned: xpTotal >= badge.minXp,
       earnedAt: earnedMap.get(badge.id) ?? null,
     })),
     certificates: cards
@@ -408,10 +414,10 @@ export async function getProfileView(session: TwSession, now = new Date()): Prom
       .map((card) => {
         const snapshot = snapshots.find((s) => s.id === card.id);
         const stats = snapshot ? chapterProgress(snapshot, progress) : null;
-        return { chapter: card.title, number: card.number, complete: stats?.complete ?? false, pct: card.pct };
+        return { chapter: card.title, slug: card.slug, number: card.number, complete: stats?.complete ?? false, pct: card.pct };
       }),
     prefs: {
-      locale: employee?.locale ?? "es",
+      locale: resolveTwLocale(employee?.locale),
       dailyReminder: prefs.dailyReminder !== false,
       leagueAlerts: prefs.leagueAlerts !== false,
     },
@@ -462,7 +468,7 @@ export async function getLeagueView(session: TwSession, seasonId?: string, now =
   }
 
   const [scores, stores, employees] = await Promise.all([
-    prisma.twLeagueScore.findMany({ where: { seasonId: season.id }, orderBy: { position: "asc" } }),
+    prisma.twLeagueScore.findMany({ where: { seasonId: season.id }, orderBy: { points: "desc" } }),
     prisma.twStore.findMany({
       where: { franchiseId: session.franchiseId },
       select: { id: true, name: true, city: true, _count: { select: { employees: true } } },
@@ -479,6 +485,19 @@ export async function getLeagueView(session: TwSession, seasonId?: string, now =
   // posición global (PLAN §4.4).
   const restricted = session.user.role === "FRANCHISE_OWNER" && session.scope.storeIds !== "all";
   const visibleStores = restricted ? new Set(session.scope.storeIds as string[]) : null;
+
+  /**
+   * La posición que se pinta se recalcula aquí desde los puntos. La columna
+   * `position` solo la escribe el job nocturno, así que entre pasadas las
+   * filas nuevas que crea awardXp llegan con 0 y encabezaban la tabla.
+   */
+  const rank = (entityType: "STORE" | "USER") => {
+    const rows = scores.filter((score) => score.entityType === entityType);
+    const standings = computeStandings(rows.map((row) => ({ entityId: row.entityId, points: row.points })));
+    return new Map(standings.map((standing) => [standing.entityId, standing.position]));
+  };
+  const storeRank = rank("STORE");
+  const userRank = rank("USER");
   const storeById = new Map(stores.map((store) => [store.id, store]));
   const employeeByUser = new Map(employees.map((employee) => [employee.userId, employee]));
 
@@ -486,10 +505,11 @@ export async function getLeagueView(session: TwSession, seasonId?: string, now =
     .filter((score) => score.entityType === "STORE")
     .map((score) => {
       const store = storeById.get(score.entityId);
+      const position = storeRank.get(score.entityId) ?? score.position;
       return {
         entityId: score.entityId,
-        position: score.position,
-        delta: positionDelta(score.position, score.prevPosition),
+        position,
+        delta: positionDelta(position, score.prevPosition),
         points: score.points,
         name: store?.name ?? "—",
         place: store?.city ?? null,
@@ -502,10 +522,11 @@ export async function getLeagueView(session: TwSession, seasonId?: string, now =
     .filter((score) => score.entityType === "USER")
     .map((score) => {
       const employee = employeeByUser.get(score.entityId);
+      const position = userRank.get(score.entityId) ?? score.position;
       return {
         entityId: score.entityId,
-        position: score.position,
-        delta: positionDelta(score.position, score.prevPosition),
+        position,
+        delta: positionDelta(position, score.prevPosition),
         points: score.points,
         name: employee?.user.name ?? "—",
         place: employee?.store?.name ?? employee?.roleTitle ?? null,
@@ -598,7 +619,13 @@ export type LeaderView = {
 
 export async function getLeaderView(session: TwSession, storeFilter?: string | null, now = new Date()): Promise<LeaderView> {
   const where = employeeWhere(session.scope);
-  const scopedWhere = storeFilter ? { ...where, storeId: { in: [storeFilter] } } : where;
+  // El filtro de tienda INTERSECTA con el scope; nunca lo amplía. Antes el
+  // spread dejaba `storeId` después y sobreescribía la restricción del rol.
+  const allowed = where.storeId?.in;
+  const scopedWhere =
+    storeFilter && (!allowed || allowed.includes(storeFilter))
+      ? { ...where, storeId: { in: [storeFilter] } }
+      : where;
 
   const [employees, stores, { snapshots }, season] = await Promise.all([
     prisma.twEmployee.findMany({

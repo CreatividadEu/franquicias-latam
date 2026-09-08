@@ -7,6 +7,7 @@ import type { QuizQuestion, TwBlock } from "@/lib/totto-way/content";
 import { useToast } from "@/app/totto-way/_components/TwToast";
 import { deleteLesson, upsertLesson, upsertQuiz } from "../actions";
 import { BlockEditor } from "./BlockEditor";
+import { MediaUpload } from "./MediaUpload";
 import { QuizEditor } from "./QuizEditor";
 
 export type LessonFormValue = {
@@ -133,10 +134,11 @@ export function LessonForm({
             <span className="tw-label">Regla (banda amarilla, opcional)</span>
             <input className="tw-input" value={value.ruleBanner} onChange={(event) => set("ruleBanner", event.target.value)} />
           </label>
-          <label className="tw-field">
+          <div className="tw-field">
             <span className="tw-label">Póster</span>
             <input className="tw-input" value={value.posterUrl} placeholder="/totto-way/manual/p21.png" onChange={(event) => set("posterUrl", event.target.value)} />
-          </label>
+            <MediaUpload kind="POSTER" label="Subir imagen" onUploaded={(url) => set("posterUrl", url)} />
+          </div>
           <label className="tw-field">
             <span className="tw-label">Códigos DOC</span>
             <input className="tw-input" value={value.docRefs} placeholder="DOC-01-03, DOC-01-04" onChange={(event) => set("docRefs", event.target.value)} />

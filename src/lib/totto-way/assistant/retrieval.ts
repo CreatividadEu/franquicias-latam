@@ -63,8 +63,12 @@ export async function searchKnowledge(
 
   if (rows.length > 0) return rows.map(toHit);
 
+  // `to_tsquery` es sintaxis, no texto: un "&", un "!" o un paréntesis del
+  // usuario lanzaba un error de sintaxis en Postgres. Se deja solo el término
+  // más largo reducido a letras y números.
   const longest = clean
     .split(/\s+/)
+    .map((word) => word.normalize("NFD").replace(/[^\p{L}\p{N}]/gu, ""))
     .filter((word) => word.length >= 4)
     .sort((a, b) => b.length - a.length)[0];
   if (!longest) return [];

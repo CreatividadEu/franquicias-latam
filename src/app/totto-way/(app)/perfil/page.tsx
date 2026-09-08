@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Award, Check, Compass, Flag, Map as MapIcon, Mountain } from "lucide-react";
+import { Award, Compass, Download, Flag, Map as MapIcon, Mountain } from "lucide-react";
 import { requireTwSession } from "@/lib/totto-way/auth";
-import { createTranslator, type TwMessageKey } from "@/lib/totto-way/i18n";
+import { createTranslator, intlLocale, type TwMessageKey } from "@/lib/totto-way/i18n";
 import { getProfileView } from "@/lib/totto-way/queries";
 import { Avatar, Chip, Eyebrow, TwProgress, initialsOf } from "../../_components/atoms";
 import { PreferencesForm } from "../../_components/PreferencesForm";
@@ -17,9 +17,10 @@ export default async function ProfilePage() {
   const view = await getProfileView(session);
   const employee = session.employee;
   const roleKey = `roles.${session.user.role}` as TwMessageKey;
-  const monthYear = new Intl.DateTimeFormat(session.locale === "en" ? "en-US" : "es-CO", { month: "short", year: "numeric" });
+  const intl = intlLocale(session.locale);
+  const monthYear = new Intl.DateTimeFormat(intl, { month: "short", year: "numeric" });
   const since = employee?.since
-    ? new Intl.DateTimeFormat(session.locale === "en" ? "en-US" : "es-CO", { month: "long", year: "numeric" }).format(employee.since)
+    ? new Intl.DateTimeFormat(intl, { month: "long", year: "numeric" }).format(employee.since)
     : null;
 
   return (
@@ -35,7 +36,7 @@ export default async function ProfilePage() {
         </div>
         {view.gamification ? (
           <div className="tw-profile__xp">
-            <span className="tw-stat">{view.xpTotal.toLocaleString("es-CO")}</span>
+            <span className="tw-stat">{view.xpTotal.toLocaleString(intl)}</span>
             <div className="tw-eyebrow tw-eyebrow--muted">{t("common.xp")}</div>
           </div>
         ) : null}
@@ -55,7 +56,7 @@ export default async function ProfilePage() {
           <div className="tw-medallions">
             {view.badges.map((badge) => {
               const Icon = BADGE_ICON[badge.icon as keyof typeof BADGE_ICON] ?? Award;
-              const earned = !!badge.earnedAt;
+              const earned = badge.earned;
               return (
                 <div key={badge.code} className={`tw-medallion${earned ? "" : " tw-medallion--locked"}`}>
                   <span className="tw-medallion__disc">
@@ -64,8 +65,10 @@ export default async function ProfilePage() {
                   <span className="tw-medallion__name">{badge.name}</span>
                   <span className="tw-medallion__meta">
                     {earned
-                      ? t("profile.badgeEarned", { date: monthYear.format(badge.earnedAt as Date) })
-                      : t("profile.badgeLocked", { n: (badge.minXp - view.xpTotal).toLocaleString("es-CO") })}
+                      ? badge.earnedAt
+                        ? t("profile.badgeEarned", { date: monthYear.format(badge.earnedAt) })
+                        : `${badge.minXp.toLocaleString(intl)} XP`
+                      : t("profile.badgeLocked", { n: Math.max(0, badge.minXp - view.xpTotal).toLocaleString(intl) })}
                   </span>
                 </div>
               );
@@ -86,9 +89,10 @@ export default async function ProfilePage() {
                 {String(certificate.number).padStart(2, "0")} · {certificate.chapter}
               </span>
               {certificate.complete ? (
-                <Chip tone="yellow">
-                  <Check size={12} strokeWidth={2.4} /> {t("profile.certificateReady")}
-                </Chip>
+                <a className="tw-btn tw-btn--yellow tw-btn--sm" href={`/api/totto-way/certificate/${certificate.slug}`} download>
+                  <Download strokeWidth={1.8} />
+                  {t("profile.certificateReady")}
+                </a>
               ) : (
                 <Chip tone="soft">{certificate.pct}%</Chip>
               )}
@@ -103,7 +107,7 @@ export default async function ProfilePage() {
           <h2 className="tw-title-sm">{t("profile.prefs")}</h2>
           <PreferencesForm
             initial={{
-              locale: view.prefs.locale === "en" ? "en" : "es",
+              locale: view.prefs.locale,
               dailyReminder: view.prefs.dailyReminder,
               leagueAlerts: view.prefs.leagueAlerts,
             }}

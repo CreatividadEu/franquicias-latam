@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { TW_LOCALE_LABELS, TW_LOCALES } from "@/lib/totto-way/i18n";
 import type { PreferencesInput } from "../(app)/perfil/actions";
 import { updatePreferences } from "../(app)/perfil/actions";
 import { useToast } from "./TwToast";
@@ -52,14 +53,14 @@ export function PreferencesForm({ initial, copy }: { initial: PreferencesInput; 
       <div className="tw-pref-row">
         <span className="tw-list-row__title">{copy.locale}</span>
         <div className="tw-seg">
-          {(["es", "en"] as const).map((code) => (
+          {TW_LOCALES.map((code) => (
             <button
               key={code}
               type="button"
               className={`tw-seg__btn${prefs.locale === code ? " is-active" : ""}`}
               onClick={() => setPrefs((prev) => ({ ...prev, locale: code }))}
             >
-              {code === "es" ? "Español" : "English"}
+              {TW_LOCALE_LABELS[code]}
             </button>
           ))}
         </div>

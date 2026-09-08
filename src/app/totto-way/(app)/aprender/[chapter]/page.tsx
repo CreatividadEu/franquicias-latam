@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, BookOpen, Check, FileText, Flag, ListChecks, Video } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, FileText, Flag, ListChecks, Printer, Video } from "lucide-react";
 import { requireTwSession } from "@/lib/totto-way/auth";
 import { createTranslator, type TwMessageKey } from "@/lib/totto-way/i18n";
 import { NAV_HREF } from "@/lib/totto-way/nav";
@@ -110,9 +110,12 @@ export default async function ChapterPage({ params }: { params: Promise<{ chapte
                 <FileText strokeWidth={1.8} />
                 {t("chapter.manualOpen")}
               </a>
-            ) : (
-              <p className="tw-small tw-muted">{t("chapter.manualMissing")}</p>
-            )}
+            ) : null}
+            <Link className="tw-btn tw-btn--outline tw-btn--sm" href={`/totto-way/manual/${snapshot.slug}`} target="_blank">
+              <Printer strokeWidth={1.8} />
+              {t("chapter.manualPrint")}
+            </Link>
+            {!view.manualUrl ? <p className="tw-small tw-muted">{t("chapter.manualMissing")}</p> : null}
           </section>
 
           {checkpoint ? (

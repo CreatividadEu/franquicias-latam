@@ -7,7 +7,7 @@ import { getTwSessionOrNull } from "@/lib/totto-way/auth";
 import { NAV_HREF } from "@/lib/totto-way/nav";
 
 const PrefsSchema = z.object({
-  locale: z.enum(["es", "en"]),
+  locale: z.enum(["es", "es-MX", "en", "pt-BR"]),
   dailyReminder: z.boolean(),
   leagueAlerts: z.boolean(),
 });
