@@ -2,22 +2,19 @@
   'use strict';
   // Walkable floor plan reconstructed from photographs; all units are internal.
   const obstacles = [
-    {x:-3.65,z:3.05,w:2.1,d:1.55},
-    {x:-0.6,z:2.65,w:1.52,d:2.15},
-    {x:3.95,z:2.7,w:1.55,d:2.25},
-    {x:3.8,z:-1.15,w:1.75,d:1.45},
-    {x:-3.25,z:-.35,w:1.5,d:1.7},
-    {x:-3.15,z:-4.25,w:2.65,d:.95},
-    {x:-3.15,z:-5.73,w:3.5,d:.16},
-    {x:-5.06,z:5.27,w:.65,d:.6},
-    {x:-5.95,z:-.2,w:.9,d:13.6},
-    {x:5.95,z:-.2,w:.9,d:13.6},
-    {x:0,z:-6.85,w:12.8,d:1.1},
-    {x:-3.375,z:7.3,w:6.05,d:.35},
-    {x:6.1,z:7.3,w:.6,d:.35}
+    {x:-4.65,z:0,w:.7,d:18},{x:4.65,z:0,w:.7,d:18},
+    {x:0,z:-8.65,w:10,d:.7},
+    {x:-4.36,z:8.96,w:1.42,d:.4},{x:2.75,z:8.67,w:4.5,d:1.15},
+    {x:-3.55,z:-.35,w:1.15,d:3.5},
+    {x:-2.6,z:4.6,w:1.5,d:1.65},{x:2.55,z:4.7,w:1.5,d:1.7},
+    {x:.1,z:1.9,w:1.25,d:1.05},{x:2.3,z:-.9,w:1.45,d:1.15},
+    {x:-1.9,z:-3.55,w:1.4,d:1.15},{x:1.5,z:-4.35,w:1.4,d:1.1},
+    {x:-3.9,z:7.5,w:.85,d:.85},{x:.25,z:-6.05,w:.85,d:.85},
+    {x:1.1,z:-6.05,w:.78,d:.68},
+    {x:-3.15,z:8.72,w:.17,d:.48},{x:.08,z:8.72,w:.17,d:.48}
   ];
   function free(x,z,r=.24){
-    if(x < -6.13+r || x > 6.13-r || z < -7+r || z > 11.8-r) return false;
+    if(x < -4.9+r || x > 4.9-r || z < -8.8+r || z > 13.4-r) return false;
     return !obstacles.some(o=>Math.abs(x-o.x)<o.w/2+r && Math.abs(z-o.z)<o.d/2+r);
   }
   function move(p,dx,dz){
@@ -30,7 +27,7 @@
   }
   function path(start,end){
     if(!free(end.x,end.z)) return [];
-    const step=.28, xmin=-6, zmin=-6.5, w=44,h=66;
+    const step=.28, xmin=-4.6, zmin=-8.2, w=34,h=78;
     const encode=(x,z)=>z*w+x;
     const world=k=>({x:xmin+(k%w)*step,z:zmin+Math.floor(k/w)*step});
     const node=p=>{
@@ -64,13 +61,14 @@
     return short;
   }
   const stops=[
-    {id:'entrada',name:'Entrada',subtitle:'Una primera mirada',x:1.0,z:6.55,look:[-.2,1.6,-4.5],photo:'interior',color:'#fafafa'},
-    {id:'viajes',name:'Viajes',subtitle:'Equipaje para cada destino',x:-3.7,z:5.05,look:[-6,1.6,2],photo:'viajes',color:'#66bdff'},
-    {id:'personaliza',name:'Personalización',subtitle:'Tu morral, a tu manera',x:1.05,z:2.9,look:[-.7,1.5,2.65],photo:'interior',color:'#b9a0ff'},
-    {id:'morrales',name:'Morrales D.C.',subtitle:'El corazón de la tienda',x:0,z:-4.7,look:[0,1.55,-6.65],photo:'morrales',color:'#eb94bc'},
-    {id:'distritos',name:'Los distritos',subtitle:'Mujer, hombre y oficina',x:3.35,z:-3.1,look:[6.05,1.7,-2.6],photo:'distritos',color:'#eabe43'},
-    {id:'caja',name:'Punto de pago',subtitle:'El encuentro con la marca',x:-2.6,z:-2.65,look:[-3.2,1.6,-5.6],photo:'caja',color:'#f5ca43'},
-    {id:'fachada',name:'Fachada',subtitle:'La identidad hacia afuera',x:1.85,z:11.2,look:[-1.2,2,7.05],photo:'fachada',color:'#a2adba'}
+    {id:'entrada',name:'Entrada',subtitle:'Acceso amarillo · tienda 1043',x:-1.2,z:7.6,look:[0,1.7,-7],photo:'interior',color:'#f5cf35'},
+    {id:'mujer',name:'Mujer',subtitle:'Prendas y accesorios en tonos suaves',x:-2.15,z:6.4,look:[-4.65,1.65,4.8],photo:'perspectiva',color:'#d4b7c2'},
+    {id:'caja',name:'Punto de pago',subtitle:'Madera clara y doble atención',x:-1.75,z:-.2,look:[-4.5,1.95,-.35],photo:'caja',color:'#c8a27b'},
+    {id:'kids',name:'Kids',subtitle:'Color para los más pequeños',x:-2.8,z:-5.85,look:[-4.65,1.65,-6.1],photo:'kids-colors',color:'#e58caf'},
+    {id:'colors',name:'COLORS',subtitle:'Desde 1987 cargando tus historias',x:-.7,z:-7.25,look:[0,1.85,-8.7],photo:'kids-colors',color:'#83b6d6'},
+    {id:'viaje',name:'Viaje',subtitle:'Maletas y equipaje',x:2.9,z:-6.75,look:[4.65,1.6,-6.3],photo:'hombre-viaje',color:'#8aab9e'},
+    {id:'hombre',name:'Hombre',subtitle:'Prendas, morrales y esenciales',x:2.7,z:2.9,look:[4.65,1.7,4.6],photo:'hombre-viaje',color:'#b6a07e'},
+    {id:'fachada',name:'Fachada',subtitle:'Portal amarillo · vitrina BAZY',x:-.85,z:12.8,look:[0,2.1,8.75],photo:'fachada',color:'#f5cf35'}
   ];
   root.TottoNav={obstacles,free,move,path,stops};
   if(typeof module!=='undefined')module.exports=root.TottoNav;

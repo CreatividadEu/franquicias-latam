@@ -116,13 +116,13 @@
    });
    let instanced=0;
    for(const objects of buckets.values()){
-     if(objects.length<3)continue;const src=objects[0],i=new T.InstancedMesh(src.geometry,src.material,objects.length);i.castShadow=src.castShadow;i.receiveShadow=src.receiveShadow;
+     if(objects.length<8)continue;const src=objects[0],i=new T.InstancedMesh(src.geometry,src.material,objects.length);i.castShadow=src.castShadow;i.receiveShadow=src.receiveShadow;
      objects.forEach((o,k)=>{i.setMatrixAt(k,o.matrixWorld);remove.push(o);});i.computeBoundingSphere();root.add(i);instanced+=objects.length;
    }
    remove.forEach(o=>o.removeFromParent());
    // Batch the remaining one-off fixtures by material to reduce GPU draw calls.
    root.updateMatrixWorld(true);const leftovers=new Map();
-   root.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||o.material.transparent)return;const k=o.material.uuid+':'+o.castShadow+':'+o.receiveShadow;if(!leftovers.has(k))leftovers.set(k,[]);leftovers.get(k).push(o);});
+   root.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||o.material.transparent||o.userData.keep)return;const k=o.material.uuid+':'+o.castShadow+':'+o.receiveShadow;if(!leftovers.has(k))leftovers.set(k,[]);leftovers.get(k).push(o);});
    for(const list of leftovers.values()){
      if(list.length<3)continue;
      const baked=list.map(o=>{const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);return g;}),total=baked.reduce((n,g)=>n+g.attributes.position.count,0),geo=new T.BufferGeometry();
@@ -131,176 +131,175 @@
    }
    return instanced;
  }
+
  window.buildTottoScene=function(){
-   const scene=new T.Scene();scene.background=new T.Color('#abb8c0');scene.fog=new T.Fog('#afb5b5',28,65);
+   const scene=new T.Scene();scene.background=new T.Color('#dce1e3');scene.fog=new T.Fog('#dce1e3',34,75);
    const fixed=new T.Group(),ceiling=new T.Group(),front=new T.Group();scene.add(fixed,ceiling,front);
-   const ft=floorTexture();ft.wrapS=ft.wrapT=T.RepeatWrapping;ft.repeat.set(4,6);const fm=new T.MeshStandardMaterial({map:ft,roughness:.61,metalness:.05,bumpMap:ft,bumpScale:.012});
-   box(fixed,13,.14,15,0,-.07,0,fm);
-   box(fixed,18,.15,6,0,-.075,10.5,material('#bfc3c3',.28,.19));
-   // Wall volumes and illuminated perimeter skirting.
-   box(fixed,.20,4.05,15,-6.5,2.025,0,M.wall);box(fixed,.20,4.05,15,6.5,2.025,0,M.wall);box(fixed,13,4.05,.2,0,2.025,-7.5,M.wall);
-   box(fixed,12.7,.035,.028,0,.12,-7.36,M.led);
-   for(const x of [-6.36,6.36])box(fixed,.025,.035,14.4,x,.12,-.02,M.led);
-   box(ceiling,13,.18,15,0,4.13,0,M.black);
-   for(const z of [-6,-2.5,1,4.7]){
-     box(ceiling,12.55,.14,.12,0,3.87,z,M.darkSteel);
-     box(ceiling,12.3,.025,.044,0,3.79,z,M.led);
+   const white=material('#f1f1eb',.62),stone=material('#666968',.92),blue=material('#65b8dc',.42),oakTex=canvasTexture(256,512,(c,w,h)=>{
+     c.fillStyle='#c8a27b';c.fillRect(0,0,w,h);
+     for(let i=0;i<180;i++){c.strokeStyle=i%3?'rgba(120,82,40,.12)':'rgba(245,218,179,.28)';c.lineWidth=1+i%2;c.beginPath();c.moveTo(i*1.7,0);c.bezierCurveTo(i*1.7+8,160,i*1.7-7,380,i*1.7+2,h);c.stroke();}
+   }),oak=new T.MeshStandardMaterial({map:oakTex,roughness:.73});
+   const ft=floorTexture();ft.wrapS=ft.wrapT=T.RepeatWrapping;ft.repeat.set(3,5);
+   const floor=new T.MeshStandardMaterial({map:ft,color:'#e6e8e9',roughness:.65,bumpMap:ft,bumpScale:.006});
+   box(fixed,10,.12,18,0,-.06,0,floor);
+   box(fixed,14,.12,5,0,-.06,11.5,material('#c8c3b5',.55));
+   for(let i=0;i<14;i++)for(let j=0;j<5;j++)if((i+j)%3===0)box(fixed,.98,.003,.98,-6.5+i,.002,9.5+j,material('#a4a4a0',.6));
+   box(fixed,.2,3.85,18,-5,1.925,0,white);box(fixed,.2,3.85,18,5,1.925,0,white);
+   box(fixed,10,3.85,.2,0,1.925,-9,white);
+   for(const x of [-4.86,4.86])box(fixed,.05,.1,17.7,x,.05,0,material('#a5a5a1'));
+   // Pale exposed ceiling, beams, service ducts, square light panels and linear LEDs.
+   box(ceiling,10,.14,18,0,3.94,0,material('#c5c8c7',.93));
+   for(const z of [-7,-3,1,5,8])box(ceiling,10,.20,.18,0,3.79,z,white);
+   for(const x of [-3.65,3.65]){
+     box(ceiling,.09,.07,17.5,x,3.57,0,white);box(ceiling,.045,.025,17.5,x,3.525,0,M.led);
+     rod(ceiling,[x+.3,3.79,-8.7],[x+.3,3.79,8.7],.06,white);
    }
-   for(const x of [-4.7,4.7]){box(ceiling,.1,.1,12.5,x,3.83,-.6,M.darkSteel);box(ceiling,.043,.025,12.5,x,3.77,-.6,M.led);}
-   for(const z of [-5,-1,3]){
-     for(const x of [-5.5,-2.75,0,2.75,5.5]){
-       const lamp=mesh(new T.CylinderGeometry(.087,.095,.14,12),M.black,ceiling,x,3.76,z);lamp.rotation.z=x*.03;
-       const lens=mesh(new T.CircleGeometry(.069,12),M.led,ceiling,x,3.68,z);lens.rotation.x=Math.PI/2;
+   rod(ceiling,[-1.7,3.82,-8.8],[-1.7,3.82,8.8],.035,material('#b25043'));
+   for(const z of [-6,-1,4]){
+     for(const x of [-2.15,2.15]){
+       box(ceiling,1.85,.07,1.75,x,3.45,z,white);box(ceiling,1.71,.018,1.61,x,3.405,z,M.led);
+       for(const dx of [-.7,.7])rod(ceiling,[x+dx,3.49,z],[x+dx,3.85,z],.006,M.steel);
+     }
+     box(ceiling,1.1,.14,1.1,0,3.66,z+1.6,white);box(ceiling,.75,.01,.75,0,3.58,z+1.6,material('#a9adad'));
+     for(let k=0;k<8;k++)box(ceiling,.68,.016,.025,0,3.568,z+1.34+k*.075,white);
+   }
+   function grid(p,w,h,z=0,y=1.45){
+     for(let x=-w/2;x<=w/2+.001;x+=.17)box(p,.011,h,.013,x,y,z,white);
+     for(let yy=y-h/2;yy<=y+h/2+.001;yy+=.17)box(p,w,.011,.013,0,yy,z,white);
+     for(const x of [-w/2,w/2])box(p,.035,h+.06,.035,x,y,z,white);
+   }
+   function heading(p,text,w,x=0,y=3.1,z=.08){
+     panel(p,labelTexture(text,'',{bg:'#f1f1eb',fg:'#34393b',border:false,h:128,size:63}),w,.32,x,y,z,true);
+   }
+   function wallSection(x,z,w,rot,title,type,colors){
+     const g=new T.Group();g.position.set(x,0,z);g.rotation.y=rot;fixed.add(g);grid(g,w,2.68,0,1.57);
+     box(g,w,.16,.59,0,.08,.21,oak);heading(g,title,Math.min(w,2.7));
+     if(type==='clothes'){
+       for(const y of [1.05,2.15]){
+         rod(g,[-w/2+.1,y+.5,.34],[w/2-.1,y+.5,.34],.018,white);
+         for(let i=0;i<Math.floor(w/.47);i++)addProduct(g,jacket(colors[i%colors.length]),-w/2+.28+i*.47,y,.32,.92);
+       }
+     }else{
+       const rows=type==='luggage'?3:3,sep=type==='luggage'?.91:.78;
+       for(let r=0;r<rows;r++){
+         const sy=.18+r*sep;box(g,w,.055,.52,0,sy,.24,oak);
+         for(let i=0;i<Math.floor(w/.59);i++)addProduct(g,type==='luggage'?suitcase(colors[(i+r)%colors.length]):backpack(colors[(i+r)%colors.length]),-w/2+.32+i*.59,sy+(type==='luggage'?.37:.32),.25,type==='luggage'?.86:.83);
+       }
+     }return g;
+   }
+   const pastel=['#d4b7c2','#e3dfce','#8faba0','#b8adc9'],dark=['#3c4741','#242e3e','#b69e7d','#202428'],kids=['#e58caf','#9676ba','#76b8cc','#edbb55','#608baa'];
+   wallSection(-4.72,5.35,6.1,Math.PI/2,'MUJER','clothes',pastel);
+   wallSection(-4.72,-5.75,5.2,Math.PI/2,'KIDS','bags',kids);
+   wallSection(4.72,5.1,6.2,-Math.PI/2,'HOMBRE','clothes',dark);
+   wallSection(4.72,-.3,3.8,-Math.PI/2,'¡Siempre listos!','bags',[...pastel,...dark]);
+   wallSection(4.72,-5.9,6.3,-Math.PI/2,'VIAJE','luggage',['#bdb1c6','#7f9890','#202f35','#d5b6b1','#b8a075']);
+   // The back wall is a luminous COLORS display, not a photographic billboard.
+   const back=new T.Group();back.position.set(0,0,-8.7);fixed.add(back);
+   box(back,7.95,2.95,.10,0,1.7,-.06,blue);
+   heading(back,'COLORS',3.1,0,3.28,.025);
+   panel(back,labelTexture('Desde 1987 cargando tus historias','',{bg:'#c4e8f5',fg:'#374853',border:false,h:128,size:44}),4.6,.21,0,2.94,.03,true);
+   for(let i=0;i<9;i++){
+     const x=-3.5+i*.875;
+     for(let r=0;r<4;r++){
+       const y=.5+r*.61;
+       for(const xx of [-.31,.31])box(back,.016,.54,.04,x+xx,y,.015,white);
+       for(const yy of [-.27,.27])box(back,.63,.016,.04,x,y+yy,.015,white);
+       addProduct(back,backpack(['#dca4bd','#b777a8','#9687b0','#83b6d6','#3f789e','#263c5b','#182735','#709396','#ddc585'][i]),x,y,.20,.79);
      }
    }
-   for(const x of [-2.8,2.8])rod(ceiling,[x,4,-7.3],[x,4,7.3],.025,material('#713d32',.65,.28));
-   // Back wall: four rows of rounded fabric backpacks, school districts at either end.
-   const back=new T.Group();back.position.set(0,0,-6.96);fixed.add(back);
-   for(let i=0;i<11;i++){
-     const x=-5.25+i*1.05;
-     box(back,.025,2.77,.033,x,1.54,0,M.steel);
-     for(let row=0;row<4;row++){
-       const color=bagColors[(i+row*(i%2?2:3))%bagColors.length];
-       const bp=backpack(color);addProduct(back,bp,x,.46+row*.71,.17,.94,(i%3-1)*.06);
-       rod(back,[x,.8+row*.71,0],[x,.8+row*.71,.22],.009,M.steel);
-     }
-   }
-   for(let k=0;k<5;k++)box(back,2.05,.07,.62,-4.2+k*2.1,.08,.15,M.steel);
-   for(const x of [-2.55,2.55])box(back,.055,2.7,.76,x,1.43,.1,M.wall,.02);
-   sign(back,'Morrales D.C.',3.35,0,3.37,.11);
-   panel(back,labelTexture('SOMOS EXPERTOS DESDE 1987','',{h:128,border:false,size:54}),3.22,.18,0,3.07,.17,true);
-   sign(back,'NIÑO',1.5,-4.3,3.17,.12);sign(back,'NIÑA',1.5,4.3,3.17,.12);
-   // Left wall: the travel wall with brushed metal shelves and light under every shelf.
-   const travel=new T.Group();travel.position.set(-6.24,0,0);travel.rotation.y=Math.PI/2;fixed.add(travel);
-   box(travel,12.9,2.99,.07,0,1.64,-.02,material('#a8a8a1',.5,.4));
-   for(const y of [.13,1.23,2.37,3.4]){
-     box(travel,12.8,.065,.67,0,y,.28,M.steel);
-     if(y>.2)box(travel,12.65,.023,.036,0,y-.04,.58,M.led);
-   }
-   const colors=['#89b4d8','#152630','#6d9b92','#d8c2a5','#e3bd37','#536c7e'];
-   for(let c=0;c<15;c++)for(let row=0;row<3;row++){
-     const x=-6+c*.855;
-     addProduct(travel,suitcase(colors[(c+row*2)%colors.length]),x,.13+row*1.125+.414,.29,row===2?.84:.97,.04*(c%3-1));
-   }
-   sign(travel,'Estación de viajes',3.2,1.5,3.71,.15);sign(travel,'Artículo personal',2,-3.6,3.71,.15);
-   // Right wall: district rails, apparel and small bag shelves.
-   const right=new T.Group();right.position.set(6.25,0,0);right.rotation.y=-Math.PI/2;fixed.add(right);
-   for(let i=0;i<9;i++){const x=-5.7+i*1.43;box(right,.03,2.93,.04,x,1.61,0,M.steel);}
-   for(const y of [1.1,2.28]){
-     rod(right,[-6,y+.48,.37],[6,y+.48,.37],.018,M.steel);
-     for(let i=0;i<21;i++){
-       const color=['#2e4a4d','#1f405a','#263239','#d8d4c6','#dcba3d','#c3a6b7'][Math.floor(i/4)%6];
-       addProduct(right,jacket(color),-5.85+i*.58,y,.27,1.04,(i%2)*.12);
-     }
-   }
-   sign(right,'Distrito Hombre',3.1,-3.9,3.4,.1);sign(right,'Distrito Mujer',3.1,3.8,3.4,.1);
-   box(right,1.44,2.92,.16,0,1.68,.12,M.steel);
-   panel(right,labelTexture('Esenciales','PARA LA OFICINA',{w:512,h:512,bg:'#8176ac',border:false,size:68}),1.32,1.1,0,2.6,.205,true);
-   for(let i=0;i<3;i++){
-     box(right,1.35,.035,.51,0,.35+i*.64,.34,M.steel);
-     addProduct(right,backpack(bagColors[i*2]),0,.69+i*.64,.43,.93);
-   }
-   function plinth(x,z,w,d,height=.14,col=M.darkSteel){box(fixed,w,height,d,x,height/2,z,col,.015);contact(fixed,x,z,w*1.5,d*1.5);return height;}
-   // Entrance travel island.
-   plinth(-3.65,3.05,2.1,1.55,.16);box(fixed,2.03,.025,1.48,-3.65,.174,3.05,material('#5368b0',.44));
-   [[-4.23,3.35,1.03],[-3.54,3.3,1.17],[-2.92,3.08,.92],[-4.1,2.68,.88]].forEach((p,i)=>addProduct(fixed,suitcase(['#1e2e39','#87abd4','#a2b4ca','#94b7d7'][i]),p[0],.17+.42*p[2],p[1],p[2],-.13));
-   // Personalisation island and its luminous totem.
-   plinth(-.6,2.65,1.52,2.15,.16);
-   box(fixed,1.45,.025,2.05,-.6,.17,2.65,material('#395cc3',.4,.1));
-   const totem=new T.Group();totem.position.set(-.6,0,2.35);fixed.add(totem);
-   box(totem,1.27,2.2,.15,0,1.3,0,M.darkSteel,.024);
-   const personal=canvasTexture(512,1024,(c,w,h)=>{const grad=c.createLinearGradient(0,0,w,h);grad.addColorStop(0,'#c6bce9');grad.addColorStop(.6,'#a19bdc');grad.addColorStop(1,'#486ce9');c.fillStyle=grad;c.fillRect(0,0,w,h);c.fillStyle='#fff';c.font='600 45px Arial';c.fillText('TU IDEA.',44,115);c.fillText('TU ESTILO.',44,175);c.font='500 26px Arial';c.fillText('PERSONALIZA',44,243);c.fillText('TUS PRODUCTOS',44,282);c.save();c.translate(49,925);c.rotate(-Math.PI/2);c.font='bold 58px Arial';c.fillStyle='rgba(255,255,255,.65)';c.fillText('HAZLO TUYO',0,0);c.restore();});
-   panel(totem,personal,1.18,2.1,0,1.3,.08,true);
-   const backPanel=panel(totem,personal,1.18,2.1,0,1.3,-.08,true);backPanel.rotation.y=Math.PI;
-   addProduct(totem,backpack('#162b45'),.24,1.13,.36,1.19);
-   box(totem,.63,.62,.57,.22,.46,.32,M.darkSteel,.015);
-   addProduct(fixed,backpack('#e0dfd7'),-1.02,.55,3.31,1.0,.1);
-   addProduct(fixed,backpack('#2c526d'),-.19,.55,3.32,1.0,-.11);
-   // Clothing islands.
-   function clothingIsland(x,z,w,d){
-     plinth(x,z,w,d,.12);
-     for(const zz of [-d*.41,d*.41]){
-       rod(fixed,[x-w*.43,.14,z+zz],[x-w*.43,1.79,z+zz],.027,M.darkSteel);
-       rod(fixed,[x+w*.43,.14,z+zz],[x+w*.43,1.79,z+zz],.027,M.darkSteel);
-       rod(fixed,[x-w*.43,1.79,z+zz],[x+w*.43,1.79,z+zz],.023,M.steel);
-       for(let i=0;i<5;i++)addProduct(fixed,jacket(['#203943','#284b4a','#344449','#243e57','#b9b8b1'][i]),x-w*.34+i*w*.17,1.305,z+zz,1.0,zz>0?0:Math.PI);
-     }
-   }
-   clothingIsland(3.95,2.7,1.55,2.25);
-   plinth(3.8,-1.15,1.75,1.45,.12);
-   box(fixed,1.69,.075,1.37,3.8,.95,-1.15,M.steel,.012);
-   for(let col=0;col<3;col++)for(let layer=0;layer<5;layer++)box(fixed,.42,.037,.44,3.26+col*.51,1.015+layer*.04,-1.12,material(['#b9c9d5','#dddacf','#d5b253'][col],.98),.016);
-   // Accessories display with steel grid and bottles.
-   plinth(-3.25,-.35,1.5,1.7,.11);
-   for(const x of [-3.87,-2.63])for(const z of [-1.07,.37])rod(fixed,[x,.12,z],[x,1.88,z],.021,M.darkSteel);
-   for(const y of [.24,.78,1.3,1.83])box(fixed,1.37,.04,1.49,-3.25,y,-.35,M.darkSteel);
-   const bottleMat=['#9ebbd0','#dbb5c3','#20383d','#c6c9b8'].map(c=>material(c,.35,.12));
-   for(let row=0;row<3;row++)for(let col=0;col<5;col++){
-     const x=-3.78+col*.263,y=.4+row*.535;
-     mesh(new T.CylinderGeometry(.063,.068,.26,10),bottleMat[(row+col)%4],fixed,x,y,.15);
-     mesh(new T.CylinderGeometry(.056,.056,.046,10),M.darkSteel,fixed,x,y+.15,.15);
-     addProduct(fixed,backpack(bagColors[(col+row*2)%10]),x,y+.014,-.70,.41,Math.PI);
-   }
-   sign(fixed,'Accesorios',1.38,-3.25,2.01,.36);
-   // Payment desk and its iridescent branded backdrop.
-   const pay=new T.Group();pay.position.set(-3.15,0,-4.25);fixed.add(pay);
-   box(pay,2.65,1.08,.95,0,.54,0,M.yellow,.01);
-   box(pay,2.54,1.025,.015,0,.527,.485,M.steel);
-   box(pay,2.7,.065,1.02,0,1.11,0,M.darkSteel,.02);
-   box(pay,.12,.20,.16,.47,1.235,-.05,M.black,.01);
-   const screen=box(pay,.49,.32,.045,.47,1.42,-.1,M.black,.015);screen.rotation.x=-.15;
-   panel(pay,labelTexture('TOTTO','BIENVENIDO',{h:256,border:false}),.44,.267,.47,1.42,-.073,true);
-   box(pay,.2,.055,.13,-.6,1.173,.1,M.black,.014);
-   box(pay,3.5,2.94,.1,0,1.6,-1.48,M.wall);
-   box(pay,3.22,1.82,.075,0,2.1,-1.4,M.darkSteel);
-   panel(pay,makeDigital(),3.13,1.74,0,2.1,-1.35,true);
+   box(back,8.1,.12,.6,0,.06,.18,oak);
+   // Left-center double checkout, oak canopy, two white counters and dark TOTTO screen.
+   const pay=new T.Group();pay.position.set(-4.67,0,-.35);pay.rotation.y=Math.PI/2;fixed.add(pay);
+   box(pay,3.45,1.01,.22,0,2.78,0,oak);
+   box(pay,2.06,1.03,.08,0,2.01,.05,M.black);
    const logoMat=new T.MeshBasicMaterial({map:makeLogo(),transparent:true,depthWrite:false});
-   mesh(new T.PlaneGeometry(2.55,1.03),logoMat,pay,0,2.15,-1.34);
-   contact(fixed,-3.15,-4.25,3.3,1.5);
-   // Coloured wayfinding stripes, as in the supplied interior photograph.
-   const lineColors=['#d17b9f','#348ab7','#715fab','#e47f59','#e0b838'];
-   lineColors.forEach((c,i)=>{
-     const x=1.52+i*.126,m=material(c,.7);
-     box(fixed,.066,.004,9.9,x,.014,1.40,m);
-     const length=i<3?1.5:2.7;
-     box(fixed,length,.004,.066,x+(i<3?-1:1)*length/2,.014,-3.51-i*.10,m);
-   });
-   // Front frame, transparent entry and iridescent shop window.
-   box(front,13,.73,.36,0,3.65,7.32,M.black);
-   box(front,.50,3.29,.36,-.60,1.645,7.32,M.black);
-   box(front,.55,3.29,.36,6.17,1.645,7.32,M.black);
-   box(front,.35,3.29,.36,-6.31,1.645,7.32,M.black);
-   box(front,5.25,.12,.40,-3.54,.06,7.32,M.black);
-   const displayTex=makeDigital();
-   for(let i=0;i<7;i++){
-     box(front,.59,2.89,.075,-5.89+i*.719,1.70,7.24,M.darkSteel);
-     const tex=displayTex.clone();tex.offset.y=i*.07;tex.wrapT=T.MirroredRepeatWrapping;
-     panel(front,tex,.50,2.77,-5.89+i*.719,1.70,7.285,true);
+   mesh(new T.PlaneGeometry(1.73,.72),logoMat,pay,0,2.05,.1);
+   for(const x of [-1.27,1.27]){box(pay,.39,.88,.08,x,2.05,.04,M.led);}
+   for(const x of [-.9,.9]){
+     box(pay,1.5,1.03,.82,x,.515,1.12,white);
+     box(pay,1.55,.065,.9,x,1.06,1.12,oak,.01);
+     box(pay,.12,.2,.14,x,1.19,1.12,M.black);
+     box(pay,.43,.28,.035,x,1.39,1.16,M.black,.015);
+     panel(pay,labelTexture('TOTTO','',{border:false}),.39,.23,x,1.39,1.18,true);
+     for(let i=0;i<3;i++)box(pay,.27,.2,.05,x-.42+i*.42,.68,1.56,material(pastel[i]),.025);
    }
-   mesh(new T.PlaneGeometry(3.7,1.5),logoMat,front,-3.70,1.87,7.38);
-   mesh(new T.PlaneGeometry(2.14,.87),logoMat,front,2.37,3.66,7.525);
-   const glass=new T.MeshPhysicalMaterial({color:'#e3f3ff',transparent:true,opacity:.095,roughness:.08,metalness:.1,side:T.DoubleSide,depthWrite:false});
-   box(front,5.20,3.11,.02,-3.59,1.63,7.4,glass);
-   rod(front,[-.30,.022,7.58],[5.87,.022,7.58],.011,M.led);
-   // Smooth mannequin in the yellow travel jacket.
-   const man=new T.Group();man.position.set(-5.06,0,5.27);fixed.add(man);
-   mesh(new T.CylinderGeometry(.27,.30,.045,18),M.darkSteel,man,0,.022,0);
-   const skin=material('#d6d8d1',.72),trouser=material('#303940',.92);
-   for(const x of [-.11,.11]){rod(man,[x,.12,0],[x,.91,0],.07,trouser);box(man,.14,.10,.27,x,.087,.054,M.cream,.042);}
-   const torso=mesh(new T.SphereGeometry(1,16,14),skin,man,0,1.13,0);torso.scale.set(.205,.315,.11);
-   addProduct(man,jacket('#e2be3f'),0,1.15,.02,1.05);
-   rod(man,[0,1.48,0],[0,1.61,0],.06,skin);
-   const head=mesh(new T.SphereGeometry(.125,18,16),skin,man,0,1.71,0);head.scale.set(.81,1.16,.93);
-   // No painted wall photographs: all display objects have actual depth.
-   const hemi=new T.HemisphereLight('#edf4ff','#77705f',2.05);scene.add(hemi);
-   const key=new T.DirectionalLight('#fff4df',3.1);key.position.set(-3,8.5,4);key.target.position.set(0,0,-1);key.castShadow=true;key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-11,right:11,top:12,bottom:-12,near:.1,far:30});key.shadow.bias=-.00045;key.shadow.normalBias=.035;key.shadow.radius=3;scene.add(key,key.target);
-   const fill=new T.PointLight('#fff7ec',35,18,2);fill.position.set(0,3.48,-3.7);scene.add(fill);
-   const fill2=new T.PointLight('#e5edff',29,18,2);fill2.position.set(0,3.45,3.9);scene.add(fill2);
-   // The ceiling is visually opaque but must not block the broad interior light rig.
+   box(pay,.32,1.16,.9,0,.58,1.1,oak);
+   // White mesh gondolas with oak bases, small accessories and hanging apparel.
+   let featuredProduct=null;
+   function island(x,z,w,d,type,colors){
+     const g=new T.Group();g.position.set(x,0,z);fixed.add(g);
+     box(g,w,.14,d,0,.07,0,oak);contact(fixed,x,z,w*1.4,d*1.4);
+     if(type==='clothes'){
+       for(const side of [-1,1]){
+         for(const xx of [-w*.43,w*.43])rod(g,[xx,.14,side*d*.3],[xx,1.72,side*d*.3],.02,white);
+         rod(g,[-w*.43,1.72,side*d*.3],[w*.43,1.72,side*d*.3],.02,white);
+         for(let k=0;k<3;k++){
+           const selected=x===-2.6&&side===1&&k===1;
+           const garment=addProduct(g,jacket(selected?'#8d839a':colors[k%colors.length]),-w*.3+k*w*.3,1.22,side*d*.32,.88,side<0?Math.PI:0);
+           if(selected){
+             garment.userData.productId='colorfull-violeta';
+             garment.traverse(o=>{if(o.isMesh)o.userData.keep=true;});
+             featuredProduct=garment;
+           }
+         }
+       }
+       box(g,w,.05,d*.7,0,1.79,0,oak);
+       for(let k=0;k<3;k++)for(let r=0;r<2;r++)box(g,.31,.06,.4,-w*.3+k*w*.3,1.86+r*.061,0,material(colors[k%colors.length]),.025);
+     }else{
+       grid(g,w,1.38,0,.89);
+       for(const y of [.23,.89,1.56])box(g,w,.05,d,0,y,0,oak);
+       for(const side of [-1,1])for(let r=0;r<2;r++)for(let k=0;k<3;k++)addProduct(g,backpack(colors[(k+r)%colors.length]),-w*.32+k*w*.32,.56+r*.65,side*d*.28,.59,side<0?Math.PI:0);
+     }
+   }
+   island(-2.6,4.6,1.5,1.65,'clothes',pastel);
+   island(2.55,4.7,1.5,1.7,'clothes',dark);
+   island(.1,1.9,1.25,1.05,'bags',pastel);
+   island(2.3,-.9,1.45,1.15,'bags',[...dark,...pastel]);
+   island(-1.9,-3.55,1.4,1.15,'bags',kids);
+   island(1.5,-4.35,1.4,1.1,'bags',pastel);
+   function mannequin(x,z,color,angle=0){
+     const g=new T.Group();g.position.set(x,0,z);g.rotation.y=angle;fixed.add(g);
+     box(g,.85,.12,.85,0,.06,0,white);
+     const skin=material('#e6e4dc'),pants=material('#ab9b81');
+     for(const xx of [-.11,.11]){rod(g,[xx,.23,0],[xx,1.02,0],.065,pants);box(g,.14,.09,.28,xx,.18,.06,white,.03);}
+     addProduct(g,jacket(color),0,1.25,0,1.02);
+     rod(g,[0,1.52,0],[0,1.68,0],.055,skin);
+     const head=mesh(new T.SphereGeometry(.123,16,12),skin,g,0,1.81,0);head.scale.set(.84,1.13,.94);
+   }
+   mannequin(-3.9,7.5,'#e3dfce',-.3);
+   mannequin(.25,-6.05,'#576954',.22);
+   box(fixed,.78,.13,.68,1.1,.065,-6.05,white);
+   addProduct(fixed,suitcase('#78836b'),1.1,.58,-6.05,1.15,.2);
+   // Gray stone facade: yellow portal to the left, blue BAZY window on the right.
+   box(front,10,.75,.3,0,3.59,8.98,stone);
+   box(front,1.3,3.2,.3,-4.35,1.6,8.98,stone);
+   box(front,.2,3.2,.3,4.9,1.6,8.98,stone);
+   mesh(new T.PlaneGeometry(2.65,1.04),logoMat,front,-2.65,3.62,9.145);
+   box(front,.16,3.08,.54,-3.62,1.54,8.74,M.yellow);
+   box(front,4.1,.15,.54,-1.62,3.03,8.74,M.yellow);
+   box(front,.09,3.2,.15,.5,1.6,9,white);
+   // Slim promotional display: stylized product, no invented human photograph.
+   box(front,.8,2.17,.07,-4.33,1.65,9.16,M.black);
+   panel(front,labelTexture('TOTTO','MUJER',{w:512,h:1024,bg:'#d7a6b8',fg:'#ffffff',border:false,size:87}),.73,2.08,-4.33,1.65,9.2,true);
+   const posterJacket=addProduct(front,jacket('#d7b5c7'),-4.33,1.6,9.25,.79);posterJacket.scale.z=.16;
+   box(front,4.25,2.85,.08,2.69,1.48,8.28,blue);
+   panel(front,labelTexture('MALETA BAZY','MUÉVETE MEJOR. VIAJA MEJOR.',{w:1024,h:320,bg:'#65b8dc',border:false,size:119}),3.8,1.12,2.67,2.3,8.33,true);
+   for(let i=0;i<3;i++){
+     box(front,.84,.14,.62,1.3+i*1.2,.07,8.62,white);
+     addProduct(front,suitcase(['#d4b0ae','#222c32','#c4a19d'][i]),1.3+i*1.2,.56+(i%2)*.12,8.65,1.06+(i%2)*.18);
+   }
+   const glass=new T.MeshPhysicalMaterial({color:'#ddecf0',transparent:true,opacity:.055,roughness:.08,metalness:.05,depthWrite:false,side:T.DoubleSide});
+   box(front,4.28,3.1,.016,2.69,1.55,9.08,glass);
+   panel(front,labelTexture('1043','',{bg:'#666968',border:false,w:256,h:128,size:78}),.53,.24,4.44,3.18,9.16,true);
+   for(const x of [-3.15,.08]){box(fixed,.11,1.05,.42,x,.525,8.72,white,.035);box(fixed,.17,.05,.48,x,.025,8.72,white);}
+   const hemi=new T.HemisphereLight('#f3f7ff','#958b76',2.1);scene.add(hemi);
+   const key=new T.DirectionalLight('#fff6e8',2.7);key.position.set(-2,8,5);key.target.position.set(0,0,-2);key.castShadow=true;
+   key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-9,right:9,top:14,bottom:-14,near:.1,far:32});key.shadow.bias=-.0004;key.shadow.normalBias=.035;scene.add(key,key.target);
+   for(const z of [-6,0,6]){const light=new T.PointLight('#f5f7ff',25,14,2);light.position.set(0,3.25,z);scene.add(light);}
    ceiling.traverse(o=>{if(o.isMesh)o.castShadow=false;});
    const instanceCount=compileInstances(fixed);compileInstances(ceiling);compileInstances(front);
-   scene.updateMatrixWorld(true);
-   let meshes=0,triangles=0;scene.traverse(o=>{if(o.isMesh){meshes++;triangles+=(o.geometry.index?o.geometry.index.count:o.geometry.attributes.position.count)/3*(o.isInstancedMesh?o.count:1);}});
-   return {scene,ceiling,front,key,stats:{meshes,triangles,instanceCount}};
+   scene.updateMatrixWorld(true);let meshes=0,triangles=0;
+   scene.traverse(o=>{if(o.isMesh){meshes++;triangles+=(o.geometry.index?o.geometry.index.count:o.geometry.attributes.position.count)/3*(o.isInstancedMesh?o.count:1);}});
+   return {scene,ceiling,front,key,featuredProduct,stats:{meshes,triangles,instanceCount}};
  };
 })();

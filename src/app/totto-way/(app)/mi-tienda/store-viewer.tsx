@@ -13,10 +13,10 @@ export function StoreViewer() {
 
   return (
     <section className="tw-store" aria-label="Mi Tienda Totto">
-      <iframe key={attempt} src="/microsites/totto-way/index.html"
-        title="Mi Tienda Totto — recorrido virtual por una tienda TOTTO"
+      <iframe key={attempt} src="/microsites/totto-way/index.html?v=61471409e691"
+        title="TOTTO Way — recorrido virtual"
         allow="fullscreen" allowFullScreen
-        onLoad={(event) => setStatus(event.currentTarget.contentDocument?.querySelector('script[src="./app.js"]') ? "ready" : "error")}
+        onLoad={(event) => setStatus(event.currentTarget.contentDocument?.querySelector('script[src^="./app.js?"]') ? "ready" : "error")}
         onError={() => setStatus("error")} />
       {status !== "ready" && <div className="tw-store__status">
         {status === "loading" ? <p role="status">Cargando Mi Tienda Totto…</p> : <div role="alert">
