@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
   // pointed at it in DNS before this takes effect.
   async rewrites() {
     return [
+      // Totto Journey: landing estática (HTML autocontenido) en URL limpia.
+      { source: "/totto-journey", destination: "/microsites/totto-journey/index.html" },
       {
         source: "/",
         has: [{ type: "host", value: "franquiciar.franquiciaslatam.com" }],
@@ -37,6 +39,11 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
         ],
+      },
+      // Totto Journey es un prototipo interno: no se indexa.
+      {
+        source: "/totto-journey",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }],
       },
       // El expediente Caso 001 es confidencial y circula por enlace no listado:
       // nunca se indexa, pase lo que pase con la metadata de la página.
