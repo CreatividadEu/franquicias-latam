@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Totto Journey</title>
+<meta name="description" content="Totto Journey — de lo que fue exitoso ayer a lo que va a ser exitoso en el mundo de mañana. Dirección de Proyectos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F3EFE6; --ink:#121212; --red:#E3231B; --yellow:#FFC628; --green:#159A5B;
+  --muted:#5A5750; --soft:#D9D4C7; --card:#FFFFFF; --line:#121212;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --sans:'Archivo',system-ui,-apple-system,sans-serif;
+  --gutter:clamp(16px,5vw,72px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.eyebrow.red{color:var(--red)}
+.eyebrow.yellow{color:var(--yellow)}
+.display{font-weight:900;letter-spacing:-.045em;line-height:.92;margin:0}
+.display .dot{color:var(--red)}
+.lead{font-size:clamp(17px,1.4vw,21px);line-height:1.45;color:#3A3833;max-width:62ch;margin:0}
+section{padding:clamp(72px,10vw,140px) var(--gutter);position:relative}
+.wrap{max-width:1360px;margin:0 auto}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:clamp(40px,5vw,72px)}
+.head .display{font-size:clamp(40px,6.2vw,88px);max-width:14ch}
+.btn{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:15px 24px;border:2px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:999px;min-height:48px;text-decoration:none;display:inline-flex;align-items:center;gap:10px;transition:background .2s,border-color .2s,transform .15s}
+.btn:hover{background:var(--red);border-color:var(--red);transform:translateY(-1px)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{background:var(--card);border-color:var(--ink)}
+.btn.inv{background:var(--yellow);border-color:var(--yellow);color:var(--ink)}
+.btn.inv:hover{background:var(--paper);border-color:var(--paper)}
+.btn.outl{background:transparent;color:var(--paper);border-color:var(--paper)}
+.btn.outl:hover{background:var(--paper);color:var(--ink)}
+
+/* progress + dots */
+#progress{position:fixed;top:0;left:0;height:4px;width:0;background:var(--red);z-index:50;transition:width .1s linear}
+#dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:14px;z-index:40}
+#dots a{width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);background:transparent;display:block;position:relative;transition:background .2s,transform .2s}
+#dots a.on{background:var(--ink);transform:scale(1.3)}
+#dots a span{position:absolute;right:22px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none;background:var(--ink);color:var(--paper);padding:4px 8px}
+#dots a:hover span,#dots a:focus-visible span{opacity:1}
+.dark #dots a,#dots.dark a{border-color:var(--paper)}
+#dots.dark a.on{background:var(--yellow);border-color:var(--yellow)}
+@media (max-width:900px){#dots{display:none}}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:45;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px var(--gutter);background:rgba(243,239,230,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:2px solid var(--ink)}
+.brand{display:flex;align-items:baseline;gap:12px;text-decoration:none}
+.brand b{font-size:22px;font-weight:900;letter-spacing:-.04em}
+.topnav{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.topnav a{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;padding:9px 12px;border-radius:999px;border:2px solid transparent}
+.topnav a:hover{border-color:var(--ink)}
+.topnav a.on{background:var(--ink);color:var(--yellow)}
+@media (max-width:760px){.topnav a:not(.key){display:none}}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}
+
+/* HERO */
+#inicio{min-height:100svh;display:flex;flex-direction:column;justify-content:space-between;padding-top:clamp(56px,8vw,110px);padding-bottom:0;overflow:hidden}
+.hero-title{font-size:clamp(56px,11.5vw,184px)}
+.hero-title .line{display:block;overflow:hidden}
+.hero-title .line span{display:inline-block;transform:translateY(110%);animation:rise 1s cubic-bezier(.2,.8,.2,1) forwards}
+.hero-title .line:nth-child(2) span{animation-delay:.12s}
+.hero-title .line:nth-child(3) span{animation-delay:.24s}
+@keyframes rise{to{transform:none}}
+.hero-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px;align-items:end;margin-top:40px}
+.hero-grid .lead{grid-column:span 6}
+.hero-grid .ctas{grid-column:span 6;display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:900px){.hero-grid .lead,.hero-grid .ctas{grid-column:span 12}.hero-grid .ctas{justify-content:flex-start}}
+.ticker{margin:clamp(48px,7vw,96px) calc(-1*var(--gutter)) 0;border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);overflow:hidden;background:var(--yellow)}
+.ticker .track{display:flex;width:max-content;animation:scroll 38s linear infinite}
+.ticker:hover .track{animation-play-state:paused}
+.ticker span{font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:14px 28px;white-space:nowrap;border-right:2px solid var(--ink)}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+/* PRINCIPIOS */
+.stress{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:28px}
+.stress .ctl{grid-column:span 4;background:var(--ink);color:var(--paper);padding:30px;display:flex;flex-direction:column;gap:22px;align-self:start;position:sticky;top:96px}
+.stress .cards{grid-column:span 8;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-content:start}
+@media (max-width:900px){.stress .ctl,.stress .cards{grid-column:span 12}.stress .ctl{position:static}}
+@media (max-width:560px){.stress .cards{grid-template-columns:1fr}}
+.range{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:#3A3833;border-radius:2px;outline:none}
+.range::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink);cursor:grab;box-shadow:0 0 0 3px var(--paper)}
+.range::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink);cursor:grab}
+.range-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#B9B3A4}
+.readout{font-size:52px;font-weight:900;letter-spacing:-.04em;line-height:1}
+.readout small{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);font-weight:600;margin-top:8px}
+.pcard{background:var(--card);border:2px solid var(--ink);padding:22px;display:flex;flex-direction:column;gap:10px;min-height:150px;transition:opacity .5s,transform .5s,border-color .4s,background .4s;position:relative}
+.pcard h3{margin:0;font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1.05}
+.pcard p{margin:0;font-size:14px;line-height:1.45;color:#3A3833}
+.pcard .tag{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.pcard.must .tag{color:var(--red)}
+.pcard .stay{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;background:var(--yellow);padding:5px 8px;opacity:0;transform:translateY(-4px);transition:opacity .4s,transform .4s}
+.pcard.must.hold{border-color:var(--ink);box-shadow:6px 6px 0 var(--yellow)}
+.pcard.must.hold .stay{opacity:1;transform:none}
+.pcard.fad{opacity:var(--o,1);transform:scale(var(--s,1))}
+
+/* OPORTUNIDAD */
+.compare{position:relative;border:3px solid var(--ink);overflow:hidden;user-select:none}
+.pane{display:grid;grid-template-columns:200px 1fr;gap:0}
+.pane .row{display:contents}
+.pane .k{padding:22px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;border-top:2px solid currentColor;opacity:.75}
+.pane .v{padding:22px 24px 22px 0;font-size:clamp(17px,1.5vw,22px);font-weight:700;letter-spacing:-.02em;line-height:1.2;border-top:2px solid currentColor}
+.pane .row:first-child .k,.pane .row:first-child .v{border-top:0}
+.pane header{grid-column:1/-1;padding:22px 24px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;display:flex;justify-content:space-between}
+.pane.ayer{background:var(--paper);color:var(--ink)}
+.pane.manana{position:absolute;inset:0;background:var(--ink);color:var(--paper);clip-path:inset(0 0 0 var(--x,55%))}
+.pane.manana .k{color:var(--yellow);opacity:1}
+.handle{position:absolute;top:0;bottom:0;left:var(--x,55%);width:3px;background:var(--red);transform:translateX(-50%);pointer-events:none}
+.handle::after{content:"◂ ▸";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;letter-spacing:-.05em;box-shadow:0 0 0 4px var(--paper)}
+.compare input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+@media (max-width:700px){.pane{grid-template-columns:1fr}.pane .k{padding-bottom:0;border-top:2px solid currentColor}.pane .v{padding:8px 24px 20px;border-top:0}.pane .row:first-child .k{border-top:0}}
+
+/* JOURNEY */
+#journey{background:var(--card);border-top:3px solid var(--ink);border-bottom:3px solid var(--ink)}
+.rail{position:relative;display:flex;gap:4px;overflow-x:auto;padding:14px 0 10px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail::before{content:"";position:absolute;left:30px;right:30px;top:40px;height:3px;background:var(--ink)}
+.st{position:relative;flex:1 0 108px;display:flex;flex-direction:column;align-items:center;gap:12px;background:none;border:0;padding:0;color:var(--ink)}
+.st .n{width:52px;height:52px;border-radius:50%;border:3px solid var(--ink);background:var(--card);font-family:var(--mono);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s,color .2s,box-shadow .2s}
+.st:hover .n{transform:scale(1.08)}
+.st .l{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
+.st.done .n{background:var(--ink);color:var(--paper)}
+.st.on .n{background:var(--ink);color:var(--yellow);box-shadow:0 0 0 6px var(--yellow)}
+.st.on .l{color:var(--ink);font-weight:600}
+.st.fin .n{border-radius:8px;transform:rotate(45deg);background:var(--yellow)}
+.st.fin:hover .n{transform:rotate(45deg) scale(1.08)}
+.stage{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:32px;margin-top:44px;min-height:520px}
+.stage .txt{grid-column:span 7;display:flex;flex-direction:column;gap:22px;min-width:0}
+.stage .vis{grid-column:span 5;min-width:0;background:var(--ink);color:var(--paper);padding:30px;display:flex;flex-direction:column;gap:24px;min-height:460px}
+@media (max-width:900px){.stage .txt,.stage .vis{grid-column:span 12}}
+.stage h3{font-size:clamp(40px,5.4vw,76px);margin:0;font-weight:900;letter-spacing:-.045em;line-height:.95}
+.stage .body{font-size:clamp(18px,1.5vw,22px);line-height:1.4;max-width:60ch;margin:0}
+.quote{border:2px solid var(--ink);padding:16px 18px;display:flex;gap:14px;align-items:flex-start;max-width:640px;background:var(--paper)}
+.quote .q{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;padding-top:3px;color:var(--red)}
+.quote p{margin:0;font-size:15px;line-height:1.45;font-style:italic}
+.ojo{background:var(--yellow);padding:16px 18px;display:flex;gap:14px;align-items:flex-start;max-width:640px}
+.ojo .q{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;padding-top:3px;font-weight:600}
+.ojo p{margin:0;font-size:15px;line-height:1.45;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--paper);padding:7px 11px;border-radius:999px}
+.vis .big{font-size:clamp(72px,9vw,140px);font-weight:900;letter-spacing:-.06em;line-height:.85;color:var(--yellow)}
+.vis .kv{display:flex;flex-direction:column;gap:8px}
+.vis .kv b{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.vis .foot{margin-top:auto;border-top:1px solid #3A3833;padding-top:16px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8C877A}
+.vis .foot b{color:var(--yellow);font-weight:600}
+.jnav{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:8px}
+.jnav .cnt{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.1em}
+.auto{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:0;padding:8px}
+.auto i{width:10px;height:10px;border-radius:50%;background:var(--soft);display:inline-block}
+.auto.on i{background:var(--red);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.fade{animation:fade .45s cubic-bezier(.2,.7,.2,1)}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* loop svg */
+.loop{width:100%;max-width:360px;margin:0 auto}
+.loop circle.track{fill:none;stroke:#3A3833;stroke-width:3}
+.loop circle.run{fill:none;stroke:var(--yellow);stroke-width:3;stroke-dasharray:60 540;stroke-linecap:round;animation:run 4s linear infinite}
+@keyframes run{to{stroke-dashoffset:-600}}
+.loop text{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;fill:var(--paper)}
+.loop text.c{font-family:var(--sans);font-weight:900;font-size:30px;letter-spacing:-.04em;fill:var(--yellow);text-anchor:middle}
+/* oriente pipeline */
+.pipe{display:flex;flex-direction:column;gap:18px}
+.pipe .r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pipe .b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;border:2px solid var(--paper);padding:10px 12px}
+.pipe .b.err{border-color:var(--red);color:var(--red);animation:blink 1.6s infinite}
+.pipe .b.ok{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
+.pipe .a{color:#8C877A}
+.pipe .lab{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8C877A}
+@keyframes blink{50%{opacity:.45}}
+/* kpi shells */
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.kpi{border:1px solid #3A3833;padding:16px}
+.kpi span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8C877A;margin-bottom:8px}
+.kpi b{font-family:var(--mono);font-size:18px;color:var(--yellow);font-weight:600}
+/* people line */
+.line10{display:flex;gap:6px;flex-wrap:wrap}
+.line10 i{width:22px;height:34px;border:2px solid var(--paper);border-radius:11px 11px 4px 4px;display:block;transition:opacity .4s,transform .4s}
+.line10.flow i:nth-child(n+5){opacity:.18;transform:translateY(6px)}
+
+/* PROYECTOS */
+.hub{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:28px}
+.hub .list{grid-column:span 5;display:flex;flex-direction:column;gap:8px}
+.hub .map{grid-column:span 7;display:flex;flex-direction:column;gap:16px}
+@media (max-width:900px){.hub .list,.hub .map{grid-column:span 12}}
+.proj{display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;background:var(--card);border:2px solid var(--ink);padding:14px 18px;font-weight:700;font-size:17px;letter-spacing:-.01em;transition:background .15s,color .15s,transform .15s}
+.proj small{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.proj:hover,.proj.on{background:var(--ink);color:var(--paper);transform:translateX(6px)}
+.proj:hover small,.proj.on small{color:var(--yellow)}
+.proj.all{background:var(--yellow);border-color:var(--ink)}
+.silos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.silo{position:relative;background:var(--card);border:2px solid var(--ink);padding:16px 14px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;min-height:72px;display:flex;align-items:flex-end;transition:background .25s,color .25s,transform .25s,opacity .25s}
+.silo em{position:absolute;top:10px;right:10px;font-style:normal;font-size:10px;color:var(--muted)}
+.silo.lit{background:var(--yellow);transform:translateY(-3px)}
+.silo.dim{opacity:.32}
+.hubline{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--ink);color:var(--paper);padding:22px 26px;flex-wrap:wrap}
+.hubline b{font-size:clamp(24px,2.6vw,36px);font-weight:900;letter-spacing:-.04em}
+.hubline span{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow)}
+
+/* DESTINO */
+#destino{background:var(--ink);color:var(--paper)}
+#destino .lead{color:var(--soft)}
+#destino .display{font-size:clamp(64px,13vw,200px)}
+.pillars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:clamp(40px,5vw,72px)}
+@media (max-width:860px){.pillars{grid-template-columns:1fr}}
+.pillar{border:2px solid var(--paper);padding:26px;display:flex;flex-direction:column;gap:14px;transition:background .25s,color .25s}
+.pillar:hover{background:var(--paper);color:var(--ink)}
+.pillar b{font-size:clamp(26px,2.6vw,38px);font-weight:900;letter-spacing:-.035em;line-height:1}
+.pillar p{margin:0;font-size:15px;line-height:1.45;opacity:.8}
+.shellrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;border-top:1px solid #3A3833;padding-top:28px;margin-top:48px}
+@media (max-width:860px){.shellrow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.shellrow span{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8C877A;margin-bottom:6px}
+.shellrow b{font-family:var(--mono);font-size:20px;color:var(--yellow);font-weight:600}
+footer{padding:20px var(--gutter);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-top:3px solid var(--ink)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}.hero-title .line span{transform:none}}
+</style>
+</head>
+<body>
+<div id="progress" aria-hidden="true"></div>
+
+<header class="topbar">
+  <a class="brand" href="#inicio"><b>TOTTO<span style="color:var(--red)">.</span></b><span class="eyebrow">Journey</span></a>
+  <nav class="topnav" aria-label="Secciones">
+    <a href="#principios">01 Principios</a>
+    <a href="#oportunidad">02 Oportunidad</a>
+    <a href="#journey" class="key">03 Journey</a>
+    <a href="#proyectos" class="key">04 Proyectos</a>
+    <a href="#destino">05 Destino</a>
+  </nav>
+</header>
+
+<nav id="dots" aria-label="Navegación rápida">
+  <a href="#inicio"><span>Inicio</span></a>
+  <a href="#principios"><span>Principios</span></a>
+  <a href="#oportunidad"><span>Oportunidad</span></a>
+  <a href="#journey"><span>Journey</span></a>
+  <a href="#proyectos"><span>Proyectos</span></a>
+  <a href="#destino"><span>Destino</span></a>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section id="inicio">
+  <div class="wrap">
+    <p class="eyebrow" style="margin:0 0 22px">Dirección de Proyectos · Totto Journey · v0.2</p>
+    <h1 class="display hero-title">
+      <span class="line"><span>Totto</span></span>
+      <span class="line"><span>para el</span></span>
+      <span class="line"><span>mundo<span class="dot">.</span></span></span>
+    </h1>
+    <div class="hero-grid">
+      <p class="lead">De lo que fue exitoso ayer a lo que va a ser exitoso en el mundo exigente y rápido de mañana. El Journey pone cada área en una sola línea, y los proyectos son lo que la mueve.</p>
+      <div class="ctas">
+        <a class="btn" href="#journey">Recorrer el Journey ↓</a>
+        <a class="btn ghost" href="#proyectos">Ver los proyectos</a>
+      </div>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true"><div class="track" id="ticker"></div></div>
+</section>
+
+<!-- ============ 01 PRINCIPIOS ============ -->
+<section id="principios">
+  <div class="wrap">
+    <div class="head">
+      <div class="reveal">
+        <p class="eyebrow red" style="margin:0 0 14px">01 · Qué es sostenibilidad</p>
+        <h2 class="display">Sostenibilidad no es una moda<span class="dot">.</span></h2>
+      </div>
+      <p class="lead reveal d1">Es todo aquello que, cuando la compañía esté mal, uno no quiera bajar. Los <em>first principles</em> y los <em>must-haves</em> del negocio. Mueve la presión y mira qué se queda.</p>
+    </div>
+    <div class="stress">
+      <div class="ctl reveal">
+        <p class="eyebrow yellow" style="margin:0">Stress test</p>
+        <div class="readout"><span id="keep">6</span> / 10<small id="keepLbl">Se quedan en un año bueno</small></div>
+        <label for="pressure" class="mono" style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#B9B3A4">Presión sobre la compañía</label>
+        <input id="pressure" class="range" type="range" min="0" max="100" value="0" aria-valuetext="Año bueno">
+        <div class="range-labels"><span>Año bueno</span><span>Año difícil</span></div>
+        <p style="margin:0;font-size:14px;line-height:1.5;color:#D9D4C7">Lo que sobrevive a la presión es lo que define el negocio. Todo lo demás es táctica.</p>
+      </div>
+      <div class="cards" id="cards">
+        <article class="pcard must reveal"><span class="tag">First principle</span><h3>Producto que llega</h3><p>Retail planning y abastecimiento confiable. Sin producto en tienda no hay marca.</p><span class="stay">Se queda</span></article>
+        <article class="pcard must reveal d1"><span class="tag">First principle</span><h3>Servicio que completa la venta</h3><p>Friedman: atender, cerrar, que el cliente lleve más y vuelva.</p><span class="stay">Se queda</span></article>
+        <article class="pcard fad reveal" data-i="0"><span class="tag">Moda · ejemplo</span><h3>Activación de temporada</h3><p>Suma ruido un trimestre. No sostiene la operación.</p></article>
+        <article class="pcard must reveal d2"><span class="tag">First principle</span><h3>Gente formada</h3><p>TOTTO Way: el journey del empleado sistematizado, igual en cualquier tienda.</p><span class="stay">Se queda</span></article>
+        <article class="pcard fad reveal d1" data-i="1"><span class="tag">Moda · ejemplo</span><h3>Canal nuevo sin integrar</h3><p>Otro silo con otro Excel.</p></article>
+        <article class="pcard must reveal d3"><span class="tag">First principle</span><h3>Datos sin Excel</h3><p>Automatizar la comunicación con Oriente y la data de importación.</p><span class="stay">Se queda</span></article>
+        <article class="pcard must reveal"><span class="tag">First principle</span><h3>Procesos replicables</h3><p>Estructura que se localiza y se replica en cualquier país.</p><span class="stay">Se queda</span></article>
+        <article class="pcard fad reveal d2" data-i="2"><span class="tag">Moda · ejemplo</span><h3>Herramienta sin proceso</h3><p>Software comprado antes de definir cómo se trabaja.</p></article>
+        <article class="pcard must reveal d1"><span class="tag">First principle</span><h3>Marca con ADN</h3><p>Muy personal. Lo que hace que Totto sea Totto en Bogotá o en cualquier parte.</p><span class="stay">Se queda</span></article>
+        <article class="pcard fad reveal d3" data-i="3"><span class="tag">Moda · ejemplo</span><h3>Rediseño cosmético</h3><p>Cambia la superficie, no el Journey.</p></article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 OPORTUNIDAD ============ -->
+<section id="oportunidad">
+  <div class="wrap">
+    <div class="head">
+      <div class="reveal">
+        <p class="eyebrow red" style="margin:0 0 14px">02 · Cambio generacional</p>
+        <h2 class="display">La marca lista para encarar al mundo<span class="dot">.</span></h2>
+      </div>
+      <p class="lead reveal d1">Llevar lo que alguna vez fue local, y se está globalizando, a una marca lista para el mundo de hoy, que es muy diferente al de ayer. Ese es el espacio de oportunidad para los avances tech y de procesos. Ahí viven los proyectos. Arrastra.</p>
+    </div>
+    <div class="compare reveal" id="compare" style="--x:55%">
+      <div class="pane ayer">
+        <header><span>Ayer · local</span><span>Lo que fue exitoso</span></header>
+        <div class="row"><div class="k">Oriente</div><div class="v">China se hace por Excel, correo, Excel. Alto margen de error.</div></div>
+        <div class="row"><div class="k">Producción</div><div class="v">Diez personas para hacer una camiseta.</div></div>
+        <div class="row"><div class="k">Abastecimiento</div><div class="v">Product centric. Se reacciona al faltante.</div></div>
+        <div class="row"><div class="k">Tienda</div><div class="v">El back y el front de la tienda viven separados.</div></div>
+        <div class="row"><div class="k">Procesos</div><div class="v">Manuales pensados para una sola plaza.</div></div>
+      </div>
+      <div class="pane manana" aria-hidden="true">
+        <header><span>Mañana · mundo</span><span>Lo que va a ser exitoso</span></header>
+        <div class="row"><div class="k">Oriente</div><div class="v">Data de importación automatizada. Un solo flujo desde la orden.</div></div>
+        <div class="row"><div class="k">Producción</div><div class="v">Línea en flujo con feedback loop. Menos personas, más rapidez.</div></div>
+        <div class="row"><div class="k">Abastecimiento</div><div class="v">Retail planning: planificación de abastecimiento con datos.</div></div>
+        <div class="row"><div class="k">Tienda</div><div class="v">Back atado al front: Nexo, Bodegas y Friedman en un solo estándar.</div></div>
+        <div class="row"><div class="k">Procesos</div><div class="v">Estructura replicable en cualquier país. TOTTO Way.</div></div>
+      </div>
+      <div class="handle" aria-hidden="true"></div>
+      <input type="range" min="8" max="92" value="55" id="cmp" aria-label="Comparar ayer y mañana">
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 JOURNEY ============ -->
+<section id="journey">
+  <div class="wrap">
+    <div class="head">
+      <div class="reveal">
+        <p class="eyebrow red" style="margin:0 0 14px">03 · El Journey</p>
+        <h2 class="display">Del producto a la venta<span class="dot">.</span> Un solo recorrido<span class="dot">.</span></h2>
+      </div>
+      <p class="lead reveal d1">Nueve estaciones. Cada una la vive un área distinta; cada una tiene un proyecto que la conecta con la siguiente. Usa las flechas ← → o deja que avance sola.</p>
+    </div>
+    <div class="rail" id="rail" role="tablist" aria-label="Estaciones"></div>
+    <div class="stage" id="stage"></div>
+  </div>
+</section>
+
+<!-- ============ 04 PROYECTOS ============ -->
+<section id="proyectos">
+  <div class="wrap">
+    <div class="head">
+      <div class="reveal">
+        <p class="eyebrow red" style="margin:0 0 14px">04 · Silos → Proyectos</p>
+        <h2 class="display">Mejoran por procesos<span class="dot">.</span> Crecen por proyectos<span class="dot">.</span></h2>
+      </div>
+      <p class="lead reveal d1">La empresa trabaja por silos: cada esfuerzo es un área diferente. Un proyecto es la única estructura que atraviesa varios a la vez. Pasa el cursor por un proyecto y mira qué áreas enciende.</p>
+    </div>
+    <div class="hub">
+      <div class="list reveal" id="plist"></div>
+      <div class="map reveal d1">
+        <div class="hubline"><b id="hubTitle">Todos los proyectos</b><span id="hubSub">13 áreas · 10 proyectos · 0 silos</span></div>
+        <div class="silos" id="silos"></div>
+        <p class="eyebrow" style="margin:6px 0 0">El número es cuántos proyectos tocan esa área. Armonía es que ninguna quede en cero.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 DESTINO ============ -->
+<section id="destino">
+  <div class="wrap">
+    <p class="eyebrow yellow reveal" style="margin:0 0 18px">05 · Destino · Foco en expansión</p>
+    <h2 class="display reveal d1">Totto para el mundo<span class="dot">.</span></h2>
+    <p class="lead reveal d2" style="margin-top:28px">Dejar de pensar los procesos y la marca de manera tan local. Lo que se diseñe para una tienda se diseña para cualquier país, con Expansión, Nexo y TOTTO Way como los tres rieles que lo sostienen.</p>
+    <div class="pillars">
+      <div class="pillar reveal"><span class="eyebrow yellow">Riel 01</span><b>Expansión<span style="color:var(--red)">.</span></b><p>La prueba final del Journey: cada estación con estructura replicable y localizable.</p></div>
+      <div class="pillar reveal d1"><span class="eyebrow yellow">Riel 02</span><b>Nexo<span style="color:var(--red)">.</span></b><p>Donde el back de la cadena toca por primera vez el front de la tienda.</p></div>
+      <div class="pillar reveal d2"><span class="eyebrow yellow">Riel 03</span><b>TOTTO Way<span style="color:var(--red)">.</span></b><p>El sistema que forma a la gente y cierra el journey del empleado.</p></div>
+    </div>
+    <div class="shellrow reveal">
+      <div><span>Países objetivo</span><b>[POR DEFINIR]</b></div>
+      <div><span>Aperturas / año</span><b>[POR DEFINIR]</b></div>
+      <div><span>Proyectos activos</span><b>10</b></div>
+      <div><span>Horizonte</span><b>[POR DEFINIR]</b></div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:40px">
+      <a class="btn inv" href="#journey">Recorrer el Journey de nuevo</a>
+      <a class="btn outl" href="#principios">Volver a los principios</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Totto Journey · Shell v0.2 · Prototipo navegable</span>
+  <span>Dirección de Proyectos · [FECHA]</span>
+</footer>
+
+<script>
+(function(){
+  /* ---------- DATA ---------- */
+  var STATIONS = [
+    {name:'Producto', tag:'Retail planning', h:'Planificar antes de producir',
+     body:'El Journey empieza antes de la fábrica: en decidir qué, cuánto y cuándo. Retail planning convierte el abastecimiento en una decisión de datos, no de intuición ni de faltantes.',
+     quotes:['Producto: retail planning, planificación de abastecimiento.'],
+     areas:['Producto','Comercial','Finanzas'], proj:'Retail Planning', vis:'big', kv:[['Pregunta que resuelve','Qué, cuánto y cuándo abastecer']]},
+    {name:'Producción', tag:'La planta · productividad', h:'De diez personas por camiseta a una línea que fluye',
+     body:'La planta de producción (el bebé consentido de Natán) y el Proyecto de Productividad: línea de producción en flujo, des-especializar el rol para mejorar el inflow, y una cross-contamination de labores que se mueve en feedback loop. Menos personas, más rapidez.',
+     quotes:['Queremos pasar de hacer 10 personas para hacer una camiseta.','Producción fordista, mapeada con un feedback loop, en el cual haya cross contamination de las labores.'],
+     areas:['Producción','Gestión Humana','Procesos'], proj:'Proyecto de Productividad', vis:'loop'},
+    {name:'Oriente', tag:'Automatización · importación', h:'China hoy se hace por Excel, correo, Excel',
+     body:'Alto margen de error y product centric. Automatizar la comunicación con Oriente y la data de importación: un solo flujo de datos desde la orden hasta el puerto, visible para todo el Journey.',
+     quotes:['Automatización de la comunicación con Oriente. Automatización de esta data: importación.'],
+     areas:['Compras','Tecnología','Logística'], proj:'Automatización Oriente', vis:'pipe'},
+    {name:'AutoStore', tag:'CEDI · robots', h:'Robots en despacho',
+     body:'La logística se optimiza con robots. El punto crítico no es el robot: es cómo su back y su software integran con el resto del Journey. Un robot aislado es otro silo.',
+     ojo:'El back o el software de esto: cómo integra con el resto.',
+     areas:['Logística','Tecnología'], proj:'AutoStore + integración', vis:'big', kv:[['Riesgo a vigilar','Integración del software con el resto']]},
+    {name:'Nexo', tag:'Llegada a tienda', h:'La promesa se vuelve física',
+     body:'Del CEDI a la tienda y la recepción del producto: quién recibe, cómo recibe, con qué herramienta. Nexo es donde el back de la cadena toca por primera vez el front.',
+     quotes:['Luego llega a la tienda (Nexo). Quién recibe. Recepción de producto.'],
+     areas:['Logística','Operaciones','Tienda'], proj:'Nexo', vis:'big', kv:[['Lo que conecta','CEDI → recepción → piso de venta']]},
+    {name:'Bodegas', tag:'Abastecimiento de tienda', h:'El back de la tienda',
+     body:'Proyecto Bodegas: mejora de procesos y de bodegas para que el piso de venta nunca espere al inventario. Abastecimiento interno, no solo externo.',
+     quotes:['Proyecto Bodegas: abastecimiento.'],
+     areas:['Operaciones','Logística'], proj:'Proyecto Bodegas', vis:'big', kv:[['Métrica natural','Tiempo bodega → piso de venta']]},
+    {name:'Experiencia', tag:'Friedman', h:'Completar la venta',
+     body:'Servicio al cliente que completa la venta, hace crecer las tiendas, logra que el cliente lleve más productos y que haya recompra. Aquí se ata el back de la tienda al front.',
+     quotes:['Friedman: servicio al cliente, completar venta, crecer tiendas, que el cliente lleve más productos, que haya recompra.'],
+     areas:['Comercial','Formación','Tienda'], proj:'Friedman + Manuales', vis:'kpi'},
+    {name:'Gente', tag:'Gestión Humana · TOTTO Way', h:'El journey del empleado, sistematizado',
+     body:'Si sistematizamos el journey de cara al empleado —ingreso, formación, estándar, crecimiento— cerramos el círculo: la misma persona que recibe el producto es la que completa la venta. TOTTO Way es el sistema.',
+     quotes:['Gestión Humana: sistematización del journey del empleado. Desde nuestra sistematización de cara al empleado, y cerramos.'],
+     areas:['Gestión Humana','Formación','Operaciones'], proj:'TOTTO Way · Journey del empleado', vis:'big', kv:[['Cierra el círculo','Recibe el producto → completa la venta']]},
+    {name:'Expansión', tag:'Totto para el mundo', h:'Lo que funciona aquí funciona en cualquier país',
+     body:'Expansión es la prueba final del Journey: cada estación con estructura replicable y localizable. Si abrir una tienda funciona igual en cualquier país, el Journey funciona.',
+     areas:['Expansión','Producto','Logística','Comercial','Procesos'], proj:'Expansión', vis:'big', kv:[['Destino','Totto para el mundo']], fin:true}
+  ];
+  var PROJECTS = [
+    ['Retail Planning','Producto',['Producto','Comercial','Finanzas']],
+    ['Proyecto de Productividad','Planta',['Producción','Gestión Humana','Procesos']],
+    ['Automatización Oriente','Importación',['Compras','Tecnología','Logística']],
+    ['AutoStore','CEDI',['Logística','Tecnología']],
+    ['Nexo','Llegada a tienda',['Logística','Operaciones','Tienda']],
+    ['Proyecto Bodegas','Abastecimiento',['Operaciones','Logística']],
+    ['Friedman + Manuales','Experiencia',['Comercial','Formación','Tienda']],
+    ['Journey del empleado','Gestión Humana',['Gestión Humana','Formación','Operaciones']],
+    ['TOTTO Way','Formación',['Formación','Operaciones','Tienda','Expansión']],
+    ['Expansión','Mundo',['Expansión','Producto','Logística','Comercial','Procesos']]
+  ];
+  var AREAS = ['Producto','Producción','Compras','Logística','Tecnología','Operaciones','Tienda','Comercial','Formación','Gestión Humana','Procesos','Finanzas','Expansión'];
+
+  function pad(n){return (n<10?'0':'')+n}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+  /* ---------- progress + dots + topnav ---------- */
+  var prog=document.getElementById('progress');
+  var dots=document.querySelectorAll('#dots a'), tops=document.querySelectorAll('.topnav a');
+  var secs=Array.prototype.slice.call(document.querySelectorAll('section'));
+  function onScroll(){
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?(h.scrollTop/max*100):0)+'%';
+    var y=h.scrollTop+window.innerHeight*0.45, cur=secs[0];
+    secs.forEach(function(s){ if(s.offsetTop<=y) cur=s; });
+    var id='#'+cur.id;
+    dots.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')===id)});
+    tops.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')===id)});
+    document.getElementById('dots').classList.toggle('dark',cur.id==='destino');
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* ---------- reveal ---------- */
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
+
+  /* ---------- ticker ---------- */
+  var t=document.getElementById('ticker'), names=STATIONS.map(function(s,i){return pad(i+1)+' '+s.name}).concat(['Totto para el mundo']);
+  t.innerHTML=(names.concat(names)).map(function(n){return '<span>'+esc(n)+'</span>'}).join('');
+
+  /* ---------- stress test ---------- */
+  var pr=document.getElementById('pressure'), keep=document.getElementById('keep'), keepLbl=document.getElementById('keepLbl');
+  var fads=document.querySelectorAll('.pcard.fad'), musts=document.querySelectorAll('.pcard.must');
+  function stress(){
+    var v=+pr.value/100, gone=0;
+    fads.forEach(function(c,i){ var th=0.25+i*0.18, o=Math.max(0.08,1-Math.max(0,(v-th)/0.25)); c.style.setProperty('--o',o.toFixed(2)); c.style.setProperty('--s',(0.9+0.1*o).toFixed(3)); if(o<=0.1) gone++; });
+    musts.forEach(function(c){c.classList.toggle('hold',v>0.35)});
+    keep.textContent=10-gone;
+    keepLbl.textContent=v<0.15?'Se quedan en un año bueno':(v<0.6?'Se quedan bajo presión':'Se quedan cuando la compañía está mal');
+    pr.setAttribute('aria-valuetext',v<0.5?'Año bueno':'Año difícil');
+  }
+  pr.addEventListener('input',stress); stress();
+
+  /* ---------- compare ---------- */
+  var cmp=document.getElementById('cmp'), cbox=document.getElementById('compare');
+  cmp.addEventListener('input',function(){cbox.style.setProperty('--x',cmp.value+'%')});
+
+  /* ---------- journey ---------- */
+  var rail=document.getElementById('rail'), stage=document.getElementById('stage'), cur=0, timer=null;
+  rail.innerHTML=STATIONS.map(function(s,i){return '<button class="st'+(s.fin?' fin':'')+'" role="tab" data-i="'+i+'" aria-label="Estación '+pad(i+1)+': '+esc(s.name)+'"><span class="n">'+(s.fin?'':pad(i+1))+'</span><span class="l">'+esc(s.name)+'</span></button>'}).join('');
+  var sts=rail.querySelectorAll('.st');
+  rail.addEventListener('click',function(e){var b=e.target.closest('.st'); if(b){ go(+b.dataset.i,true); }});
+
+  function visual(s,i){
+    var foot='<div class="foot"><span>Estado</span><b>[POR DEFINIR]</b></div>';
+    if(s.vis==='loop') return '<p class="eyebrow yellow" style="margin:0">Feedback loop · producción en línea</p><svg class="loop" viewBox="0 0 360 300" role="img" aria-label="Ciclo: planificar, producir, abastecer, vender, medir"><circle class="track" cx="180" cy="150" r="96"/><circle class="run" cx="180" cy="150" r="96"/><text x="180" y="40" text-anchor="middle">Planificar</text><text x="305" y="120" text-anchor="start">Producir</text><text x="275" y="258" text-anchor="middle">Abastecer</text><text x="85" y="258" text-anchor="middle">Vender</text><text x="55" y="120" text-anchor="end">Medir</text><text class="c" x="180" y="142">10 → menos</text><text x="180" y="168" text-anchor="middle">personas · más rapidez</text></svg><div class="kv"><span class="eyebrow yellow">Des-especializar el rol</span><div class="line10 flow" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>'+foot;
+    if(s.vis==='pipe') return '<p class="eyebrow yellow" style="margin:0">Flujo de datos con Oriente</p><div class="pipe"><span class="lab">Hoy</span><div class="r"><span class="b">Excel</span><span class="a">→</span><span class="b">Correo</span><span class="a">→</span><span class="b">Excel</span><span class="a">→</span><span class="b err">Error</span></div><span class="lab" style="margin-top:8px">Mañana</span><div class="r"><span class="b ok">Orden</span><span class="a">→</span><span class="b ok">Proveedor</span><span class="a">→</span><span class="b ok">Importación</span><span class="a">→</span><span class="b ok">CEDI</span></div></div><div class="kv"><span class="eyebrow yellow">Qué cambia</span><b>De product centric a data centric: una sola fuente, visible para todo el Journey.</b></div>'+foot;
+    if(s.vis==='kpi') return '<p class="eyebrow yellow" style="margin:0">Lo que Friedman mueve</p><div class="kpis"><div class="kpi"><span>Completar venta</span><b>[CONVERSIÓN]</b></div><div class="kpi"><span>Más productos</span><b>[UPT]</b></div><div class="kpi"><span>Crecer tiendas</span><b>[VENTA / M²]</b></div><div class="kpi"><span>Recompra</span><b>[FRECUENCIA]</b></div></div><div class="kv"><span class="eyebrow yellow">Back ↔ front</span><b>La misma persona que recibe el producto es la que completa la venta.</b></div>'+foot;
+    var kv=(s.kv||[]).map(function(p){return '<div class="kv"><span class="eyebrow yellow">'+esc(p[0])+'</span><b>'+esc(p[1])+'</b></div>'}).join('');
+    return '<div class="big">'+(s.fin?'∞':pad(i+1))+'</div>'+kv+foot;
+  }
+  function render(){
+    var s=STATIONS[cur];
+    sts.forEach(function(b,i){b.classList.toggle('on',i===cur);b.classList.toggle('done',i<cur);b.setAttribute('aria-selected',i===cur?'true':'false')});
+    var q=(s.quotes||[]).map(function(x){return '<div class="quote"><span class="q">Lo que pidieron</span><p>“'+esc(x)+'”</p></div>'}).join('');
+    var ojo=s.ojo?'<div class="ojo"><span class="q">Ojo</span><p>'+esc(s.ojo)+'</p></div>':'';
+    var last=cur===STATIONS.length-1;
+    stage.innerHTML='<div class="txt fade"><p class="eyebrow red" style="margin:0">Estación '+pad(cur+1)+' · '+esc(s.tag)+'</p><h3>'+esc(s.h)+'<span style="color:var(--red)">.</span></h3><p class="body">'+esc(s.body)+'</p>'+q+ojo+
+      '<div class="jnav"><button class="btn ghost" id="prev">← Anterior</button><span class="cnt">'+pad(cur+1)+' / '+pad(STATIONS.length)+'</span>'+(last?'<a class="btn" href="#destino">Llegar al destino →</a>':'<button class="btn" id="next">Siguiente estación →</button>')+'<button class="auto'+(timer?' on':'')+'" id="auto" aria-pressed="'+(timer?'true':'false')+'"><i></i>Auto</button></div></div>'+
+      '<div class="vis fade"><div style="display:flex;flex-direction:column;gap:10px"><span class="eyebrow yellow">Áreas que toca</span><div class="chips">'+s.areas.map(function(a){return '<span class="chip">'+esc(a)+'</span>'}).join('')+'</div></div><div class="kv"><span class="eyebrow yellow">Proyecto que lo une</span><b>'+esc(s.proj)+'</b></div>'+visual(s,cur)+'</div>';
+    var p=document.getElementById('prev'), n=document.getElementById('next'), a=document.getElementById('auto');
+    p.addEventListener('click',function(){go(cur-1,true)}); if(n) n.addEventListener('click',function(){go(cur+1,true)});
+    a.addEventListener('click',function(){ if(timer){stop()} else {start()} a.classList.toggle('on',!!timer); a.setAttribute('aria-pressed',timer?'true':'false'); });
+    var on=sts[cur]; if(on&&on.scrollIntoView&&rail.scrollWidth>rail.clientWidth) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    if(history.replaceState) history.replaceState(null,'','#e'+(cur+1));
+  }
+  function go(i,manual){ if(i<0||i>=STATIONS.length) return; cur=i; if(manual) stop(); render(); }
+  function start(){ stop(); timer=setInterval(function(){ cur=(cur+1)%STATIONS.length; render(); },6000); }
+  function stop(){ if(timer){clearInterval(timer);timer=null;} }
+  document.addEventListener('keydown',function(e){ if(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName)) return; if(e.key==='ArrowRight'){go(cur+1,true)} if(e.key==='ArrowLeft'){go(cur-1,true)} });
+  var m=location.hash.match(/^#e(\d+)$/); if(m){ cur=Math.min(STATIONS.length,Math.max(1,+m[1]))-1; }
+  render();
+  if(m){ setTimeout(function(){document.getElementById('journey').scrollIntoView()},50); }
+
+  /* ---------- projects hub ---------- */
+  var plist=document.getElementById('plist'), silos=document.getElementById('silos'), hubT=document.getElementById('hubTitle'), hubS=document.getElementById('hubSub');
+  var counts={}; AREAS.forEach(function(a){counts[a]=0}); PROJECTS.forEach(function(p){p[2].forEach(function(a){counts[a]++})});
+  plist.innerHTML='<button class="proj all on" data-p="-1">Todos los proyectos<small>Mapa de calor</small></button>'+PROJECTS.map(function(p,i){return '<button class="proj" data-p="'+i+'">'+esc(p[0])+'<small>'+esc(p[1])+' · '+p[2].length+' áreas</small></button>'}).join('');
+  silos.innerHTML=AREAS.map(function(a){return '<div class="silo" data-a="'+esc(a)+'"><em>'+counts[a]+'</em>'+esc(a)+'</div>'}).join('');
+  var projs=plist.querySelectorAll('.proj'), tiles=silos.querySelectorAll('.silo');
+  function light(i){
+    projs.forEach(function(b){b.classList.toggle('on',+b.dataset.p===i)});
+    if(i<0){ tiles.forEach(function(t){t.classList.remove('lit','dim')}); hubT.textContent='Todos los proyectos'; var zero=AREAS.filter(function(a){return counts[a]===0}).length; hubS.textContent=AREAS.length+' áreas · '+PROJECTS.length+' proyectos · '+zero+' silos sin proyecto'; return; }
+    var p=PROJECTS[i]; tiles.forEach(function(t){var hit=p[2].indexOf(t.dataset.a)>-1; t.classList.toggle('lit',hit); t.classList.toggle('dim',!hit)});
+    hubT.textContent=p[0]; hubS.textContent='Toca '+p[2].length+' áreas · '+p[2].join(' · ');
+  }
+  plist.addEventListener('mouseover',function(e){var b=e.target.closest('.proj'); if(b) light(+b.dataset.p)});
+  plist.addEventListener('focusin',function(e){var b=e.target.closest('.proj'); if(b) light(+b.dataset.p)});
+  plist.addEventListener('click',function(e){var b=e.target.closest('.proj'); if(b) light(+b.dataset.p)});
+  light(-1);
+})();
+</script>
+</body>
+</html>
