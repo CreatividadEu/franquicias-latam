@@ -26,6 +26,8 @@ const nextConfig: NextConfig = {
         has: [{ type: "host", value: "www.franquiciar.franquiciaslatam.com" }],
         destination: "/franquiciar",
       },
+      // Microsite estático Totto Journey: URL limpia para el HTML de public/.
+      { source: "/totto/journey", destination: "/totto/journey/index.html" },
     ];
   },
   // The SAJÚ command center is an internal panel: never index it, whatever the
